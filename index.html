@@ -1,5 +1,99 @@
 <!DOCTYPE html>
-<html>
-<head><title>Automation Tools</title></head>
-<body><h1>Automation Tools</h1><p>Official homepage for content publishing scripts.</p></body>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coding For Freedom | APOND TikTok Automation</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --accent-hover: #0284c7;
+            --border: #334155;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); line-height: 1.6; padding: 0; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
+        header { border-bottom: 1px solid var(--border); padding: 20px 0; background: rgba(15, 23, 42, 0.9); position: sticky; top: 0; backdrop-filter: blur(8px); }
+        nav { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.25rem; font-weight: 700; color: var(--accent); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+        .nav-links { display: flex; gap: 20px; list-style: none; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.95rem; transition: color 0.2s; }
+        .nav-links a:hover { color: var(--text-main); }
+        .hero { padding: 80px 0 60px; text-align: center; }
+        .badge { background: #0369a1; color: #e0f2fe; padding: 4px 12px; border-radius: 999px; font-size: 0.85rem; font-weight: 600; display: inline-block; margin-bottom: 16px; }
+        h1 { font-size: 2.5rem; margin-bottom: 16px; font-weight: 800; letter-spacing: -0.025em; }
+        .hero p { font-size: 1.15rem; color: var(--text-muted); max-width: 700px; margin: 0 auto 30px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin: 40px 0; }
+        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 30px; text-align: left; }
+        .card h3 { color: var(--accent); margin-bottom: 12px; font-size: 1.2rem; }
+        .card p { color: var(--text-muted); font-size: 0.95rem; }
+        footer { border-top: 1px solid var(--border); margin-top: 80px; padding: 40px 0; text-align: center; color: var(--text-muted); font-size: 0.9rem; }
+        footer a { color: var(--accent); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+        .footer-links { margin-top: 12px; display: flex; justify-content: center; gap: 20px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="logo">🐍 Coding For Freedom</a>
+                <ul class="nav-links">
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#apond">APOND App</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                    <li><a href="terms.html">Terms of Service</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="hero" id="about">
+            <span class="badge">Official Application Portal</span>
+            <h1>Python Automation, Education & Data Solutions</h1>
+            <p>Coding For Freedom builds high-efficiency Python workflows, automated content delivery pipelines, and data processing solutions designed to scale education and operations.</p>
+        </section>
+
+        <section id="apond" class="card" style="margin-bottom: 40px; border-color: var(--accent);">
+            <span class="badge" style="background: #1e3a8a;">API Integration</span>
+            <h2>APOND — TikTok Content Dispatch Pipeline</h2>
+            <p style="margin-top: 12px; color: var(--text-main); font-size: 1.05rem;">
+                <strong>APOND</strong> is an automated Python application developed by Coding For Freedom designed to systematically curate, format, and dispatch our educational materials, programming tutorials, and scientific media directly to our TikTok audience.
+            </p>
+        </section>
+
+        <section class="grid">
+            <div class="card">
+                <h3>⚡ Workflow Automation</h3>
+                <p>Developing custom automated scripts using Python, APIs, and data processing tools to streamline content publishing and business workflows.</p>
+            </div>
+            <div class="card">
+                <h3>📚 Educational Content</h3>
+                <p>Empowering developers and creators through structured programming tutorials, algorithmic workflows, and practical Python demonstrations.</p>
+            </div>
+            <div class="card">
+                <h3>📊 Data Solutions</h3>
+                <p>Extracting, transforming, and organizing media and analytical metrics to deliver reliable data pipeline automation.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Coding For Freedom. All rights reserved.</p>
+            <p>Support / Inquiries: <a href="mailto:support@codingforfreedom.com">support@codingforfreedom.com</a></p>
+            <div class="footer-links">
+                <a href="privacy.html">Privacy Policy</a>
+                <a href="terms.html">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
 </html>
