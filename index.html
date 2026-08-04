@@ -37,6 +37,7 @@
             margin: 20px 0 40px;
             overflow: hidden;
             border: 1px solid var(--border);
+            background-color: var(--bg-color);
         }
 
         .slideshow-background {
@@ -56,22 +57,28 @@
             height: 100%;
             background-size: cover;
             background-position: center;
+            background-repeat: no-repeat;
             opacity: 0;
             transition: opacity 1.5s ease-in-out;
         }
 
         .slide.active {
-            opacity: 0.25; /* Translucent background so text pops clearly */
+            opacity: 0.55;
         }
 
-        /* Overlay gradient to blend edges */
+        .slide-logo {
+            background-size: contain !important;
+            background-position: center !important;
+        }
+
+        /* Overlay gradient for text legibility */
         .slideshow-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle, rgba(15, 23, 42, 0.4) 0%, rgba(15, 23, 42, 0.95) 100%);
+            background: rgba(15, 23, 42, 0.65);
             z-index: 2;
         }
 
@@ -134,9 +141,9 @@
         <!-- Hero Section with Background Slideshow -->
         <section class="hero" id="about">
             <div class="slideshow-background">
-                <div class="slide active" style="background-image: url('coding_for_freedom_logo_thicker_circular_text_v2.png'); background-size: contain; background-repeat: no-repeat;"></div>
-                <div class="slide" style="background-image: url('file_000000007d2071f885f9000af711d975.png');"></div>
-                <div class="slide" style="background-image: url('file_00000000027071f8ad9a071dff987d5b.png');"></div>
+                <div class="slide slide-logo active" style="background-image: url('bg1.png');"></div>
+                <div class="slide" style="background-image: url('bg2.png');"></div>
+                <div class="slide" style="background-image: url('bg3.png');"></div>
             </div>
             <div class="slideshow-overlay"></div>
 
@@ -257,8 +264,8 @@
             } else {
                 signupForm.style.display = 'none';
                 loginForm.style.display = 'block';
-                tabLoginBtn.classList.add('active');
-                tabSignupBtn.classList.remove('active');
+                tabSignupBtn.classList.add('active');
+                tabLoginBtn.classList.remove('active');
             }
         }
 
