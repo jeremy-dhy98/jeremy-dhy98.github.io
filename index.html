@@ -94,7 +94,15 @@
         .tab-buttons { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
         .tab-btn { background: none; border: none; color: var(--text-muted); font-size: 1rem; font-weight: 600; padding: 6px 12px; cursor: pointer; border-radius: 4px; }
         .tab-btn.active { color: var(--accent); background: var(--card-bg); border-bottom: 2px solid var(--accent); }
-        .form-group { margin-bottom: 16px; }
+        
+        /* Form alignment rules to center the submit button */
+        #signupForm, #loginForm {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .form-group { width: 100%; margin-bottom: 16px; }
         .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; }
         .form-group input { width: 100%; padding: 10px 14px; background: var(--bg-color); border: 1px solid var(--border); border-radius: 6px; color: var(--text-main); font-size: 0.95rem; }
         .form-group input:focus { outline: none; border-color: var(--accent); }
@@ -111,12 +119,11 @@
             font-size: 1rem; 
             cursor: pointer; 
             transition: background 0.2s; 
-            margin: 10px auto 0 auto; 
-            display: block; 
+            margin-top: 10px; 
         }
         .btn-submit:hover { background: var(--accent-hover); }
         
-        .status-msg { margin-top: 15px; padding: 10px; border-radius: 6px; font-size: 0.9rem; display: none; }
+        .status-msg { margin-top: 15px; padding: 10px; border-radius: 6px; font-size: 0.9rem; display: none; width: 100%; text-align: center; }
         .status-msg.success { background: rgba(16, 185, 129, 0.2); border: 1px solid var(--success); color: #6ee7b7; }
         .status-msg.error { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; }
 
@@ -267,13 +274,13 @@
             statusMsg.style.display = 'none';
 
             if (type === 'signup') {
-                signupForm.style.display = 'block';
+                signupForm.style.display = 'flex';
                 loginForm.style.display = 'none';
                 tabSignupBtn.classList.add('active');
                 tabLoginBtn.classList.remove('active');
             } else {
                 signupForm.style.display = 'none';
-                loginForm.style.display = 'block';
+                loginForm.style.display = 'flex';
                 tabSignupBtn.classList.add('active');
                 tabLoginBtn.classList.remove('active');
             }
