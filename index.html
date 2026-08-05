@@ -168,6 +168,39 @@
             fill: currentColor;
         }
 
+        /* Flexible Media Accommodation Styles */
+        .media-item-box {
+            background: var(--bg-color);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .media-element-wrapper {
+            position: relative;
+            border-radius: 6px;
+            overflow: hidden;
+            width: 100%;
+            min-height: 280px;
+            max-height: 420px;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+        .media-element-wrapper video,
+        .media-element-wrapper img {
+            width: 100%;
+            height: 100%;
+            max-height: 400px;
+            object-fit: contain;
+            background: #000;
+            border-radius: 4px;
+        }
+
         /* Auth Portal Card Styles */
         .auth-card { border: 1px solid var(--accent); background: #162032; }
         .tab-buttons { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
@@ -259,33 +292,37 @@
                     Explore our daily educational motivation, Bing wallpaper updates, and NASA astronomy features. Visitors can preview content, while subscribers get full streaming and download access.
                 </p>
 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
                     <!-- 1. EDUCATIONAL MOTIVATION VIDEO -->
-                    <div style="background: var(--bg-color); border: 1px solid var(--border); border-radius: 8px; padding: 16px;">
-                        <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 8px;">🎓 Educational Motivation</h3>
-                        <video controls style="width: 100%; border-radius: 6px; max-height: 160px; background: #000; margin-bottom: 8px;">
-                            <source src="./raw_media_ready/latest_motivation.mp4" type="video/mp4">
-                            Your browser does not support video.
-                        </video>
+                    <div class="media-item-box">
+                        <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 10px;">🎓 Educational Motivation</h3>
+                        <div class="media-element-wrapper">
+                            <video controls preload="metadata">
+                                <source src="./raw_media_ready/latest_motivation.mp4" type="video/mp4">
+                                Your browser does not support video.
+                            </video>
+                        </div>
                         <p style="font-size: 0.85rem; color: var(--text-muted);">Daily Python programming and coding motivation quote.</p>
                     </div>
 
                     <!-- 2. BING WALLPAPER -->
-                    <div style="background: var(--bg-color); border: 1px solid var(--border); border-radius: 8px; padding: 16px;">
-                        <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 8px;">🌍 Bing Daily Wallpaper</h3>
-                        <div class="media-gate-container" data-media-type="bing" style="position: relative; border-radius: 6px; overflow: hidden; height: 150px; background: #111;">
-                            <div class="visitor-view" style="width: 100%; height: 100%; position: relative;">
-                                <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500" alt="Bing Wallpaper Preview" style="width: 100%; height: 100%; object-fit: cover; filter: blur(6px);">
-                                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.7); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; text-align: center;">
-                                    <p style="font-size: 0.85rem; color: #f8fafc; margin-bottom: 8px;">🔒 Members Only Content</p>
-                                    <button onclick="document.getElementById('portal').scrollIntoView({behavior: 'smooth'})" style="background: var(--accent); color: #0f172a; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; cursor: pointer;">Login to Unlock</button>
+                    <div class="media-item-box">
+                        <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 10px;">🌍 Bing Daily Wallpaper</h3>
+                        <div class="media-element-wrapper media-gate-container" data-media-type="bing">
+                            <div class="visitor-view" style="width: 100%; height: 100%; position: relative; display: flex; align-items: center; justify-content: center;">
+                                <img src="./raw_media_ready/bind_media.mp4" alt="Bing Wallpaper Preview" style="filter: blur(8px);">
+                                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.75); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px; text-align: center;">
+                                    <p style="font-size: 0.9rem; color: #f8fafc; margin-bottom: 10px;">🔒 Members Only Content</p>
+                                    <button onclick="document.getElementById('portal').scrollIntoView({behavior: 'smooth'})" style="background: var(--accent); color: #0f172a; border: none; padding: 8px 14px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; cursor: pointer;">Login to Unlock</button>
                                 </div>
                             </div>
-                            <div class="subscriber-view" style="display: none; width: 100%; height: 100%;">
-                                <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500" alt="Bing Wallpaper" style="width: 100%; height: 90px; object-fit: cover; border-radius: 4px;">
-                                <div style="display: flex; gap: 6px; margin-top: 6px;">
-                                    <a href="#" target="_blank" style="background: var(--accent); color: #0f172a; padding: 4px 8px; font-size: 0.75rem; text-decoration: none; border-radius: 4px; font-weight: bold;">HD Image</a>
-                                    <a href="#" target="_blank" style="background: var(--success); color: #0f172a; padding: 4px 8px; font-size: 0.75rem; text-decoration: none; border-radius: 4px; font-weight: bold;">6s Motion MP4</a>
+                            <div class="subscriber-view" style="display: none; width: 100%; height: 100%; flex-direction: column; justify-content: space-between;">
+                                <video controls preload="metadata" style="width: 100%; max-height: 340px; object-fit: contain;">
+                                    <source src="./raw_media_ready/bind_media.mp4" type="video/mp4">
+                                    Your browser does not support video.
+                                </video>
+                                <div style="display: flex; gap: 8px; margin-top: 10px;">
+                                    <a href="./raw_media_ready/bind_media.mp4" target="_blank" style="background: var(--success); color: #0f172a; padding: 6px 12px; font-size: 0.8rem; text-decoration: none; border-radius: 4px; font-weight: bold; text-align: center; flex: 1;">Download MP4</a>
                                 </div>
                             </div>
                         </div>
@@ -293,21 +330,25 @@
                     </div>
 
                     <!-- 3. NASA APOD -->
-                    <div style="background: var(--bg-color); border: 1px solid var(--border); border-radius: 8px; padding: 16px;">
-                        <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 8px;">🚀 NASA APOD Feature</h3>
-                        <div class="media-gate-container" data-media-type="nasa" style="position: relative; border-radius: 6px; overflow: hidden; height: 150px; background: #111;">
-                            <div class="visitor-view" style="width: 100%; height: 100%; position: relative;">
-                                <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500" alt="NASA APOD Preview" style="width: 100%; height: 100%; object-fit: cover; filter: blur(6px);">
-                                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.7); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; text-align: center;">
-                                    <p style="font-size: 0.85rem; color: #f8fafc; margin-bottom: 8px;">🔒 Members Only Content</p>
-                                    <button onclick="document.getElementById('portal').scrollIntoView({behavior: 'smooth'})" style="background: var(--accent); color: #0f172a; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; cursor: pointer;">Login to Unlock</button>
+                    <div class="media-item-box">
+                        <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 10px;">🚀 NASA APOD Feature</h3>
+                        <div class="media-element-wrapper media-gate-container" data-media-type="nasa">
+                            <div class="visitor-view" style="width: 100%; height: 100%; position: relative; display: flex; align-items: center; justify-content: center;">
+                                <video preload="metadata" style="filter: blur(8px);">
+                                    <source src="./raw_media_ready/nasa_apod.mp4" type="video/mp4">
+                                </video>
+                                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.75); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px; text-align: center;">
+                                    <p style="font-size: 0.9rem; color: #f8fafc; margin-bottom: 10px;">🔒 Members Only Content</p>
+                                    <button onclick="document.getElementById('portal').scrollIntoView({behavior: 'smooth'})" style="background: var(--accent); color: #0f172a; border: none; padding: 8px 14px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; cursor: pointer;">Login to Unlock</button>
                                 </div>
                             </div>
-                            <div class="subscriber-view" style="display: none; width: 100%; height: 100%;">
-                                <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500" alt="NASA APOD" style="width: 100%; height: 90px; object-fit: cover; border-radius: 4px;">
-                                <div style="display: flex; gap: 6px; margin-top: 6px;">
-                                    <a href="#" target="_blank" style="background: var(--accent); color: #0f172a; padding: 4px 8px; font-size: 0.75rem; text-decoration: none; border-radius: 4px; font-weight: bold;">HD Space Photo</a>
-                                    <a href="#" target="_blank" style="background: var(--success); color: #0f172a; padding: 4px 8px; font-size: 0.75rem; text-decoration: none; border-radius: 4px; font-weight: bold;">6s Space MP4</a>
+                            <div class="subscriber-view" style="display: none; width: 100%; height: 100%; flex-direction: column; justify-content: space-between;">
+                                <video controls preload="metadata" style="width: 100%; max-height: 340px; object-fit: contain;">
+                                    <source src="./raw_media_ready/nasa_apod.mp4" type="video/mp4">
+                                    Your browser does not support video.
+                                </video>
+                                <div style="display: flex; gap: 8px; margin-top: 10px;">
+                                    <a href="./raw_media_ready/nasa_apod.mp4" target="_blank" style="background: var(--success); color: #0f172a; padding: 6px 12px; font-size: 0.8rem; text-decoration: none; border-radius: 4px; font-weight: bold; text-align: center; flex: 1;">Download MP4</a>
                                 </div>
                             </div>
                         </div>
@@ -451,7 +492,7 @@
                 const subscriberView = container.querySelector('.subscriber-view');
                 if (visitorView && subscriberView) {
                     visitorView.style.display = 'none';
-                    subscriberView.style.display = 'block';
+                    subscriberView.style.display = 'flex';
                 }
             });
         }
