@@ -281,8 +281,8 @@
             } else {
                 signupForm.style.display = 'none';
                 loginForm.style.display = 'flex';
-                tabSignupBtn.classList.add('active');
-                tabLoginBtn.classList.remove('active');
+                tabSignupBtn.classList.remove('active');
+                tabLoginBtn.classList.add('active');
             }
         }
 
@@ -291,7 +291,7 @@
             const statusMsg = document.getElementById('statusMessage');
             statusMsg.className = 'status-msg';
             statusMsg.style.display = 'block';
-            statusMsg.innerHTML = 'Processing...';
+            statusMsg.innerHTML = 'Connecting to Render backend...';
 
             let payload = {};
             if (type === 'signup') {
@@ -310,7 +310,8 @@
             }
 
             try {
-                const response = await fetch('https://your-api-server.com/api/auth', {
+                // Live Render backend URL endpoint
+                const response = await fetch('https://cff-dispatcher-api.onrender.com/api/auth', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
@@ -321,11 +322,12 @@
                     statusMsg.className = 'status-msg success';
                     statusMsg.innerHTML = `✓ ${type === 'signup' ? 'Subscription successful!' : 'Welcome back!'} <br><a href="${data.drive_url}" target="_blank" style="color:#38bdf8;">Click here to access your Google Drive Media Zip Archive</a>`;
                 } else {
-                    throw new Error('Authentication failed');
+                    const errData = await response.json().catch(() => ({}));
+                    throw new Error(errData.message || 'Authentication failed');
                 }
             } catch (err) {
-                statusMsg.className = 'status-msg success';
-                statusMsg.innerHTML = `✓ Authentication verified for ${payload.email}. <br><strong>Access Granted:</strong> Check your email daily for direct download links to compressed TikTok & YouTube tutorials!`;
+                statusMsg.className = 'status-msg error';
+                statusMsg.innerHTML = `❌ Connection error: ${err.message || 'Could not connect to live server'}. Please try again shortly.`;
             }
         }
     </script>
