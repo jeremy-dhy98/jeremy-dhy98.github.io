@@ -98,8 +98,11 @@
         .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; }
         .form-group input { width: 100%; padding: 10px 14px; background: var(--bg-color); border: 1px solid var(--border); border-radius: 6px; color: var(--text-main); font-size: 0.95rem; }
         .form-group input:focus { outline: none; border-color: var(--accent); }
-        .btn-submit { width: 100%; padding: 12px; background: var(--accent); color: #0f172a; border: none; border-radius: 6px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: background 0.2s; margin-top: 10px; }
+        
+        /* Updated submit button style to wrap tightly around text */
+        .btn-submit { width: fit-content; padding: 10px 24px; background: var(--accent); color: #0f172a; border: none; border-radius: 6px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: background 0.2s; margin-top: 10px; display: block; }
         .btn-submit:hover { background: var(--accent-hover); }
+        
         .status-msg { margin-top: 15px; padding: 10px; border-radius: 6px; font-size: 0.9rem; display: none; }
         .status-msg.success { background: rgba(16, 185, 129, 0.2); border: 1px solid var(--success); color: #6ee7b7; }
         .status-msg.error { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; }
