@@ -376,7 +376,7 @@
                             <div style="display: flex; gap: 8px; margin-top: 10px;">
                                 <a href="./backend/raw_media_ready/nasa_apod.mp4" target="_blank" style="background: var(--success); color: #0f172a; padding: 6px 12px; font-size: 0.8rem; text-decoration: none; border-radius: 4px; font-weight: bold; text-align: center; flex: 1;">Download MP4</a>
                             </div>
-                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">Includes daily NASA astronomy video feature.</p>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">Includes daily NASA astronomy video feature and Bing daily featured wallpaper media.</p>
                         </div>
                     </div>
 
@@ -448,7 +448,7 @@
         <!-- Subscriber Access & Authentication Card -->
         <section id="portal" class="card auth-card" style="margin-bottom: 40px;">
             <span class="badge" style="background: #065f46; color: #a7f3d0;">Subscriber Hub</span>
-            <h2 style="margin-bottom: 15px;">Access Python Tutorial Archives</h2>
+            <h2>Access Python Tutorial Archives</h2>
             
             <div class="tab-buttons">
                 <button class="tab-btn active" id="tabSignupBtn" onclick="switchTab('signup')">Sign Up</button>
@@ -615,26 +615,3 @@
                     const data = await response.json();
                     
                     localStorage.setItem("cff_user_session", "active");
-                    unlockMediaHub();
-
-                    statusMsg.className = 'status-msg success';
-                    statusMsg.innerHTML = `✓ ${type === 'signup' ? 'Subscription successful!' : 'Welcome back!'} Gated media unlocked. <br><a href="${data.drive_url}" target="_blank" style="color:#38bdf8;">Click here to access your Google Drive Media Zip Archive</a>`;
-                } else {
-                    const errText = await response.text();
-                    let errMsg = 'Authentication failed';
-                    try {
-                        const errJson = JSON.parse(errText);
-                        errMsg = errJson.message || errMsg;
-                    } catch (e) {
-                        if (errText) errMsg = errText;
-                    }
-                    throw new Error(errMsg);
-                }
-            } catch (err) {
-                statusMsg.className = 'status-msg error';
-                statusMsg.innerHTML = `❌ Connection error: ${err.message || 'Could not connect to live server'}. Please try again shortly.`;
-            }
-        }
-    </script>
-</body>
-</html>
