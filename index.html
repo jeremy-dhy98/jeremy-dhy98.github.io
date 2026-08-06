@@ -383,11 +383,32 @@
         }
 
         document.addEventListener("DOMContentLoaded", function () {
-            fetch(`${BACKEND_BASE_URL}/api/health`).catch(() => {
-                console.warn('Backend health ping failed.');
+            // Fire the health ping to wake up the Render instance early.
+            // We also use its result to trigger a branding retry in case
+            // the first loadStaticBranding() attempt lost the cold-start race.
+            let brandingLoaded = false;
+
+            const brandingPromise = loadStaticBranding().then(() => {
+                brandingLoaded = true;
+            }).catch(() => {
+                // loadStaticBranding already falls back internally; this
+                // outer catch just silences any unhandled rejections.
             });
 
-            loadStaticBranding();
+            fetch(`${BACKEND_BASE_URL}/api/health`)
+                .then(() => {
+                    // Backend is awake. If branding hasn't resolved yet, wait
+                    // for it; if it already failed (fell back to local files),
+                    // try the backend manifest once more to upgrade to Cloudinary URLs.
+                    return brandingPromise.then(() => {
+                        if (!brandingLoaded) {
+                            return loadStaticBranding();
+                        }
+                    });
+                })
+                .catch(() => {
+                    console.warn('Backend health ping failed — backend may be down.');
+                });
 
             const activeSession = localStorage.getItem(SESSION_KEY);
             if (activeSession) {
@@ -398,32 +419,66 @@
 
         // ==========================================
         // STATIC BRANDING (logo + hero backgrounds)
-        // Fetches directly from /api/static-manifest to ensure Cloudinary 
-        // URLs are always fetched and visible on page load.
+        //
+        // Strategy (in priority order):
+        //   1. Try /api/static-manifest from the backend (Cloudinary URLs).
+        //   2. If that fails (cold start, network error), fall back to the
+        //      same-named files committed to this GitHub Pages repo root.
+        //   3. If both fail, the elements stay hidden/empty gracefully.
+        //
+        // LOCAL_STATIC_ASSETS must match the filenames committed to the
+        // GitHub Pages repo root (logo.jpg, bg1.png, bg2.png, bg3.png).
         // ==========================================
-        async function loadStaticBranding() {
-            const logoImg = document.getElementById('brand-logo');
+        const LOCAL_STATIC_ASSETS = {
+            logo: 'logo.jpg',
+            bg1:  'bg1.png',
+            bg2:  'bg2.png',
+            bg3:  'bg3.png',
+        };
+
+        function applyStaticAssets(staticMedia) {
+            const logoImg  = document.getElementById('brand-logo');
             const bgSlides = Array.from(document.querySelectorAll('.slide'));
 
+            if (logoImg && staticMedia['logo']) {
+                logoImg.src = staticMedia['logo'];
+                logoImg.style.display = '';      // un-hide if previously hidden
+            }
+
+            bgSlides.forEach((slide) => {
+                const key = slide.dataset.bgKey;
+                if (key && staticMedia[key]) {
+                    slide.src = staticMedia[key];
+                }
+            });
+        }
+
+        async function loadStaticBranding() {
+            // --- Attempt 1: backend /api/static-manifest (Cloudinary URLs) ---
+            // Use a generous timeout (55 s) so a Render cold-start (≤60 s) has
+            // time to wake up before we give up and fall back to local files.
             try {
-                const response = await fetchWithRetry(`${BACKEND_BASE_URL}/api/static-manifest`, {}, { timeoutMs: 20000, retries: 1 });
+                const response = await fetchWithRetry(
+                    `${BACKEND_BASE_URL}/api/static-manifest`,
+                    {},
+                    { timeoutMs: 55000, retries: 2 }
+                );
                 if (!response.ok) throw new Error(`static-manifest responded ${response.status}`);
                 const data = await response.json();
                 const staticMedia = data.media || {};
 
-                if (logoImg && staticMedia['logo']) {
-                    logoImg.src = staticMedia['logo'];
+                // Only use the backend result if we actually got at least one key.
+                if (Object.keys(staticMedia).length > 0) {
+                    applyStaticAssets(staticMedia);
+                    return; // success — done
                 }
-
-                bgSlides.forEach((slide) => {
-                    const key = slide.dataset.bgKey;
-                    if (key && staticMedia[key]) {
-                        slide.src = staticMedia[key];
-                    }
-                });
+                throw new Error('static-manifest returned empty media object');
             } catch (err) {
-                console.error('Could not load static branding from backend:', err);
+                console.warn('Backend static-manifest unavailable, falling back to local assets:', err.message);
             }
+
+            // --- Attempt 2: local GitHub Pages files ---
+            applyStaticAssets(LOCAL_STATIC_ASSETS);
         }
 
         // ==========================================
@@ -443,7 +498,7 @@
 
             if (!manifest) {
                 try {
-                    const response = await fetchWithRetry(`${BACKEND_BASE_URL}/api/media-manifest`, {}, { timeoutMs: 25000, retries: 1 });
+                    const response = await fetchWithRetry(`${BACKEND_BASE_URL}/api/media-manifest`, {}, { timeoutMs: 55000, retries: 2 });
                     if (!response.ok) throw new Error(`media-manifest responded ${response.status}`);
                     const data = await response.json();
                     manifest = data.media || {};
@@ -461,18 +516,26 @@
             document.querySelectorAll('.media-gate-container').forEach((cardEl, i) => {
                 const cardIndex = i + 1;
                 const targetUrl = matchManifestKeyForCard(cardEl, manifest);
-                const videoSource = document.getElementById(`media-source-${cardIndex}`);
+                const videoSource  = document.getElementById(`media-source-${cardIndex}`);
                 const videoElement = document.getElementById(`media-video-${cardIndex}`);
                 const downloadLink = document.getElementById(`media-download-${cardIndex}`);
-                const statusEl = document.getElementById(`media-status-${cardIndex}`);
+                const statusEl     = document.getElementById(`media-status-${cardIndex}`);
 
                 if (targetUrl) {
-                    if (videoSource) videoSource.src = targetUrl;
-                    if (videoElement) videoElement.load();
+                    if (videoSource)  videoSource.src  = targetUrl;
                     if (downloadLink) downloadLink.href = targetUrl;
-                    if (statusEl) statusEl.textContent = '';
-                } else if (statusEl) {
-                    statusEl.textContent = 'This asset is not available yet.';
+                    // Always call load() so browsers that cached the initial
+                    // blank src="" actually pick up the new URL.
+                    if (videoElement) videoElement.load();
+                    if (statusEl)     statusEl.textContent = '';
+                } else {
+                    // Log which keys were attempted so mismatches are easy to spot.
+                    const attempted = (cardEl.dataset.cardKeys || '').split(',').map(k => k.trim()).filter(Boolean);
+                    console.warn(
+                        `media-hub card ${cardIndex}: no manifest match for key(s) [${attempted.join(', ')}]. ` +
+                        `Available keys: [${Object.keys(manifest).join(', ')}]`
+                    );
+                    if (statusEl) statusEl.textContent = 'This asset is not available yet.';
                 }
             });
         }
