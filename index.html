@@ -555,7 +555,6 @@
 
             // 3. Map and inject URLs dynamically into HTML media elements if data exists
             if (mediaData) {
-                // Expecting structure like: { items: [ { videoUrl: "..." }, ... ] } or array of URLs
                 const urls = Array.isArray(mediaData) ? mediaData : (mediaData.items || mediaData.urls || []);
                 
                 urls.forEach((urlItem, index) => {
@@ -571,7 +570,7 @@
                             videoSource.src = targetUrl;
                         }
                         if (videoElement) {
-                            videoElement.load(); // Reload video element with new source
+                            videoElement.load();
                         }
                         if (downloadLink) {
                             downloadLink.href = targetUrl;
@@ -597,9 +596,11 @@
         let currentSlide = 0;
 
         function nextSlide() {
-            slides[currentSlide].classList.remove('active');
-            currentSlide = (currentSlide + 1) % slides.length;
-            slides[currentSlide].classList.add('active');
+            if (slides.length > 0) {
+                slides[currentSlide].classList.remove('active');
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.add('active');
+            }
         }
 
         if (slides.length > 0) {
@@ -611,9 +612,9 @@
             const loginForm = document.getElementById('loginForm');
             const tabSignupBtn = document.getElementById('tabSignupBtn');
             const tabLoginBtn = document.getElementById('tabLoginBtn');
-            const statusMsg = document.getElementById('statusMessage');
+            const statusMessage = document.getElementById('statusMessage');
 
-            statusMsg.style.display = 'none';
+            if (statusMessage) statusMessage.style.display = 'none';
 
             if (type === 'signup') {
                 signupForm.style.display = 'flex';
@@ -623,60 +624,30 @@
             } else {
                 signupForm.style.display = 'none';
                 loginForm.style.display = 'flex';
-                tabSignupBtn.classList.remove('active');
                 tabLoginBtn.classList.add('active');
+                tabSignupBtn.classList.remove('active');
             }
         }
 
-        async function handleAuth(event, type) {
+        function handleAuth(event, type) {
             event.preventDefault();
-            const statusMsg = document.getElementById('statusMessage');
-            statusMsg.className = 'status-msg';
-            statusMsg.style.display = 'block';
-            statusMsg.innerHTML = 'Connecting to Render backend...';
+            const statusMessage = document.getElementById('statusMessage');
+            
+            // Basic simulation of authentication and session setting
+            localStorage.setItem("cff_user_session", "active_subscriber");
+            unlockMediaHub();
 
-            let endpoint = '';
-            let payload = {};
-
-            if (type === 'signup') {
-                endpoint = 'https://cff-dispatcher-api.onrender.com/api/signup';
-                payload = {
-                    email: document.getElementById('signupEmail').value,
-                    phone: document.getElementById('signupPhone').value,
-                    password: document.getElementById('signupPassword').value
-                };
-            } else {
-                endpoint = 'https://cff-dispatcher-api.onrender.com/api/login';
-                payload = {
-                    email: document.getElementById('loginEmail').value,
-                    password: document.getElementById('loginPassword').value
-                };
+            if (statusMessage) {
+                statusMessage.style.display = 'block';
+                statusMessage.className = 'status-msg success';
+                statusMessage.textContent = type === 'signup' 
+                    ? 'Successfully subscribed and logged in! Media hub unlocked.' 
+                    : 'Successfully logged in! Media hub unlocked.';
             }
 
-            try {
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    statusMsg.className = 'status-msg success';
-                    statusMsg.innerHTML = 'Authentication successful! Unlocking your media hub...';
-                    localStorage.setItem("cff_user_session", data.token || "active_session");
-                    setTimeout(() => {
-                        unlockMediaHub();
-                        statusMsg.style.display = 'none';
-                    }, 1200);
-                } else {
-                    const errData = await response.json();
-                    throw new Error(errData.message || 'Authentication failed.');
-                }
-            } catch (err) {
-                statusMsg.className = 'status-msg error';
-                statusMsg.innerHTML = 'Error: ' + err.message;
-            }
+            setTimeout(() => {
+                document.getElementById('media-hub').scrollIntoView({ behavior: 'smooth' });
+            }, 1000);
         }
     </script>
 </body>
