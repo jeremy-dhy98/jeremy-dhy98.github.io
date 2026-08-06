@@ -612,17 +612,11 @@
                 } else {
                     const errData = await response.json().catch(() => ({}));
                     statusMsg.className = 'status-msg error';
-                    statusMsg.innerHTML = errData.message || 'Authentication failed. Please check your credentials.';
+                    statusMsg.innerHTML = errData.message || 'Authentication failed. Please verify your credentials.';
                 }
-            } catch (error) {
-                // Fallback local simulation in case offline or API routing block
-                localStorage.setItem("cff_user_session", "local_fallback_session");
-                statusMsg.className = 'status-msg success';
-                statusMsg.innerHTML = 'Access granted! Unlocking media files...';
-                setTimeout(() => {
-                    unlockMediaHub();
-                    document.getElementById('media-hub').scrollIntoView({ behavior: 'smooth' });
-                }, 1000);
+            } catch (err) {
+                statusMsg.className = 'status-msg error';
+                statusMsg.innerHTML = 'Network error connecting to backend API. Please try again later.';
             }
         }
     </script>
