@@ -294,7 +294,7 @@
             </div>
         </section>
 
-        <!-- DAILY SOCIAL MEDIA HUB SECTION (Updated with Gates) -->
+        <!-- DAILY SOCIAL MEDIA HUB SECTION (Updated with 4 separate cards for 4 medias) -->
         <section id="media-hub" style="margin-bottom: 40px;">
             <div class="card" style="border-color: var(--accent);">
                 <span class="badge" style="background: #0369a1;">Daily Engagement Hub</span>
@@ -303,8 +303,9 @@
                     Explore our active repository pipeline feeds including daily motivational quotes, recent TikTok/YouTube automation drops, and NASA astronomy features.
                 </p>
 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
-                    <!-- 1. EDUCATIONAL MOTIVATION VIDEO -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px;">
+                    
+                    <!-- 1. EDUCATIONAL MOTIVATION VIDEO CARD -->
                     <div class="media-item-box media-gate-container">
                         <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 10px;">🎓 Educational Motivation</h3>
                         
@@ -322,13 +323,16 @@
                                     Your browser does not support video.
                                 </video>
                             </div>
-                            <p style="font-size: 0.85rem; color: var(--text-muted);">Daily Python programming and coding motivation quote.</p>
+                            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                                <a href="./backend/raw_media_ready/latest_motivation.mp4" target="_blank" style="background: var(--success); color: #0f172a; padding: 6px 12px; font-size: 0.8rem; text-decoration: none; border-radius: 4px; font-weight: bold; text-align: center; flex: 1;">Download MP4</a>
+                            </div>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">Daily Python programming and coding motivation quote.</p>
                         </div>
                     </div>
 
-                    <!-- 2. RECENT PIPELINE DROP (TikTok Automation #38) -->
+                    <!-- 2. RECENT PIPELINE DROP (TikTok Automation #38) CARD -->
                     <div class="media-item-box media-gate-container">
-                        <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 10px;">⚡ TikTok Automation (Pipeline #38)</h3>
+                        <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 10px;">⚡ TikTok Automation (#38)</h3>
                         
                         <!-- Visitor Locked View -->
                         <div class="visitor-view">
@@ -351,7 +355,7 @@
                         </div>
                     </div>
 
-                    <!-- 3. NASA APOD -->
+                    <!-- 3. NASA APOD FEATURE CARD -->
                     <div class="media-item-box media-gate-container">
                         <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 10px;">🚀 NASA APOD Feature</h3>
                         
@@ -375,6 +379,32 @@
                             <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">Includes daily NASA astronomy video feature.</p>
                         </div>
                     </div>
+
+                    <!-- 4. CURATED PIPELINE STREAM CARD -->
+                    <div class="media-item-box media-gate-container">
+                        <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 10px;">📦 Curated Pipeline Stream</h3>
+                        
+                        <!-- Visitor Locked View -->
+                        <div class="visitor-view">
+                            <p>🔒 Subscribe or log in to unlock automated batch media archives.</p>
+                            <button class="btn-unlock" onclick="document.getElementById('portal').scrollIntoView({behavior: 'smooth'})">Unlock Hub</button>
+                        </div>
+
+                        <!-- Subscriber Unlocked View -->
+                        <div class="subscriber-view">
+                            <div class="media-element-wrapper">
+                                <video controls preload="metadata">
+                                    <source src="./backend/raw_media_ready/latest_motivation.mp4" type="video/mp4">
+                                    Your browser does not support video.
+                                </video>
+                            </div>
+                            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                                <a href="./backend/raw_media_ready/latest_motivation.mp4" target="_blank" style="background: var(--success); color: #0f172a; padding: 6px 12px; font-size: 0.8rem; text-decoration: none; border-radius: 4px; font-weight: bold; text-align: center; flex: 1;">Download MP4</a>
+                            </div>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">Additional automated studio pipeline asset release.</p>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </section>
