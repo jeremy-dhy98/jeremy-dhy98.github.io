@@ -610,9 +610,9 @@
                         document.getElementById('media-hub').scrollIntoView({ behavior: 'smooth' });
                     }, 1000);
                 } else {
-                    const errData = await response.json().catch(() => ({}));
+                    const errorData = await response.json().catch(() => ({}));
                     statusMsg.className = 'status-msg error';
-                    statusMsg.innerHTML = errData.message || 'Authentication failed. Please check your credentials.';
+                    statusMsg.innerHTML = errorData.message || 'Authentication failed. Please check your credentials.';
                 }
             } catch (err) {
                 statusMsg.className = 'status-msg error';
