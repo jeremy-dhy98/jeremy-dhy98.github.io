@@ -18,63 +18,26 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-main); line-height: 1.6; padding: 0; }
         .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
-        
-        /* Professional Header Styling */
-        header { 
-            border-bottom: 1px solid var(--border); 
-            padding: 12px 0; 
-            background: rgba(15, 23, 42, 0.95); 
-            position: sticky; 
-            top: 0; 
-            backdrop-filter: blur(8px); 
-            z-index: 100; 
+
+        header {
+            border-bottom: 1px solid var(--border);
+            padding: 12px 0;
+            background: rgba(15, 23, 42, 0.95);
+            position: sticky;
+            top: 0;
+            backdrop-filter: blur(8px);
+            z-index: 100;
         }
-        nav { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-        }
-        .logo { 
-            font-size: 1.15rem; 
-            font-weight: 700; 
-            color: var(--accent); 
-            text-decoration: none; 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            white-space: nowrap;
-        }
-        .logo-img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
-        
-        .nav-links { 
-            display: flex; 
-            gap: 18px; 
-            list-style: none; 
-            align-items: center; 
-        }
-        .nav-links a { 
-            color: var(--text-muted); 
-            text-decoration: none; 
-            font-size: 0.9rem; 
-            font-weight: 500;
-            transition: color 0.2s; 
-        }
+        nav { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.15rem; font-weight: 700; color: var(--accent); text-decoration: none; display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+        .logo-img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: var(--card-bg); }
+
+        .nav-links { display: flex; gap: 18px; list-style: none; align-items: center; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
         .nav-links a:hover { color: var(--accent); }
-        .btn-auth-nav { 
-            background: var(--accent); 
-            color: #0f172a !important; 
-            padding: 8px 16px; 
-            border-radius: 6px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            border: none; 
-            font-size: 0.9rem;
-            transition: background 0.2s; 
-            white-space: nowrap;
-        }
+        .btn-auth-nav { background: var(--accent); color: #0f172a !important; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; border: none; font-size: 0.9rem; transition: background 0.2s; white-space: nowrap; }
         .btn-auth-nav:hover { background: var(--accent-hover); }
 
-        /* Hero Slideshow Section */
         .hero {
             position: relative;
             padding: 100px 20px 80px;
@@ -85,161 +48,52 @@
             border: 1px solid var(--border);
             background-color: var(--bg-color);
         }
-
-        .slideshow-background {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-
-        .slide {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center;
-            opacity: 0;
-            transition: opacity 1.5s ease-in-out;
-        }
-
-        .slide.active {
-            opacity: 0.55;
-        }
-
-        .slideshow-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(15, 23, 42, 0.65);
-            z-index: 2;
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 3;
-        }
+        .slideshow-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: 0; transition: opacity 1.5s ease-in-out; background: var(--card-bg); }
+        .slide.active { opacity: 0.55; }
+        .slideshow-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.65); z-index: 2; }
+        .hero-content { position: relative; z-index: 3; }
 
         .badge { background: #0369a1; color: #e0f2fe; padding: 4px 12px; border-radius: 999px; font-size: 0.85rem; font-weight: 600; display: inline-block; margin-bottom: 16px; }
         h1 { font-size: 2.5rem; margin-bottom: 16px; font-weight: 800; letter-spacing: -0.025em; }
         .hero p { font-size: 1.15rem; color: var(--text-muted); max-width: 700px; margin: 0 auto 30px; }
-        
+
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin: 40px 0; }
         .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 30px; text-align: left; }
         .card h3 { color: var(--accent); margin-bottom: 12px; font-size: 1.2rem; }
         .card p { color: var(--text-muted); font-size: 0.95rem; }
-        
-        /* Social Links Grid & Badge Styles */
-        .social-links-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            justify-content: center;
-            margin-top: 15px;
-        }
-        .social-chip {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: var(--bg-color);
-            border: 1px solid var(--border);
-            padding: 8px 16px;
-            border-radius: 8px;
-            color: var(--text-main);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-        }
-        .social-chip:hover {
-            border-color: var(--accent);
-            background: rgba(56, 189, 248, 0.1);
-            color: var(--accent);
-        }
-        .social-chip svg {
-            width: 18px;
-            height: 18px;
-            fill: currentColor;
-        }
 
-        /* Flexible Media Accommodation Styles */
-        .media-item-box {
-            background: var(--bg-color);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        .media-element-wrapper {
-            position: relative;
-            border-radius: 6px;
-            overflow: hidden;
-            width: 100%;
-            min-height: 280px;
-            max-height: 420px;
-            background: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 12px;
-        }
-        .media-element-wrapper video,
-        .media-element-wrapper img {
-            width: 100%;
-            height: 100%;
-            max-height: 400px;
-            object-fit: contain;
-            background: #000;
-            border-radius: 4px;
-        }
+        .social-links-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 15px; }
+        .social-chip { display: flex; align-items: center; gap: 8px; background: var(--bg-color); border: 1px solid var(--border); padding: 8px 16px; border-radius: 8px; color: var(--text-main); text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; }
+        .social-chip:hover { border-color: var(--accent); background: rgba(56, 189, 248, 0.1); color: var(--accent); }
+        .social-chip svg { width: 18px; height: 18px; fill: currentColor; }
 
-        /* Subscriber Gated View Styling */
+        .media-item-box { background: var(--bg-color); border: 1px solid var(--border); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; }
+        .media-element-wrapper { position: relative; border-radius: 6px; overflow: hidden; width: 100%; min-height: 280px; max-height: 420px; background: #000; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+        .media-element-wrapper video, .media-element-wrapper img { width: 100%; height: 100%; max-height: 400px; object-fit: contain; background: #000; border-radius: 4px; }
+        .media-status { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+
         .subscriber-view { display: none; flex-direction: column; gap: 8px; }
         .visitor-view { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 20px; background: rgba(15, 23, 42, 0.6); border-radius: 6px; border: 1px dashed var(--border); }
         .visitor-view p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 12px; }
         .btn-unlock { background: var(--accent); color: #0f172a; border: none; padding: 8px 16px; font-weight: 700; font-size: 0.85rem; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; }
         .btn-unlock:hover { background: var(--accent-hover); }
 
-        /* Auth Portal Card Styles */
         .auth-card { border: 1px solid var(--accent); background: #162032; }
         .tab-buttons { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
         .tab-btn { background: none; border: none; color: var(--text-muted); font-size: 1rem; font-weight: 600; padding: 6px 12px; cursor: pointer; border-radius: 4px; }
         .tab-btn.active { color: var(--accent); background: var(--card-bg); border-bottom: 2px solid var(--accent); }
-        
-        #signupForm, #loginForm {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
 
+        #signupForm, #loginForm { display: flex; flex-direction: column; align-items: center; }
         .form-group { width: 100%; margin-bottom: 16px; }
         .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; }
         .form-group input { width: 100%; padding: 10px 14px; background: var(--bg-color); border: 1px solid var(--border); border-radius: 6px; color: var(--text-main); font-size: 0.95rem; }
         .form-group input:focus { outline: none; border-color: var(--accent); }
-        
-        .btn-submit { 
-            width: fit-content; 
-            padding: 10px 24px; 
-            background: var(--accent); 
-            color: #0f172a; 
-            border: none; 
-            border-radius: 6px; 
-            font-weight: 700; 
-            font-size: 1rem; 
-            cursor: pointer; 
-            transition: background 0.2s; 
-            margin-top: 10px; 
-        }
-        .btn-submit:hover { background: var(--accent-hover); }
-        
+
+        .btn-submit { width: fit-content; padding: 10px 24px; background: var(--accent); color: #0f172a; border: none; border-radius: 6px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: background 0.2s; margin-top: 10px; }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-submit:hover:not(:disabled) { background: var(--accent-hover); }
+
         .status-msg { margin-top: 15px; padding: 10px; border-radius: 6px; font-size: 0.9rem; display: none; width: 100%; text-align: center; }
         .status-msg.success { background: rgba(16, 185, 129, 0.2); border: 1px solid var(--success); color: #6ee7b7; }
         .status-msg.error { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; }
@@ -249,9 +103,7 @@
         footer a:hover { text-decoration: underline; }
         .footer-links { margin-top: 15px; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
 
-        @media(max-width: 900px) {
-            .nav-links { display: none; }
-        }
+        @media(max-width: 900px) { .nav-links { display: none; } }
     </style>
 </head>
 <body>
@@ -260,7 +112,7 @@
         <div class="container">
             <nav>
                 <a href="index.html" class="logo">
-                    <img src="./logo/logo.jpg" alt="Coding For Freedom Logo" class="logo-img">
+                    <img src="./logo.jpg" alt="Coding For Freedom Logo" class="logo-img" id="brand-logo">
                     Coding For Freedom
                 </a>
                 <ul class="nav-links">
@@ -278,12 +130,11 @@
     </header>
 
     <main class="container">
-        <!-- Hero Section with Background Slideshow -->
         <section class="hero" id="about">
             <div class="slideshow-background">
-                <img src="./bg/bg1.png" class="slide active" alt="Background Slide 1">
-                <img src="./bg/bg2.png" class="slide" alt="Background Slide 2">
-                <img src="./bg/bg3.png" class="slide" alt="Background Slide 3">
+                <img src="./bg1.png" class="slide active" alt="Background Slide 1" data-bg-key="bg1">
+                <img src="./bg2.png" class="slide" alt="Background Slide 2" data-bg-key="bg2">
+                <img src="./bg3.png" class="slide" alt="Background Slide 3" data-bg-key="bg3">
             </div>
             <div class="slideshow-overlay"></div>
 
@@ -294,7 +145,6 @@
             </div>
         </section>
 
-        <!-- DAILY SOCIAL MEDIA HUB SECTION -->
         <section id="media-hub" style="margin-bottom: 40px;">
             <div class="card" style="border-color: var(--accent);">
                 <span class="badge" style="background: #0369a1;">Daily Engagement Hub</span>
@@ -304,16 +154,14 @@
                 </p>
 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px;">
-                    
+
                     <!-- 1. EDUCATIONAL MOTIVATION VIDEO CARD -->
-                    <div class="media-item-box media-gate-container">
+                    <div class="media-item-box media-gate-container" data-card-keys="educational_motivation,educational,motivation">
                         <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 10px;">🎓 Educational Motivation</h3>
-                        
                         <div class="visitor-view">
                             <p>🔒 Subscribe or log in to unlock daily educational motivation streams.</p>
                             <button class="btn-unlock" onclick="document.getElementById('portal').scrollIntoView({behavior: 'smooth'})">Unlock Hub</button>
                         </div>
-
                         <div class="subscriber-view">
                             <div class="media-element-wrapper">
                                 <video controls preload="metadata" id="media-video-1">
@@ -325,18 +173,17 @@
                                 <a href="" target="_blank" id="media-download-1" style="background: var(--success); color: #0f172a; padding: 6px 12px; font-size: 0.8rem; text-decoration: none; border-radius: 4px; font-weight: bold; text-align: center; flex: 1;">Download MP4</a>
                             </div>
                             <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">Daily Python programming and coding motivation quote.</p>
+                            <p class="media-status" id="media-status-1"></p>
                         </div>
                     </div>
 
                     <!-- 2. RECENT PIPELINE DROP (TikTok Automation #38) CARD -->
-                    <div class="media-item-box media-gate-container">
+                    <div class="media-item-box media-gate-container" data-card-keys="tiktok_automation,tiktok,automation">
                         <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 10px;">⚡ TikTok Automation (#38)</h3>
-                        
                         <div class="visitor-view">
                             <p>🔒 Subscribe or log in to view and download pipeline drops.</p>
                             <button class="btn-unlock" onclick="document.getElementById('portal').scrollIntoView({behavior: 'smooth'})">Unlock Hub</button>
                         </div>
-
                         <div class="subscriber-view">
                             <div class="media-element-wrapper">
                                 <video controls preload="metadata" id="media-video-2">
@@ -348,18 +195,17 @@
                                 <a href="" target="_blank" id="media-download-2" style="background: var(--success); color: #0f172a; padding: 6px 12px; font-size: 0.8rem; text-decoration: none; border-radius: 4px; font-weight: bold; text-align: center; flex: 1;">Download MP4</a>
                             </div>
                             <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">Latest dispatched TikTok automated tutorial clip.</p>
+                            <p class="media-status" id="media-status-2"></p>
                         </div>
                     </div>
 
                     <!-- 3. NASA APOD FEATURE CARD -->
-                    <div class="media-item-box media-gate-container">
+                    <div class="media-item-box media-gate-container" data-card-keys="apod_feature,apod,nasa">
                         <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 10px;">🚀 NASA APOD Feature</h3>
-                        
                         <div class="visitor-view">
                             <p>🔒 Subscribe or log in to access NASA astronomy archives.</p>
                             <button class="btn-unlock" onclick="document.getElementById('portal').scrollIntoView({behavior: 'smooth'})">Unlock Hub</button>
                         </div>
-
                         <div class="subscriber-view">
                             <div class="media-element-wrapper">
                                 <video controls preload="metadata" id="media-video-3">
@@ -371,18 +217,17 @@
                                 <a href="" target="_blank" id="media-download-3" style="background: var(--success); color: #0f172a; padding: 6px 12px; font-size: 0.8rem; text-decoration: none; border-radius: 4px; font-weight: bold; text-align: center; flex: 1;">Download MP4</a>
                             </div>
                             <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">Includes daily NASA astronomy video feature and Bing daily featured wallpaper media.</p>
+                            <p class="media-status" id="media-status-3"></p>
                         </div>
                     </div>
 
                     <!-- 4. CURATED PIPELINE STREAM CARD -->
-                    <div class="media-item-box media-gate-container">
+                    <div class="media-item-box media-gate-container" data-card-keys="curated_pipeline,curated,pipeline">
                         <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 10px;">📦 Curated Pipeline Stream</h3>
-                        
                         <div class="visitor-view">
                             <p>🔒 Subscribe or log in to unlock automated batch media archives.</p>
                             <button class="btn-unlock" onclick="document.getElementById('portal').scrollIntoView({behavior: 'smooth'})">Unlock Hub</button>
                         </div>
-
                         <div class="subscriber-view">
                             <div class="media-element-wrapper">
                                 <video controls preload="metadata" id="media-video-4">
@@ -394,6 +239,7 @@
                                 <a href="" target="_blank" id="media-download-4" style="background: var(--success); color: #0f172a; padding: 6px 12px; font-size: 0.8rem; text-decoration: none; border-radius: 4px; font-weight: bold; text-align: center; flex: 1;">Download MP4</a>
                             </div>
                             <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">Additional automated studio pipeline asset release containing Bing wallpaper media.</p>
+                            <p class="media-status" id="media-status-4"></p>
                         </div>
                     </div>
 
@@ -401,7 +247,6 @@
             </div>
         </section>
 
-        <!-- SOCIAL CHANNELS & COMMUNITY SUPPORT SECTION -->
         <section id="socials" class="card" style="margin-bottom: 40px; border-color: var(--accent);">
             <span class="badge" style="background: #0369a1;">Community & Channels</span>
             <h2>Support & Follow Coding For Freedom</h2>
@@ -432,17 +277,15 @@
             </div>
         </section>
 
-        <!-- Subscriber Access & Authentication Card -->
         <section id="portal" class="card auth-card" style="margin-bottom: 40px;">
             <span class="badge" style="background: #065f46; color: #a7f3d0;">Subscriber Hub</span>
             <h2>Access Python Tutorial Archives</h2>
-            
+
             <div class="tab-buttons">
                 <button class="tab-btn active" id="tabSignupBtn" onclick="switchTab('signup')">Sign Up</button>
                 <button class="tab-btn" id="tabLoginBtn" onclick="switchTab('login')">Login</button>
             </div>
 
-            <!-- Sign Up Form -->
             <form id="signupForm" onsubmit="handleAuth(event, 'signup')">
                 <div class="form-group">
                     <label for="signupEmail">Email Address</label>
@@ -456,10 +299,9 @@
                     <label for="signupPassword">Password</label>
                     <input type="password" id="signupPassword" placeholder="••••••••" required>
                 </div>
-                <button type="submit" class="btn-submit">Subscribe & Unlock Downloads</button>
+                <button type="submit" class="btn-submit" id="signupSubmitBtn">Subscribe & Unlock Downloads</button>
             </form>
 
-            <!-- Login Form -->
             <form id="loginForm" onsubmit="handleAuth(event, 'login')" style="display: none;">
                 <div class="form-group">
                     <label for="loginEmail">Email Address</label>
@@ -469,7 +311,7 @@
                     <label for="loginPassword">Password</label>
                     <input type="password" id="loginPassword" placeholder="••••••••" required>
                 </div>
-                <button type="submit" class="btn-submit">Login to Access Media</button>
+                <button type="submit" class="btn-submit" id="loginSubmitBtn">Login to Access Media</button>
             </form>
 
             <div id="statusMessage" class="status-msg"></div>
@@ -516,68 +358,150 @@
     </footer>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const activeSession = localStorage.getItem("cff_user_session");
+        // ==========================================
+        // CONFIG
+        // ==========================================
+        const BACKEND_BASE_URL = 'https://cff-dispatcher-api.onrender.com';
+        const SESSION_KEY = 'cff_user_session';
+        const TOKEN_KEY = 'cff_user_token';
+        let cachedVideoManifest = null; // populated after auth or a manifest fetch
+
+        // ==========================================
+        // FETCH HELPER: timeout + one retry.
+        // Render's free tier spins the instance down after inactivity, so the
+        // first real request after idle time can take 20-50s to respond
+        // instead of erroring out. We give it a generous timeout and retry
+        // once before giving up, rather than failing silently like before.
+        // ==========================================
+        async function fetchWithRetry(url, options = {}, { timeoutMs = 20000, retries = 1 } = {}) {
+            for (let attempt = 0; attempt <= retries; attempt++) {
+                const controller = new AbortController();
+                const timer = setTimeout(() => controller.abort(), timeoutMs);
+                try {
+                    const response = await fetch(url, { ...options, signal: controller.signal });
+                    clearTimeout(timer);
+                    return response;
+                } catch (err) {
+                    clearTimeout(timer);
+                    if (attempt === retries) throw err;
+                    // brief pause before retrying, gives a cold Render instance time to finish waking
+                    await new Promise(res => setTimeout(res, 3000));
+                }
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            // Fire-and-forget wake-up ping so the backend is warm by the time
+            // the user actually submits the auth form or the media hub needs data.
+            fetch(`${BACKEND_BASE_URL}/api/health`).catch(() => {
+                console.warn('Backend health ping failed (may still be waking up).');
+            });
+
+            loadStaticBranding();
+
+            const activeSession = localStorage.getItem(SESSION_KEY);
             if (activeSession) {
                 unlockMediaHub();
+                loadDynamicMediaUrls();
             }
-            
-            // Fetch dynamic media URLs with fallback logic
-            loadDynamicMediaUrls();
         });
 
-        async function loadDynamicMediaUrls() {
-            let mediaData = null;
+        // ==========================================
+        // STATIC BRANDING (logo + hero backgrounds)
+        // Local files load first (fast, no CORS). If a local file 404s, we
+        // swap the src to the backend's Cloudinary-backed static manifest.
+        // ==========================================
+        async function loadStaticBranding() {
+            const logoImg = document.getElementById('brand-logo');
+            const bgSlides = Array.from(document.querySelectorAll('.slide'));
+            const brokenElements = [];
+
+            const checkImage = (imgEl) => new Promise((resolve) => {
+                if (imgEl.complete && imgEl.naturalWidth > 0) return resolve(true);
+                imgEl.addEventListener('load', () => resolve(true), { once: true });
+                imgEl.addEventListener('error', () => resolve(false), { once: true });
+            });
+
+            const results = await Promise.all([logoImg, ...bgSlides].map(checkImage));
+            [logoImg, ...bgSlides].forEach((el, i) => {
+                if (!results[i]) brokenElements.push(el);
+            });
+
+            if (brokenElements.length === 0) return; // everything loaded locally, nothing to fix
 
             try {
-                // 1. Attempt fetching live manifest or data from the Flask backend endpoint
-                const response = await fetch('https://cff-dispatcher-api.onrender.com/api/media-manifest');
-                if (response.ok) {
-                    mediaData = await response.json();
-                } else {
-                    throw new Error('Flask backend endpoint failed, shifting to local fallback.');
-                }
-            } catch (err) {
-                console.warn('Backend fetch failed. Falling back to local manifest file (media_urls.json)...');
-                try {
-                    // 2. Fallback to check on the local JSON manifest file in your backend path structure
-                    const fallbackResponse = await fetch('./backend/raw_media_ready/media_urls.json');
-                    if (fallbackResponse.ok) {
-                        mediaData = await fallbackResponse.json();
-                    } else {
-                        throw new Error('Local fallback media_urls.json not found or inaccessible.');
+                const response = await fetchWithRetry(`${BACKEND_BASE_URL}/api/static-manifest`, {}, { timeoutMs: 20000, retries: 1 });
+                if (!response.ok) throw new Error(`static-manifest responded ${response.status}`);
+                const data = await response.json();
+                const staticMedia = data.media || {};
+
+                brokenElements.forEach((el) => {
+                    const key = el.id === 'brand-logo' ? 'logo' : el.dataset.bgKey;
+                    if (key && staticMedia[key]) {
+                        el.src = staticMedia[key];
                     }
-                } catch (fallbackErr) {
-                    console.error('Error loading media manifest from both backend and local fallback:', fallbackErr);
+                });
+            } catch (err) {
+                console.error('Could not load static branding fallback from backend:', err);
+            }
+        }
+
+        // ==========================================
+        // DAILY HUB VIDEO MANIFEST
+        // Matched by KEY (not array index) so the mapping stays correct even
+        // if Cloudinary returns resources in a different order than before.
+        // ==========================================
+        function matchManifestKeyForCard(cardEl, manifest) {
+            const candidateKeys = (cardEl.dataset.cardKeys || '').split(',').map(k => k.trim()).filter(Boolean);
+            for (const candidate of candidateKeys) {
+                if (manifest[candidate]) return manifest[candidate];
+            }
+            // fuzzy fallback: substring match against manifest keys
+            const manifestKeys = Object.keys(manifest);
+            for (const candidate of candidateKeys) {
+                const found = manifestKeys.find(mk => mk.toLowerCase().includes(candidate.toLowerCase()) || candidate.toLowerCase().includes(mk.toLowerCase()));
+                if (found) return manifest[found];
+            }
+            return null;
+        }
+
+        async function loadDynamicMediaUrls(preloadedManifest = null) {
+            let manifest = preloadedManifest;
+
+            if (!manifest) {
+                try {
+                    const response = await fetchWithRetry(`${BACKEND_BASE_URL}/api/media-manifest`, {}, { timeoutMs: 25000, retries: 1 });
+                    if (!response.ok) throw new Error(`media-manifest responded ${response.status}`);
+                    const data = await response.json();
+                    manifest = data.media || {};
+                } catch (err) {
+                    console.error('Error loading media manifest from backend:', err);
+                    document.querySelectorAll('.media-status').forEach(el => {
+                        el.textContent = 'Could not load media right now — please refresh in a moment.';
+                    });
                     return;
                 }
             }
 
-            // 3. Map and inject URLs dynamically into HTML media elements if data exists
-            if (mediaData) {
-                const urls = Array.isArray(mediaData) ? mediaData : (mediaData.items || mediaData.urls || []);
-                
-                urls.forEach((urlItem, index) => {
-                    const cardIndex = index + 1;
-                    const targetUrl = typeof urlItem === 'string' ? urlItem : (urlItem.url || urlItem.videoUrl);
-                    
-                    if (targetUrl) {
-                        const videoSource = document.getElementById(`media-source-${cardIndex}`);
-                        const videoElement = document.getElementById(`media-video-${cardIndex}`);
-                        const downloadLink = document.getElementById(`media-download-${cardIndex}`);
+            cachedVideoManifest = manifest;
 
-                        if (videoSource) {
-                            videoSource.src = targetUrl;
-                        }
-                        if (videoElement) {
-                            videoElement.load();
-                        }
-                        if (downloadLink) {
-                            downloadLink.href = targetUrl;
-                        }
-                    }
-                });
-            }
+            document.querySelectorAll('.media-gate-container').forEach((cardEl, i) => {
+                const cardIndex = i + 1;
+                const targetUrl = matchManifestKeyForCard(cardEl, manifest);
+                const videoSource = document.getElementById(`media-source-${cardIndex}`);
+                const videoElement = document.getElementById(`media-video-${cardIndex}`);
+                const downloadLink = document.getElementById(`media-download-${cardIndex}`);
+                const statusEl = document.getElementById(`media-status-${cardIndex}`);
+
+                if (targetUrl) {
+                    if (videoSource) videoSource.src = targetUrl;
+                    if (videoElement) videoElement.load();
+                    if (downloadLink) downloadLink.href = targetUrl;
+                    if (statusEl) statusEl.textContent = '';
+                } else if (statusEl) {
+                    statusEl.textContent = 'This asset is not available yet.';
+                }
+            });
         }
 
         function unlockMediaHub() {
@@ -591,10 +515,9 @@
             });
         }
 
-        // 10-Second Automatic Slideshow Script targeting ./bg/ folder
+        // 10-Second Automatic Slideshow
         const slides = document.querySelectorAll('.slide');
         let currentSlide = 0;
-
         function nextSlide() {
             if (slides.length > 0) {
                 slides[currentSlide].classList.remove('active');
@@ -602,7 +525,6 @@
                 slides[currentSlide].classList.add('active');
             }
         }
-
         if (slides.length > 0) {
             setInterval(nextSlide, 10000);
         }
@@ -613,7 +535,6 @@
             const tabSignupBtn = document.getElementById('tabSignupBtn');
             const tabLoginBtn = document.getElementById('tabLoginBtn');
             const statusMessage = document.getElementById('statusMessage');
-
             if (statusMessage) statusMessage.style.display = 'none';
 
             if (type === 'signup') {
@@ -629,25 +550,67 @@
             }
         }
 
-        function handleAuth(event, type) {
+        // ==========================================
+        // REAL AUTH: now actually calls the Flask backend instead of
+        // just flipping a localStorage flag.
+        // ==========================================
+        async function handleAuth(event, type) {
             event.preventDefault();
             const statusMessage = document.getElementById('statusMessage');
-            
-            // Basic simulation of authentication and session setting
-            localStorage.setItem("cff_user_session", "active_subscriber");
-            unlockMediaHub();
+            const submitBtn = document.getElementById(type === 'signup' ? 'signupSubmitBtn' : 'loginSubmitBtn');
 
-            if (statusMessage) {
+            const email = document.getElementById(type === 'signup' ? 'signupEmail' : 'loginEmail').value.trim();
+            const password = document.getElementById(type === 'signup' ? 'signupPassword' : 'loginPassword').value;
+            const phone = type === 'signup' ? document.getElementById('signupPhone').value.trim() : '';
+
+            const showStatus = (message, isError) => {
+                if (!statusMessage) return;
                 statusMessage.style.display = 'block';
-                statusMessage.className = 'status-msg success';
-                statusMessage.textContent = type === 'signup' 
-                    ? 'Successfully subscribed and logged in! Media hub unlocked.' 
-                    : 'Successfully logged in! Media hub unlocked.';
-            }
+                statusMessage.className = `status-msg ${isError ? 'error' : 'success'}`;
+                statusMessage.textContent = message;
+            };
 
-            setTimeout(() => {
-                document.getElementById('media-hub').scrollIntoView({ behavior: 'smooth' });
-            }, 1000);
+            if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Connecting…'; }
+            showStatus('Connecting to server — this can take up to a minute if the service was idle…', false);
+
+            try {
+                const response = await fetchWithRetry(`${BACKEND_BASE_URL}/api/${type}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, phone })
+                }, { timeoutMs: 30000, retries: 1 });
+
+                const data = await response.json();
+
+                if (response.ok && data.status === 'success') {
+                    localStorage.setItem(SESSION_KEY, 'active_subscriber');
+                    if (data.token) localStorage.setItem(TOKEN_KEY, data.token);
+
+                    unlockMediaHub();
+                    await loadDynamicMediaUrls(data.media_urls || null);
+
+                    showStatus(
+                        data.action === 'registered'
+                            ? 'Successfully subscribed and logged in! Media hub unlocked.'
+                            : 'Successfully logged in! Media hub unlocked.',
+                        false
+                    );
+
+                    setTimeout(() => {
+                        document.getElementById('media-hub').scrollIntoView({ behavior: 'smooth' });
+                    }, 800);
+                } else {
+                    showStatus(data.message || 'Authentication failed. Please check your details and try again.', true);
+                }
+            } catch (err) {
+                console.error('Auth request failed:', err);
+                showStatus('Could not reach the server. It may still be waking up — please try again in a few seconds.', true);
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = type === 'signup' ? 'Subscribe & Unlock Downloads' : 'Login to Access Media';
+                }
+            }
         }
     </script>
 </body>
