@@ -201,6 +201,13 @@
             border-radius: 4px;
         }
 
+        /* Subscriber Gated View Styling */
+        .subscriber-view { display: none; flex-direction: column; gap: 8px; }
+        .visitor-view { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 20px; background: rgba(15, 23, 42, 0.6); border-radius: 6px; border: 1px dashed var(--border); }
+        .visitor-view p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 12px; }
+        .btn-unlock { background: var(--accent); color: #0f172a; border: none; padding: 8px 16px; font-weight: 700; font-size: 0.85rem; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; }
+        .btn-unlock:hover { background: var(--accent-hover); }
+
         /* Auth Portal Card Styles */
         .auth-card { border: 1px solid var(--accent); background: #162032; }
         .tab-buttons { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
@@ -287,7 +294,7 @@
             </div>
         </section>
 
-        <!-- DAILY SOCIAL MEDIA HUB SECTION (Updated with verified repo files) -->
+        <!-- DAILY SOCIAL MEDIA HUB SECTION (Updated with Gates) -->
         <section id="media-hub" style="margin-bottom: 40px;">
             <div class="card" style="border-color: var(--accent);">
                 <span class="badge" style="background: #0369a1;">Daily Engagement Hub</span>
@@ -298,45 +305,75 @@
 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
                     <!-- 1. EDUCATIONAL MOTIVATION VIDEO -->
-                    <div class="media-item-box">
+                    <div class="media-item-box media-gate-container">
                         <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 10px;">🎓 Educational Motivation</h3>
-                        <div class="media-element-wrapper">
-                            <video controls preload="metadata">
-                                <source src="./backend/raw_media_ready/latest_motivation.mp4" type="video/mp4">
-                                Your browser does not support video.
-                            </video>
+                        
+                        <!-- Visitor Locked View -->
+                        <div class="visitor-view">
+                            <p>🔒 Subscribe or log in to unlock daily educational motivation streams.</p>
+                            <button class="btn-unlock" onclick="document.getElementById('portal').scrollIntoView({behavior: 'smooth'})">Unlock Hub</button>
                         </div>
-                        <p style="font-size: 0.85rem; color: var(--text-muted);">Daily Python programming and coding motivation quote.</p>
+
+                        <!-- Subscriber Unlocked View -->
+                        <div class="subscriber-view">
+                            <div class="media-element-wrapper">
+                                <video controls preload="metadata">
+                                    <source src="./backend/raw_media_ready/latest_motivation.mp4" type="video/mp4">
+                                    Your browser does not support video.
+                                </video>
+                            </div>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">Daily Python programming and coding motivation quote.</p>
+                        </div>
                     </div>
 
                     <!-- 2. RECENT PIPELINE DROP (TikTok Automation #38) -->
-                    <div class="media-item-box">
+                    <div class="media-item-box media-gate-container">
                         <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 10px;">⚡ TikTok Automation (Pipeline #38)</h3>
-                        <div class="media-element-wrapper">
-                            <video controls preload="metadata">
-                                <source src="./backend/raw_media_ready/38_tiktok_ready_tutorial.mp4" type="video/mp4">
-                                Your browser does not support video.
-                            </video>
+                        
+                        <!-- Visitor Locked View -->
+                        <div class="visitor-view">
+                            <p>🔒 Subscribe or log in to view and download pipeline drops.</p>
+                            <button class="btn-unlock" onclick="document.getElementById('portal').scrollIntoView({behavior: 'smooth'})">Unlock Hub</button>
                         </div>
-                        <div style="display: flex; gap: 8px; margin-top: 10px;">
-                            <a href="./backend/raw_media_ready/38_tiktok_ready_tutorial.mp4" target="_blank" style="background: var(--success); color: #0f172a; padding: 6px 12px; font-size: 0.8rem; text-decoration: none; border-radius: 4px; font-weight: bold; text-align: center; flex: 1;">Download MP4</a>
+
+                        <!-- Subscriber Unlocked View -->
+                        <div class="subscriber-view">
+                            <div class="media-element-wrapper">
+                                <video controls preload="metadata">
+                                    <source src="./backend/raw_media_ready/38_tiktok_ready_tutorial.mp4" type="video/mp4">
+                                    Your browser does not support video.
+                                </video>
+                            </div>
+                            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                                <a href="./backend/raw_media_ready/38_tiktok_ready_tutorial.mp4" target="_blank" style="background: var(--success); color: #0f172a; padding: 6px 12px; font-size: 0.8rem; text-decoration: none; border-radius: 4px; font-weight: bold; text-align: center; flex: 1;">Download MP4</a>
+                            </div>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">Latest dispatched TikTok automated tutorial clip.</p>
                         </div>
-                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">Latest dispatched TikTok automated tutorial clip.</p>
                     </div>
 
                     <!-- 3. NASA APOD -->
-                    <div class="media-item-box">
+                    <div class="media-item-box media-gate-container">
                         <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 10px;">🚀 NASA APOD Feature</h3>
-                        <div class="media-element-wrapper">
-                            <video controls preload="metadata">
-                                <source src="./backend/raw_media_ready/nasa_apod.mp4" type="video/mp4">
-                                Your browser does not support video.
-                            </video>
+                        
+                        <!-- Visitor Locked View -->
+                        <div class="visitor-view">
+                            <p>🔒 Subscribe or log in to access NASA astronomy archives.</p>
+                            <button class="btn-unlock" onclick="document.getElementById('portal').scrollIntoView({behavior: 'smooth'})">Unlock Hub</button>
                         </div>
-                        <div style="display: flex; gap: 8px; margin-top: 10px;">
-                            <a href="./backend/raw_media_ready/nasa_apod.mp4" target="_blank" style="background: var(--success); color: #0f172a; padding: 6px 12px; font-size: 0.8rem; text-decoration: none; border-radius: 4px; font-weight: bold; text-align: center; flex: 1;">Download MP4</a>
+
+                        <!-- Subscriber Unlocked View -->
+                        <div class="subscriber-view">
+                            <div class="media-element-wrapper">
+                                <video controls preload="metadata">
+                                    <source src="./backend/raw_media_ready/nasa_apod.mp4" type="video/mp4">
+                                    Your browser does not support video.
+                                </video>
+                            </div>
+                            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                                <a href="./backend/raw_media_ready/nasa_apod.mp4" target="_blank" style="background: var(--success); color: #0f172a; padding: 6px 12px; font-size: 0.8rem; text-decoration: none; border-radius: 4px; font-weight: bold; text-align: center; flex: 1;">Download MP4</a>
+                            </div>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">Includes daily NASA astronomy video feature.</p>
                         </div>
-                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">Includes daily NASA astronomy video feature.</p>
                     </div>
                 </div>
             </div>
