@@ -577,24 +577,26 @@
             statusMsg.style.display = 'block';
             statusMsg.innerHTML = 'Connecting to Render backend...';
 
+            let endpoint = '';
             let payload = {};
+
             if (type === 'signup') {
+                endpoint = 'https://cff-dispatcher-api.onrender.com/api/signup';
                 payload = {
-                    type: 'signup',
                     email: document.getElementById('signupEmail').value,
                     phone: document.getElementById('signupPhone').value,
                     password: document.getElementById('signupPassword').value
                 };
             } else {
+                endpoint = 'https://cff-dispatcher-api.onrender.com/api/login';
                 payload = {
-                    type: 'login',
                     email: document.getElementById('loginEmail').value,
                     password: document.getElementById('loginPassword').value
                 };
             }
 
             try {
-                const response = await fetch('https://cff-dispatcher-api.onrender.com/api/auth', {
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
@@ -610,13 +612,13 @@
                         document.getElementById('media-hub').scrollIntoView({ behavior: 'smooth' });
                     }, 1000);
                 } else {
-                    const errorData = await response.json().catch(() => ({}));
+                    const errData = await response.json().catch(() => ({}));
                     statusMsg.className = 'status-msg error';
-                    statusMsg.innerHTML = errorData.message || 'Authentication failed. Please check your credentials.';
+                    statusMsg.innerHTML = errData.message || 'Authentication failed. Please check your credentials.';
                 }
-            } catch (err) {
+            } catch (error) {
                 statusMsg.className = 'status-msg error';
-                statusMsg.innerHTML = 'Network error connecting to backend service.';
+                statusMsg.innerHTML = 'Network error. Could not reach backend server.';
             }
         }
     </script>
