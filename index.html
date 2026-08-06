@@ -112,7 +112,7 @@
         <div class="container">
             <nav>
                 <a href="index.html" class="logo">
-                    <img src="./logo.jpg" alt="Coding For Freedom Logo" class="logo-img" id="brand-logo">
+                    <img src="" alt="Coding For Freedom Logo" class="logo-img" id="brand-logo">
                     Coding For Freedom
                 </a>
                 <ul class="nav-links">
@@ -132,9 +132,9 @@
     <main class="container">
         <section class="hero" id="about">
             <div class="slideshow-background">
-                <img src="./bg1.png" class="slide active" alt="Background Slide 1" data-bg-key="bg1">
-                <img src="./bg2.png" class="slide" alt="Background Slide 2" data-bg-key="bg2">
-                <img src="./bg3.png" class="slide" alt="Background Slide 3" data-bg-key="bg3">
+                <img src="" class="slide active" alt="Background Slide 1" data-bg-key="bg1">
+                <img src="" class="slide" alt="Background Slide 2" data-bg-key="bg2">
+                <img src="" class="slide" alt="Background Slide 3" data-bg-key="bg3">
             </div>
             <div class="slideshow-overlay"></div>
 
@@ -156,7 +156,7 @@
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px;">
 
                     <!-- 1. EDUCATIONAL MOTIVATION VIDEO CARD -->
-                    <div class="media-item-box media-gate-container" data-card-keys="educational_motivation,educational,motivation">
+                    <div class="media-item-box media-gate-container" data-card-keys="educational_motivation">
                         <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 10px;">🎓 Educational Motivation</h3>
                         <div class="visitor-view">
                             <p>🔒 Subscribe or log in to unlock daily educational motivation streams.</p>
@@ -178,7 +178,7 @@
                     </div>
 
                     <!-- 2. RECENT PIPELINE DROP (TikTok Automation) CARD -->
-                    <div class="media-item-box media-gate-container" data-card-keys="tiktok_automation,tiktok,automation">
+                    <div class="media-item-box media-gate-container" data-card-keys="tiktok_automation">
                         <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 10px;">⚡ TikTok Automation</h3>
                         <div class="visitor-view">
                             <p>🔒 Subscribe or log in to view and download pipeline drops.</p>
@@ -200,7 +200,7 @@
                     </div>
 
                     <!-- 3. NASA APOD FEATURE CARD -->
-                    <div class="media-item-box media-gate-container" data-card-keys="apod_feature,apod,nasa">
+                    <div class="media-item-box media-gate-container" data-card-keys="apod_feature">
                         <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 10px;">🚀 NASA APOD Feature</h3>
                         <div class="visitor-view">
                             <p>🔒 Subscribe or log in to access NASA astronomy archives.</p>
@@ -222,7 +222,7 @@
                     </div>
 
                     <!-- 4. CURATED PIPELINE STREAM CARD -->
-                    <div class="media-item-box media-gate-container" data-card-keys="curated_pipeline,curated,pipeline">
+                    <div class="media-item-box media-gate-container" data-card-keys="curated_pipeline">
                         <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 10px;">📦 Curated Pipeline Stream</h3>
                         <div class="visitor-view">
                             <p>🔒 Subscribe or log in to unlock automated batch media archives.</p>
@@ -398,30 +398,12 @@
 
         // ==========================================
         // STATIC BRANDING (logo + hero backgrounds)
-        // Fetches from /api/static-manifest, which is the ONLY endpoint that
-        // serves logo/bg1/bg2/bg3. /api/media-manifest deliberately excludes
-        // everything under "coding_for_freedom/static/" on the backend
-        // (fetch_live_cloudinary_videos skips that prefix), so calling
-        // media-manifest here can never resolve a logo/bg key — that was the
-        // root cause of the branding images silently staying broken/missing.
+        // Fetches directly from /api/static-manifest to ensure Cloudinary 
+        // URLs are always fetched and visible on page load.
         // ==========================================
         async function loadStaticBranding() {
             const logoImg = document.getElementById('brand-logo');
             const bgSlides = Array.from(document.querySelectorAll('.slide'));
-            const brokenElements = [];
-
-            const checkImage = (imgEl) => new Promise((resolve) => {
-                if (imgEl.complete && imgEl.naturalWidth > 0) return resolve(true);
-                imgEl.addEventListener('load', () => resolve(true), { once: true });
-                imgEl.addEventListener('error', () => resolve(false), { once: true });
-            });
-
-            const results = await Promise.all([logoImg, ...bgSlides].map(checkImage));
-            [logoImg, ...bgSlides].forEach((el, i) => {
-                if (!results[i]) brokenElements.push(el);
-            });
-
-            if (brokenElements.length === 0) return;
 
             try {
                 const response = await fetchWithRetry(`${BACKEND_BASE_URL}/api/static-manifest`, {}, { timeoutMs: 20000, retries: 1 });
@@ -429,38 +411,30 @@
                 const data = await response.json();
                 const staticMedia = data.media || {};
 
-                brokenElements.forEach((el) => {
-                    const key = el.id === 'brand-logo' ? 'logo' : el.dataset.bgKey;
+                if (logoImg && staticMedia['logo']) {
+                    logoImg.src = staticMedia['logo'];
+                }
+
+                bgSlides.forEach((slide) => {
+                    const key = slide.dataset.bgKey;
                     if (key && staticMedia[key]) {
-                        el.src = staticMedia[key];
-                    } else {
-                        console.warn(`Static branding fallback: no Cloudinary asset found for key "${key}".`);
+                        slide.src = staticMedia[key];
                     }
                 });
             } catch (err) {
-                console.error('Could not load static branding fallback from backend:', err);
+                console.error('Could not load static branding from backend:', err);
             }
         }
 
         // ==========================================
         // DAILY HUB VIDEO MANIFEST KEY RESOLUTION
-        // Exact-match ONLY against the canonical key (data-card-keys[0]).
-        // The previous version fell back to a two-way substring match across
-        // ALL manifest keys ("mk.includes(candidate) || candidate.includes(mk)")
-        // whenever the exact key was missing. That's what let one card silently
-        // pick up a completely different card's video: a short/partial or
-        // stale key sitting in the manifest (e.g. a leftover key from a
-        // previous run that clear_cloudinary_folder() failed to delete) could
-        // fuzzy-match a candidate it was never meant to satisfy. It's safer to
-        // fail loudly (show "not available yet") than to display the wrong
-        // asset in the wrong card.
+        // Exact-match only against clean canonical keys to prevent mismatches.
         // ==========================================
         function matchManifestKeyForCard(cardEl, manifest) {
             const candidateKeys = (cardEl.dataset.cardKeys || '').split(',').map(k => k.trim()).filter(Boolean);
             for (const candidate of candidateKeys) {
                 if (manifest[candidate]) return manifest[candidate];
             }
-            console.warn(`Media manifest: no exact key match for card [${candidateKeys.join(', ')}]. Available keys:`, Object.keys(manifest));
             return null;
         }
 
