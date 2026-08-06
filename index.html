@@ -243,7 +243,7 @@
         .footer-links { margin-top: 15px; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
 
         @media(max-width: 900px) {
-            .nav-links { display: none; } /* Add a mobile menu toggle if needed, or keep core links */
+            .nav-links { display: none; }
         }
     </style>
 </head>
@@ -287,13 +287,13 @@
             </div>
         </section>
 
-        <!-- DAILY SOCIAL MEDIA HUB SECTION -->
+        <!-- DAILY SOCIAL MEDIA HUB SECTION (Updated with verified repo files) -->
         <section id="media-hub" style="margin-bottom: 40px;">
             <div class="card" style="border-color: var(--accent);">
                 <span class="badge" style="background: #0369a1;">Daily Engagement Hub</span>
-                <h2 style="margin-bottom: 10px; color: var(--text-main);">🌟 Today's Motivational Quote & Visual Updates</h2>
+                <h2 style="margin-bottom: 10px; color: var(--text-main);">🌟 Today's Motivational Quote & Pipeline Assets</h2>
                 <p style="color: var(--text-muted); margin-bottom: 25px;">
-                    Explore our daily educational motivation, Bing wallpaper updates, and NASA astronomy features. Visitors can preview content, while subscribers get full streaming and download access.
+                    Explore our active repository pipeline feeds including daily motivational quotes, recent TikTok/YouTube automation drops, and NASA astronomy features.
                 </p>
 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
@@ -302,62 +302,41 @@
                         <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 10px;">🎓 Educational Motivation</h3>
                         <div class="media-element-wrapper">
                             <video controls preload="metadata">
-                                <source src="./raw_media_ready/latest_motivation.mp4" type="video/mp4">
+                                <source src="./backend/raw_media_ready/latest_motivation.mp4" type="video/mp4">
                                 Your browser does not support video.
                             </video>
                         </div>
                         <p style="font-size: 0.85rem; color: var(--text-muted);">Daily Python programming and coding motivation quote.</p>
                     </div>
 
-                    <!-- 2. BING WALLPAPER -->
+                    <!-- 2. RECENT PIPELINE DROP (TikTok Automation #38) -->
                     <div class="media-item-box">
-                        <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 10px;">🌍 Bing Daily Wallpaper</h3>
-                        <div class="media-element-wrapper media-gate-container" data-media-type="bing">
-                            <div class="visitor-view" style="width: 100%; height: 100%; position: relative; display: flex; align-items: center; justify-content: center;">
-                                <img src="./raw_media_ready/bing_preview.jpg" alt="Bing Wallpaper Preview" style="filter: blur(8px);">
-                                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.75); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px; text-align: center;">
-                                    <p style="font-size: 0.9rem; color: #f8fafc; margin-bottom: 10px;">🔒 Members Only Content</p>
-                                    <button onclick="document.getElementById('portal').scrollIntoView({behavior: 'smooth'})" style="background: var(--accent); color: #0f172a; border: none; padding: 8px 14px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; cursor: pointer;">Login to Unlock</button>
-                                </div>
-                            </div>
-                            <div class="subscriber-view" style="display: none; width: 100%; height: 100%; flex-direction: column; justify-content: space-between;">
-                                <video controls preload="metadata" style="width: 100%; max-height: 340px; object-fit: contain;">
-                                    <!-- FIXED TYPO: bind_media.mp4 -> bing_media.mp4 -->
-                                    <source src="./raw_media_ready/bing_media.mp4" type="video/mp4">
-                                    Your browser does not support video.
-                                </video>
-                                <div style="display: flex; gap: 8px; margin-top: 10px;">
-                                    <a href="./raw_media_ready/bing_media.mp4" target="_blank" style="background: var(--success); color: #0f172a; padding: 6px 12px; font-size: 0.8rem; text-decoration: none; border-radius: 4px; font-weight: bold; text-align: center; flex: 1;">Download MP4</a>
-                                </div>
-                            </div>
+                        <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 10px;">⚡ TikTok Automation (Pipeline #38)</h3>
+                        <div class="media-element-wrapper">
+                            <video controls preload="metadata">
+                                <source src="./backend/raw_media_ready/38_tiktok_ready_tutorial.mp4" type="video/mp4">
+                                Your browser does not support video.
+                            </video>
                         </div>
-                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">Includes high-res wallpaper & 6sec loop version.</p>
+                        <div style="display: flex; gap: 8px; margin-top: 10px;">
+                            <a href="./backend/raw_media_ready/38_tiktok_ready_tutorial.mp4" target="_blank" style="background: var(--success); color: #0f172a; padding: 6px 12px; font-size: 0.8rem; text-decoration: none; border-radius: 4px; font-weight: bold; text-align: center; flex: 1;">Download MP4</a>
+                        </div>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">Latest dispatched TikTok automated tutorial clip.</p>
                     </div>
 
                     <!-- 3. NASA APOD -->
                     <div class="media-item-box">
                         <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 10px;">🚀 NASA APOD Feature</h3>
-                        <div class="media-element-wrapper media-gate-container" data-media-type="nasa">
-                            <div class="visitor-view" style="width: 100%; height: 100%; position: relative; display: flex; align-items: center; justify-content: center;">
-                                <video preload="metadata" style="filter: blur(8px);">
-                                    <source src="./raw_media_ready/nasa_apod.mp4" type="video/mp4">
-                                </video>
-                                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.75); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px; text-align: center;">
-                                    <p style="font-size: 0.9rem; color: #f8fafc; margin-bottom: 10px;">🔒 Members Only Content</p>
-                                    <button onclick="document.getElementById('portal').scrollIntoView({behavior: 'smooth'})" style="background: var(--accent); color: #0f172a; border: none; padding: 8px 14px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; cursor: pointer;">Login to Unlock</button>
-                                </div>
-                            </div>
-                            <div class="subscriber-view" style="display: none; width: 100%; height: 100%; flex-direction: column; justify-content: space-between;">
-                                <video controls preload="metadata" style="width: 100%; max-height: 340px; object-fit: contain;">
-                                    <source src="./raw_media_ready/nasa_apod.mp4" type="video/mp4">
-                                    Your browser does not support video.
-                                </video>
-                                <div style="display: flex; gap: 8px; margin-top: 10px;">
-                                    <a href="./raw_media_ready/nasa_apod.mp4" target="_blank" style="background: var(--success); color: #0f172a; padding: 6px 12px; font-size: 0.8rem; text-decoration: none; border-radius: 4px; font-weight: bold; text-align: center; flex: 1;">Download MP4</a>
-                                </div>
-                            </div>
+                        <div class="media-element-wrapper">
+                            <video controls preload="metadata">
+                                <source src="./backend/raw_media_ready/nasa_apod.mp4" type="video/mp4">
+                                Your browser does not support video.
+                            </video>
                         </div>
-                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">Includes daily NASA astronomy image & 6sec video.</p>
+                        <div style="display: flex; gap: 8px; margin-top: 10px;">
+                            <a href="./backend/raw_media_ready/nasa_apod.mp4" target="_blank" style="background: var(--success); color: #0f172a; padding: 6px 12px; font-size: 0.8rem; text-decoration: none; border-radius: 4px; font-weight: bold; text-align: center; flex: 1;">Download MP4</a>
+                        </div>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">Includes daily NASA astronomy video feature.</p>
                     </div>
                 </div>
             </div>
@@ -483,7 +462,6 @@
     </footer>
 
     <script>
-        // Check active session on load to unlock gated media
         document.addEventListener("DOMContentLoaded", function() {
             const activeSession = localStorage.getItem("cff_user_session");
             if (activeSession) {
@@ -514,7 +492,6 @@
 
         setInterval(nextSlide, 10000);
 
-        // Tab and Auth Logic
         function switchTab(type) {
             const signupForm = document.getElementById('signupForm');
             const loginForm = document.getElementById('loginForm');
