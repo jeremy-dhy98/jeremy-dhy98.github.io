@@ -383,32 +383,15 @@
         }
 
         document.addEventListener("DOMContentLoaded", function () {
-            // Fire the health ping to wake up the Render instance early.
-            // We also use its result to trigger a branding retry in case
-            // the first loadStaticBranding() attempt lost the cold-start race.
-            let brandingLoaded = false;
-
-            const brandingPromise = loadStaticBranding().then(() => {
-                brandingLoaded = true;
-            }).catch(() => {
-                // loadStaticBranding already falls back internally; this
-                // outer catch just silences any unhandled rejections.
+            // Wake the Render backend early so subsequent API calls
+            // (media-manifest, auth) hit a warm instance.
+            fetch(`${BACKEND_BASE_URL}/api/health`).catch(() => {
+                console.warn('Backend health ping failed — backend may be down.');
             });
 
-            fetch(`${BACKEND_BASE_URL}/api/health`)
-                .then(() => {
-                    // Backend is awake. If branding hasn't resolved yet, wait
-                    // for it; if it already failed (fell back to local files),
-                    // try the backend manifest once more to upgrade to Cloudinary URLs.
-                    return brandingPromise.then(() => {
-                        if (!brandingLoaded) {
-                            return loadStaticBranding();
-                        }
-                    });
-                })
-                .catch(() => {
-                    console.warn('Backend health ping failed — backend may be down.');
-                });
+            // Local assets render immediately; Cloudinary upgrade happens
+            // in the background inside loadStaticBranding().
+            loadStaticBranding();
 
             const activeSession = localStorage.getItem(SESSION_KEY);
             if (activeSession) {
@@ -454,9 +437,15 @@
         }
 
         async function loadStaticBranding() {
-            // --- Attempt 1: backend /api/static-manifest (Cloudinary URLs) ---
-            // Use a generous timeout (55 s) so a Render cold-start (≤60 s) has
-            // time to wake up before we give up and fall back to local files.
+            // Step 1: Apply local files immediately — zero waiting, no blank state.
+            // Users see the logo and hero backgrounds as soon as the page renders,
+            // regardless of whether the backend is awake or reachable.
+            applyStaticAssets(LOCAL_STATIC_ASSETS);
+
+            // Step 2: Upgrade to Cloudinary URLs in the background.
+            // If the backend is awake this replaces the local files with the
+            // CDN-hosted versions silently. If it fails, the local files stay
+            // and the user never notices anything went wrong.
             try {
                 const response = await fetchWithRetry(
                     `${BACKEND_BASE_URL}/api/static-manifest`,
@@ -467,18 +456,13 @@
                 const data = await response.json();
                 const staticMedia = data.media || {};
 
-                // Only use the backend result if we actually got at least one key.
                 if (Object.keys(staticMedia).length > 0) {
-                    applyStaticAssets(staticMedia);
-                    return; // success — done
+                    applyStaticAssets(staticMedia);  // upgrade in place — no flicker
                 }
-                throw new Error('static-manifest returned empty media object');
             } catch (err) {
-                console.warn('Backend static-manifest unavailable, falling back to local assets:', err.message);
+                // Local files are already showing — nothing more to do.
+                console.warn('Could not upgrade to Cloudinary branding assets:', err.message);
             }
-
-            // --- Attempt 2: local GitHub Pages files ---
-            applyStaticAssets(LOCAL_STATIC_ASSETS);
         }
 
         // ==========================================
