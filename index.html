@@ -177,9 +177,9 @@
                         </div>
                     </div>
 
-                    <!-- 2. RECENT PIPELINE DROP (TikTok Automation #38) CARD -->
+                    <!-- 2. RECENT PIPELINE DROP (TikTok Automation) CARD -->
                     <div class="media-item-box media-gate-container" data-card-keys="tiktok_automation,tiktok,automation">
-                        <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 10px;">⚡ TikTok Automation (#38)</h3>
+                        <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 10px;">⚡ TikTok Automation</h3>
                         <div class="visitor-view">
                             <p>🔒 Subscribe or log in to view and download pipeline drops.</p>
                             <button class="btn-unlock" onclick="document.getElementById('portal').scrollIntoView({behavior: 'smooth'})">Unlock Hub</button>
@@ -216,7 +216,7 @@
                             <div style="display: flex; gap: 8px; margin-top: 10px;">
                                 <a href="" target="_blank" id="media-download-3" style="background: var(--success); color: #0f172a; padding: 6px 12px; font-size: 0.8rem; text-decoration: none; border-radius: 4px; font-weight: bold; text-align: center; flex: 1;">Download MP4</a>
                             </div>
-                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">Includes daily NASA astronomy video feature and Bing daily featured wallpaper media.</p>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">Includes daily NASA astronomy video feature.</p>
                             <p class="media-status" id="media-status-3"></p>
                         </div>
                     </div>
@@ -364,15 +364,8 @@
         const BACKEND_BASE_URL = 'https://cff-dispatcher-api.onrender.com';
         const SESSION_KEY = 'cff_user_session';
         const TOKEN_KEY = 'cff_user_token';
-        let cachedVideoManifest = null; // populated after auth or a manifest fetch
+        let cachedVideoManifest = null;
 
-        // ==========================================
-        // FETCH HELPER: timeout + one retry.
-        // Render's free tier spins the instance down after inactivity, so the
-        // first real request after idle time can take 20-50s to respond
-        // instead of erroring out. We give it a generous timeout and retry
-        // once before giving up, rather than failing silently like before.
-        // ==========================================
         async function fetchWithRetry(url, options = {}, { timeoutMs = 20000, retries = 1 } = {}) {
             for (let attempt = 0; attempt <= retries; attempt++) {
                 const controller = new AbortController();
@@ -384,17 +377,14 @@
                 } catch (err) {
                     clearTimeout(timer);
                     if (attempt === retries) throw err;
-                    // brief pause before retrying, gives a cold Render instance time to finish waking
                     await new Promise(res => setTimeout(res, 3000));
                 }
             }
         }
 
         document.addEventListener("DOMContentLoaded", function () {
-            // Fire-and-forget wake-up ping so the backend is warm by the time
-            // the user actually submits the auth form or the media hub needs data.
             fetch(`${BACKEND_BASE_URL}/api/health`).catch(() => {
-                console.warn('Backend health ping failed (may still be waking up).');
+                console.warn('Backend health ping failed.');
             });
 
             loadStaticBranding();
@@ -408,8 +398,8 @@
 
         // ==========================================
         // STATIC BRANDING (logo + hero backgrounds)
-        // Local files load first (fast, no CORS). If a local file 404s, we
-        // swap the src to the backend's Cloudinary-backed static manifest.
+        // Fetches from the updated backend manifest which merges
+        // both static images and video assets.
         // ==========================================
         async function loadStaticBranding() {
             const logoImg = document.getElementById('brand-logo');
@@ -427,11 +417,11 @@
                 if (!results[i]) brokenElements.push(el);
             });
 
-            if (brokenElements.length === 0) return; // everything loaded locally, nothing to fix
+            if (brokenElements.length === 0) return;
 
             try {
-                const response = await fetchWithRetry(`${BACKEND_BASE_URL}/api/static-manifest`, {}, { timeoutMs: 20000, retries: 1 });
-                if (!response.ok) throw new Error(`static-manifest responded ${response.status}`);
+                const response = await fetchWithRetry(`${BACKEND_BASE_URL}/api/media-manifest`, {}, { timeoutMs: 20000, retries: 1 });
+                if (!response.ok) throw new Error(`media-manifest responded ${response.status}`);
                 const data = await response.json();
                 const staticMedia = data.media || {};
 
@@ -447,16 +437,13 @@
         }
 
         // ==========================================
-        // DAILY HUB VIDEO MANIFEST
-        // Matched by KEY (not array index) so the mapping stays correct even
-        // if Cloudinary returns resources in a different order than before.
+        // DAILY HUB VIDEO MANIFEST KEY RESOLUTION
         // ==========================================
         function matchManifestKeyForCard(cardEl, manifest) {
             const candidateKeys = (cardEl.dataset.cardKeys || '').split(',').map(k => k.trim()).filter(Boolean);
             for (const candidate of candidateKeys) {
                 if (manifest[candidate]) return manifest[candidate];
             }
-            // fuzzy fallback: substring match against manifest keys
             const manifestKeys = Object.keys(manifest);
             for (const candidate of candidateKeys) {
                 const found = manifestKeys.find(mk => mk.toLowerCase().includes(candidate.toLowerCase()) || candidate.toLowerCase().includes(mk.toLowerCase()));
@@ -515,7 +502,7 @@
             });
         }
 
-        // 10-Second Automatic Slideshow
+        // Slideshow Timer
         const slides = document.querySelectorAll('.slide');
         let currentSlide = 0;
         function nextSlide() {
@@ -550,10 +537,6 @@
             }
         }
 
-        // ==========================================
-        // REAL AUTH: now actually calls the Flask backend instead of
-        // just flipping a localStorage flag.
-        // ==========================================
         async function handleAuth(event, type) {
             event.preventDefault();
             const statusMessage = document.getElementById('statusMessage');
