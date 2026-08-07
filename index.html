@@ -51,6 +51,8 @@
         .slideshow-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
         .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: 0; transition: opacity 1.5s ease-in-out; background: var(--card-bg); }
         .slide.active { opacity: 0.55; }
+        /* Person slide: shift down so the full face is visible */
+        .slide-person { object-position: center 20%; }
         .slideshow-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.65); z-index: 2; }
         .hero-content { position: relative; z-index: 3; }
 
@@ -103,6 +105,95 @@
         footer a:hover { text-decoration: underline; }
         .footer-links { margin-top: 15px; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
 
+        /* Mission & Vision section */
+        .mission-vision-section {
+            margin: 60px 0 40px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+        }
+        @media(max-width: 700px) {
+            .mission-vision-section { grid-template-columns: 1fr; }
+        }
+        .mv-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 36px 32px;
+            position: relative;
+            overflow: hidden;
+        }
+        .mv-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 4px; height: 100%;
+            border-radius: 14px 0 0 14px;
+        }
+        .mv-card.mission::before { background: var(--accent); }
+        .mv-card.vision::before  { background: var(--success); }
+        .mv-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            display: block;
+        }
+        .mv-card.mission .mv-label { color: var(--accent); }
+        .mv-card.vision  .mv-label { color: var(--success); }
+        .mv-card h3 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 16px;
+            line-height: 1.3;
+        }
+        .mv-card p {
+            color: var(--text-muted);
+            font-size: 0.97rem;
+            line-height: 1.8;
+        }
+        .mv-card p + p { margin-top: 12px; }
+        .mv-promise {
+            margin-top: 48px;
+            background: linear-gradient(135deg, rgba(56,189,248,0.07) 0%, rgba(16,185,129,0.07) 100%);
+            border: 1px solid rgba(56,189,248,0.2);
+            border-radius: 14px;
+            padding: 40px 36px;
+            text-align: center;
+        }
+        .mv-promise .mv-label { color: var(--accent); justify-content: center; display: flex; }
+        .mv-promise h3 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 16px;
+        }
+        .mv-promise p {
+            color: var(--text-muted);
+            font-size: 1rem;
+            line-height: 1.85;
+            max-width: 720px;
+            margin: 0 auto;
+        }
+        .mv-pillars {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 28px;
+        }
+        .mv-pillar {
+            background: rgba(15,23,42,0.6);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 18px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
         @media(max-width: 900px) { .nav-links { display: none; } }
     </style>
 </head>
@@ -133,8 +224,8 @@
         <section class="hero" id="about">
             <div class="slideshow-background">
                 <img src="" class="slide active" alt="Background Slide 1" data-bg-key="bg1">
-                <img src="" class="slide" alt="Background Slide 2" data-bg-key="bg2">
                 <img src="" class="slide" alt="Background Slide 3" data-bg-key="bg3">
+                <img src="" class="slide slide-person" alt="Background Slide 2" data-bg-key="bg2">
             </div>
             <div class="slideshow-overlay"></div>
 
@@ -339,6 +430,57 @@
                 <p>Extracting, transforming, and organizing media and analytical metrics to deliver reliable data pipeline automation.</p>
             </div>
         </section>
+
+        <!-- =============================================
+             MISSION & VISION
+             ============================================= -->
+        <section id="mission-vision" aria-label="Mission and Vision">
+
+            <div class="mission-vision-section">
+
+                <!-- MISSION -->
+                <div class="mv-card mission">
+                    <span class="mv-label">Our Mission</span>
+                    <h3>Build systems that set people free from inefficiency</h3>
+                    <p>
+                        Coding For Freedom exists to remove the bottlenecks, delays, and manual friction that slow people and businesses down. Every solution we build is designed with one goal in mind — to give back time, clarity, and momentum to the people who need it most.
+                    </p>
+                    <p>
+                        We write code that works quietly in the background so that the people in the foreground can focus on what actually matters.
+                    </p>
+                </div>
+
+                <!-- VISION -->
+                <div class="mv-card vision">
+                    <span class="mv-label">Our Vision</span>
+                    <h3>A world where smart systems do the heavy lifting</h3>
+                    <p>
+                        We envision a future where creators, educators, and businesses of any size can access the kind of automation infrastructure that was once reserved for large engineering teams. Powerful pipelines. Clean data. Content that moves without manual intervention.
+                    </p>
+                    <p>
+                        Coding For Freedom is building toward that future, one workflow at a time.
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- THE PROMISE -->
+            <div class="mv-promise">
+                <span class="mv-label">The Promise Behind the Name</span>
+                <h3>Freedom is not a feature. It is the foundation.</h3>
+                <p>
+                    Coding For Freedom is not just a brand. It is a promise to build solutions that help people work smarter. Freedom from bottlenecks. Freedom from delays. Freedom from processes that consume time without producing value. Building under this name means more than writing code — it means creating systems that save time, remove friction, and help businesses move with clarity and confidence.
+                </p>
+                <div class="mv-pillars">
+                    <span class="mv-pillar">⚡ Automation First</span>
+                    <span class="mv-pillar">🎯 Clarity in Every System</span>
+                    <span class="mv-pillar">🔓 Freedom from Friction</span>
+                    <span class="mv-pillar">📈 Built to Scale</span>
+                    <span class="mv-pillar">🤝 Trusted by Builders</span>
+                </div>
+            </div>
+
+        </section>
     </main>
 
     <footer>
@@ -527,22 +669,14 @@
                         throw parseErr;
                     }
 
-                    // Accept both response shapes the backend sends:
-                    //   {status, media: {key: url}, items: [{key,url}]}  <- media-manifest
-                    //   {status, action, media_urls: {key: url}}          <- auth response
-                    // Precedence: media > items > bare object
-                    if (data.media && Object.keys(data.media).length > 0) {
-                        manifest = data.media;
-                    } else if (data.items && data.items.length > 0) {
-                        manifest = Object.fromEntries(data.items.map(i => [i.key, i.url]));
-                    } else if (data.media_urls && Object.keys(data.media_urls).length > 0) {
-                        manifest = data.media_urls;
-                    } else {
-                        manifest = data;
-                    }
+                    // Accept both {media: {...}} and a bare {key: url} object
+                    // so the function works whether called with auth response
+                    // data or a direct manifest fetch.
+                    manifest = data.media || data.items
+                        ? (data.media || Object.fromEntries((data.items || []).map(i => [i.key, i.url])))
+                        : data;
 
                     console.log('media-manifest loaded. Keys:', Object.keys(manifest));
-                    console.log('media-manifest full content:', JSON.stringify(manifest));
                 } catch (err) {
                     console.error('Error loading media manifest from backend:', err);
                     document.querySelectorAll('.media-status').forEach(el => {
@@ -570,11 +704,10 @@
                 if (targetUrl) {
                     if (videoSource)  videoSource.src  = targetUrl;
                     if (downloadLink) downloadLink.href = targetUrl;
+                    // Always call load() so browsers that cached the initial
+                    // blank src="" actually pick up the new URL.
+                    if (videoElement) videoElement.load();
                     if (statusEl)     statusEl.textContent = '';
-                    // Defer load() by one animation frame so the browser has
-                    // committed the subscriber-view display change first —
-                    // some browsers refuse to load media on hidden elements.
-                    if (videoElement) requestAnimationFrame(() => videoElement.load());
                 } else {
                     // Log which keys were attempted so mismatches are easy to spot.
                     const attempted = (cardEl.dataset.cardKeys || '').split(',').map(k => k.trim()).filter(Boolean);
@@ -666,7 +799,7 @@
                     if (data.token) localStorage.setItem(TOKEN_KEY, data.token);
 
                     unlockMediaHub();
-                    await loadDynamicMediaUrls(data.media_urls || null);
+                    await loadDynamicMediaUrls(data.media || data.media_urls || null);
 
                     showStatus(
                         data.action === 'registered'
