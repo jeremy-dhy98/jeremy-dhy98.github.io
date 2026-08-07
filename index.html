@@ -527,14 +527,22 @@
                         throw parseErr;
                     }
 
-                    // Accept both {media: {...}} and a bare {key: url} object
-                    // so the function works whether called with auth response
-                    // data or a direct manifest fetch.
-                    manifest = data.media || data.items
-                        ? (data.media || Object.fromEntries((data.items || []).map(i => [i.key, i.url])))
-                        : data;
+                    // Accept both response shapes the backend sends:
+                    //   {status, media: {key: url}, items: [{key,url}]}  <- media-manifest
+                    //   {status, action, media_urls: {key: url}}          <- auth response
+                    // Precedence: media > items > bare object
+                    if (data.media && Object.keys(data.media).length > 0) {
+                        manifest = data.media;
+                    } else if (data.items && data.items.length > 0) {
+                        manifest = Object.fromEntries(data.items.map(i => [i.key, i.url]));
+                    } else if (data.media_urls && Object.keys(data.media_urls).length > 0) {
+                        manifest = data.media_urls;
+                    } else {
+                        manifest = data;
+                    }
 
                     console.log('media-manifest loaded. Keys:', Object.keys(manifest));
+                    console.log('media-manifest full content:', JSON.stringify(manifest));
                 } catch (err) {
                     console.error('Error loading media manifest from backend:', err);
                     document.querySelectorAll('.media-status').forEach(el => {
@@ -562,10 +570,11 @@
                 if (targetUrl) {
                     if (videoSource)  videoSource.src  = targetUrl;
                     if (downloadLink) downloadLink.href = targetUrl;
-                    // Always call load() so browsers that cached the initial
-                    // blank src="" actually pick up the new URL.
-                    if (videoElement) videoElement.load();
                     if (statusEl)     statusEl.textContent = '';
+                    // Defer load() by one animation frame so the browser has
+                    // committed the subscriber-view display change first —
+                    // some browsers refuse to load media on hidden elements.
+                    if (videoElement) requestAnimationFrame(() => videoElement.load());
                 } else {
                     // Log which keys were attempted so mismatches are easy to spot.
                     const attempted = (cardEl.dataset.cardKeys || '').split(',').map(k => k.trim()).filter(Boolean);
