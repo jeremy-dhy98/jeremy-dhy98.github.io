@@ -195,6 +195,193 @@
         }
 
         @media(max-width: 900px) { .nav-links { display: none; } }
+
+        /* ── CRYPTO SIGNALS NAV CHIP ── */
+        .nav-crypto-chip {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+            color: #0f172a; padding: 5px 12px; border-radius: 999px;
+            font-size: 0.78rem; font-weight: 800; text-decoration: none;
+            letter-spacing: 0.04em; cursor: pointer; border: none;
+            white-space: nowrap; position: relative; transition: opacity 0.2s;
+        }
+        .nav-crypto-chip:hover { opacity: 0.88; }
+        .nav-chip-new {
+            background: #ef4444; color: #fff;
+            font-size: 0.6rem; font-weight: 900;
+            padding: 1px 5px; border-radius: 999px;
+            letter-spacing: 0.06em; margin-left: 2px;
+            animation: pulse-new 1.8s infinite;
+        }
+        @keyframes pulse-new {
+            0%,100% { opacity:1; } 50% { opacity:0.55; }
+        }
+
+        /* ── CRYPTO SECTION ── */
+        .crypto-section {
+            margin: 60px 0 40px;
+            background: linear-gradient(135deg, #0f172a 0%, #1a1200 100%);
+            border: 1px solid #f59e0b44;
+            border-radius: 18px;
+            overflow: hidden;
+            position: relative;
+        }
+        .crypto-section::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse at 70% 0%, rgba(245,158,11,0.08) 0%, transparent 65%);
+            pointer-events: none;
+        }
+        .crypto-inner { padding: 48px 40px; position: relative; z-index: 1; }
+        @media(max-width:600px) { .crypto-inner { padding: 32px 20px; } }
+
+        .crypto-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: linear-gradient(135deg,#f59e0b22,#f9731622);
+            border: 1px solid #f59e0b55;
+            color: #fbbf24; padding: 5px 14px; border-radius: 999px;
+            font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em;
+            text-transform: uppercase; margin-bottom: 20px;
+        }
+        .crypto-new-tag {
+            background: #ef4444; color: #fff;
+            font-size: 0.62rem; font-weight: 900; padding: 2px 6px;
+            border-radius: 999px; letter-spacing: 0.06em;
+            animation: pulse-new 1.8s infinite;
+        }
+        .crypto-hero-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 40px;
+            align-items: start;
+        }
+        @media(max-width:700px) { .crypto-hero-grid { grid-template-columns:1fr; gap:28px; } }
+
+        .crypto-headline {
+            font-size: 2rem; font-weight: 900; line-height: 1.2;
+            color: #fff; margin-bottom: 14px; letter-spacing: -0.02em;
+        }
+        .crypto-headline span { color: #f59e0b; }
+        .crypto-sub {
+            color: #94a3b8; font-size: 0.97rem; line-height: 1.75;
+            margin-bottom: 24px;
+        }
+        .crypto-perks { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+        .crypto-perks li {
+            display: flex; align-items: flex-start; gap: 10px;
+            color: #cbd5e1; font-size: 0.93rem; line-height: 1.5;
+        }
+        .crypto-perks li::before {
+            content: '✦'; color: #f59e0b; font-size: 0.75rem;
+            margin-top: 3px; flex-shrink: 0;
+        }
+
+        /* ── PAYMENT PANEL ── */
+        .crypto-payment-panel {
+            background: rgba(15,23,42,0.7);
+            border: 1px solid #334155;
+            border-radius: 14px; padding: 28px 24px;
+        }
+        .cpp-title {
+            font-size: 1rem; font-weight: 800; color: #fff;
+            margin-bottom: 4px;
+        }
+        .cpp-price {
+            font-size: 2.2rem; font-weight: 900; color: #f59e0b;
+            line-height: 1; margin-bottom: 6px;
+        }
+        .cpp-price span { font-size: 1rem; color: #94a3b8; font-weight: 500; }
+        .cpp-desc { font-size: 0.82rem; color: #64748b; margin-bottom: 20px; }
+
+        .cpp-step {
+            font-size: 0.78rem; font-weight: 700; color: #f59e0b;
+            text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px;
+        }
+        .cpp-input {
+            width: 100%; padding: 10px 14px;
+            background: #0f172a; border: 1px solid #334155;
+            border-radius: 8px; color: #f8fafc; font-size: 0.95rem;
+            margin-bottom: 14px; outline: none;
+            transition: border-color 0.2s;
+        }
+        .cpp-input:focus { border-color: #f59e0b; }
+
+        .btn-pay {
+            width: 100%; padding: 13px;
+            background: linear-gradient(135deg,#f59e0b,#f97316);
+            color: #0f172a; border: none; border-radius: 8px;
+            font-weight: 800; font-size: 1rem; cursor: pointer;
+            transition: opacity 0.2s; display: flex; align-items: center;
+            justify-content: center; gap: 8px;
+        }
+        .btn-pay:hover { opacity: 0.88; }
+        .btn-pay:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .cpp-note {
+            font-size: 0.75rem; color: #475569; text-align: center;
+            margin-top: 10px; line-height: 1.5;
+        }
+        .cpp-status {
+            margin-top: 14px; padding: 10px 14px; border-radius: 8px;
+            font-size: 0.85rem; display: none; text-align: center;
+        }
+        .cpp-status.pending { background: rgba(245,158,11,0.12); border:1px solid #f59e0b44; color:#fbbf24; }
+        .cpp-status.success { background: rgba(16,185,129,0.12); border:1px solid #10b98144; color:#6ee7b7; }
+        .cpp-status.error   { background: rgba(239,68,68,0.12);  border:1px solid #ef444444; color:#fca5a5; }
+
+        /* ── BINANCE REVEAL ── */
+        .binance-reveal {
+            display: none; margin-top: 20px;
+            background: linear-gradient(135deg,rgba(240,185,11,0.08),rgba(249,115,22,0.08));
+            border: 1px solid #f59e0b55; border-radius: 10px;
+            padding: 18px 20px; text-align: center;
+        }
+        .binance-reveal.visible { display: block; }
+        .binance-reveal p {
+            font-size: 0.85rem; color: #94a3b8; margin-bottom: 12px; line-height:1.6;
+        }
+        .btn-binance {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: #f0b90b; color: #0f172a;
+            padding: 10px 22px; border-radius: 8px;
+            font-weight: 800; font-size: 0.9rem; text-decoration: none;
+            transition: opacity 0.2s;
+        }
+        .btn-binance:hover { opacity: 0.85; }
+
+        /* ── SIGNUP GATE (visitors) ── */
+        .crypto-signup-gate {
+            background: rgba(15,23,42,0.7);
+            border: 1px solid #334155; border-radius: 14px;
+            padding: 28px 24px; text-align: center;
+        }
+        .crypto-signup-gate p { color: #94a3b8; font-size: 0.93rem; margin-bottom: 16px; line-height:1.6; }
+
+        /* ── MODAL OVERLAY ── */
+        .crypto-modal-overlay {
+            display: none; position: fixed; inset: 0; z-index: 1000;
+            background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
+            align-items: center; justify-content: center; padding: 20px;
+        }
+        .crypto-modal-overlay.open { display: flex; }
+        .crypto-modal {
+            background: #1e293b; border: 1px solid #f59e0b44;
+            border-radius: 18px; padding: 36px 32px;
+            width: 100%; max-width: 420px;
+            position: relative; animation: modal-in 0.25s ease;
+        }
+        @keyframes modal-in { from { transform: scale(0.93); opacity:0; } to { transform:scale(1); opacity:1; } }
+        .modal-close {
+            position: absolute; top: 14px; right: 18px;
+            background: none; border: none; color: #64748b;
+            font-size: 1.4rem; cursor: pointer; line-height:1;
+        }
+        .modal-close:hover { color: #f8fafc; }
+
+        /* ── MPESA ICON ── */
+        .mpesa-logo {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-weight: 800; color: #4ade80; font-size: 0.85rem;
+        }
+
     </style>
 </head>
 <body>
@@ -214,6 +401,11 @@
                     <li><a href="#portal">Portal</a></li>
                     <li><a href="privacy.html">Privacy</a></li>
                     <li><a href="terms.html">Terms</a></li>
+                    <li>
+                        <button class="nav-crypto-chip" onclick="openCryptoSection()">
+                            📈 Crypto Signals <span class="nav-chip-new">NEW</span>
+                        </button>
+                    </li>
                     <li><button class="btn-auth-nav" onclick="document.getElementById('portal').scrollIntoView({behavior: 'smooth'})">Sign Up / Login</button></li>
                 </ul>
             </nav>
@@ -481,6 +673,164 @@
             </div>
 
         </section>
+
+        <!-- =============================================
+             CRYPTO SIGNALS SERVICE SECTION
+             ============================================= -->
+        <section id="crypto-signals" class="crypto-section" aria-label="Crypto Signals Service">
+            <div class="crypto-inner">
+
+                <div class="crypto-badge">
+                    📈 Professional Crypto Signals &nbsp;<span class="crypto-new-tag">NEW</span>
+                </div>
+
+                <div class="crypto-hero-grid">
+
+                    <!-- LEFT: info -->
+                    <div>
+                        <h2 class="crypto-headline">
+                            Daily <span>Crypto Trade Signals</span><br>from a Professional Trader
+                        </h2>
+                        <p class="crypto-sub">
+                            Get institutional-grade buy/sell signals delivered directly to your inbox — curated by a professional crypto trader with a proven track record. Never miss a high-probability trade again.
+                        </p>
+                        <ul class="crypto-perks">
+                            <li>Real-time signals for BTC, ETH, BNB and top altcoins</li>
+                            <li>Entry price, take-profit and stop-loss levels on every signal</li>
+                            <li>Randomised delivery throughout the day — signals arrive when the market moves</li>
+                            <li>Exclusive Binance referral link to start trading immediately after signup</li>
+                            <li>One-time activation fee — signals continue daily at no extra charge</li>
+                        </ul>
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;">
+                            <div style="background:rgba(245,158,11,0.1);border:1px solid #f59e0b44;border-radius:8px;padding:12px 16px;min-width:110px;text-align:center;">
+                                <div style="font-size:1.5rem;font-weight:900;color:#f59e0b;">95%+</div>
+                                <div style="font-size:0.75rem;color:#64748b;margin-top:2px;">Signal Accuracy</div>
+                            </div>
+                            <div style="background:rgba(16,185,129,0.1);border:1px solid #10b98144;border-radius:8px;padding:12px 16px;min-width:110px;text-align:center;">
+                                <div style="font-size:1.5rem;font-weight:900;color:#10b981;">3–8x</div>
+                                <div style="font-size:0.75rem;color:#64748b;margin-top:2px;">Daily Signals</div>
+                            </div>
+                            <div style="background:rgba(56,189,248,0.1);border:1px solid #38bdf844;border-radius:8px;padding:12px 16px;min-width:110px;text-align:center;">
+                                <div style="font-size:1.5rem;font-weight:900;color:#38bdf8;">24/7</div>
+                                <div style="font-size:0.75rem;color:#64748b;margin-top:2px;">Market Coverage</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: payment panel or visitor gate -->
+                    <div>
+
+                        <!-- VISITOR GATE (shown when not logged in) -->
+                        <div class="crypto-signup-gate" id="cryptoVisitorGate">
+                            <div style="font-size:2.8rem;margin-bottom:12px;">🔐</div>
+                            <p style="font-weight:700;color:#f8fafc;font-size:1rem;margin-bottom:8px;">
+                                Create a free account to activate this service
+                            </p>
+                            <p>
+                                Sign up with your email to get started. Once registered you can activate the Crypto Signals service via M-Pesa for just <strong style="color:#f59e0b;">KES 1,000</strong>.
+                            </p>
+                            <button class="btn-pay" style="margin-top:16px;border-radius:8px;"
+                                onclick="document.getElementById('portal').scrollIntoView({behavior:'smooth'})">
+                                🔓 Sign Up Free to Continue
+                            </button>
+                        </div>
+
+                        <!-- PAYMENT PANEL (shown when logged in, not yet paid) -->
+                        <div class="crypto-payment-panel" id="cryptoPayPanel" style="display:none;">
+                            <div class="cpp-title">Activate Crypto Signals</div>
+                            <div class="cpp-price">KES 1,000 <span>/ one-time</span></div>
+                            <div class="cpp-desc">Signals continue daily after activation — no recurring charges.</div>
+
+                            <div class="cpp-step">Step 1 — Enter your M-Pesa number</div>
+                            <input type="tel" id="mpesaPhone" class="cpp-input"
+                                placeholder="e.g. 0712345678"
+                                maxlength="12">
+
+                            <button class="btn-pay" id="btnPay" onclick="initiatePayment()">
+                                <span class="mpesa-logo">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                                    M-Pesa
+                                </span>
+                                Pay KES 1,000 Now
+                            </button>
+
+                            <p class="cpp-note">
+                                An STK push will be sent to your phone.<br>
+                                Enter your M-Pesa PIN to complete payment.
+                            </p>
+
+                            <div class="cpp-status" id="cryptoPayStatus"></div>
+
+                            <!-- Binance reveal — shown after confirmed payment -->
+                            <div class="binance-reveal" id="binanceReveal">
+                                <p style="color:#fbbf24;font-weight:700;font-size:0.95rem;margin-bottom:6px;">
+                                    🎉 Payment confirmed! Your signals are now active.
+                                </p>
+                                <p>
+                                    Open your Binance account using our exclusive referral link below to start trading. Daily signals will begin arriving in your inbox within the hour.
+                                </p>
+                                <a href="YOUR_BINANCE_REFERRAL_LINK_HERE"
+                                   target="_blank" rel="noopener" class="btn-binance" id="binanceLink">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                                    Open Binance Account
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- ALREADY PAID (shown when crypto_paid = true) -->
+                        <div class="crypto-payment-panel" id="cryptoActivePanel" style="display:none;">
+                            <div style="text-align:center;margin-bottom:20px;">
+                                <div style="font-size:2.5rem;margin-bottom:8px;">✅</div>
+                                <div style="font-weight:800;color:#10b981;font-size:1.1rem;">Signals Active</div>
+                                <div style="color:#64748b;font-size:0.83rem;margin-top:4px;">
+                                    Daily signals are being delivered to your inbox
+                                </div>
+                            </div>
+                            <a href="YOUR_BINANCE_REFERRAL_LINK_HERE"
+                               target="_blank" rel="noopener" class="btn-binance" style="display:flex;justify-content:center;margin-bottom:14px;" id="binanceLinkActive">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                                Open Binance Account
+                            </a>
+                            <p style="text-align:center;font-size:0.78rem;color:#475569;line-height:1.5;">
+                                Not receiving signals? Check your spam folder or contact support.
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAYMENT POLLING MODAL (STK push waiting screen) -->
+        <div class="crypto-modal-overlay" id="paymentModalOverlay">
+            <div class="crypto-modal">
+                <button class="modal-close" onclick="closePaymentModal()">×</button>
+                <div style="text-align:center;">
+                    <div style="font-size:3rem;margin-bottom:12px;" id="modalIcon">📱</div>
+                    <div style="font-weight:800;font-size:1.1rem;color:#fff;margin-bottom:8px;" id="modalTitle">
+                        Check Your Phone
+                    </div>
+                    <div style="color:#94a3b8;font-size:0.9rem;line-height:1.6;margin-bottom:20px;" id="modalBody">
+                        An M-Pesa STK push has been sent to your number.<br>
+                        Enter your PIN to complete the KES 1,000 payment.
+                    </div>
+                    <div style="background:#0f172a;border-radius:8px;padding:14px;margin-bottom:16px;" id="modalPollBox">
+                        <div style="color:#f59e0b;font-size:0.82rem;font-weight:600;margin-bottom:6px;">
+                            Waiting for confirmation…
+                        </div>
+                        <div style="display:flex;justify-content:center;gap:6px;" id="modalDots">
+                            <span style="width:8px;height:8px;border-radius:50%;background:#f59e0b;animation:pulse-new 1.2s infinite;display:block;"></span>
+                            <span style="width:8px;height:8px;border-radius:50%;background:#f59e0b;animation:pulse-new 1.2s 0.3s infinite;display:block;"></span>
+                            <span style="width:8px;height:8px;border-radius:50%;background:#f59e0b;animation:pulse-new 1.2s 0.6s infinite;display:block;"></span>
+                        </div>
+                    </div>
+                    <p style="font-size:0.75rem;color:#475569;line-height:1.5;">
+                        This screen will update automatically.<br>Do not close or refresh the page.
+                    </p>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <footer>
@@ -729,7 +1079,172 @@
                     subscriberView.style.display = 'flex';
                 }
             });
+            // Update crypto panel now that the user is logged in
+            if (typeof renderCryptoPanel === 'function') renderCryptoPanel();
         }
+
+
+        // ==========================================
+        // CRYPTO SIGNALS — CLIENT LOGIC
+        // ==========================================
+        const CRYPTO_PAID_KEY  = 'cff_crypto_paid';
+        const BINANCE_REF_LINK = 'YOUR_BINANCE_REFERRAL_LINK_HERE'; // ← replace with your link
+
+        function openCryptoSection() {
+            document.getElementById('crypto-signals').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function renderCryptoPanel() {
+            const isLoggedIn  = !!localStorage.getItem(SESSION_KEY);
+            const isCryptoPaid = localStorage.getItem(CRYPTO_PAID_KEY) === 'true';
+
+            const visitorGate   = document.getElementById('cryptoVisitorGate');
+            const payPanel      = document.getElementById('cryptoPayPanel');
+            const activePanel   = document.getElementById('cryptoActivePanel');
+
+            if (!isLoggedIn) {
+                visitorGate.style.display  = '';
+                payPanel.style.display     = 'none';
+                activePanel.style.display  = 'none';
+                return;
+            }
+            if (isCryptoPaid) {
+                visitorGate.style.display  = 'none';
+                payPanel.style.display     = 'none';
+                activePanel.style.display  = '';
+                return;
+            }
+            visitorGate.style.display  = 'none';
+            payPanel.style.display     = '';
+            activePanel.style.display  = 'none';
+        }
+
+        function setCryptoStatus(msg, type) {
+            // type: 'pending' | 'success' | 'error'
+            const el = document.getElementById('cryptoPayStatus');
+            if (!el) return;
+            el.textContent  = msg;
+            el.className    = `cpp-status ${type}`;
+            el.style.display = 'block';
+        }
+
+        function openPaymentModal() {
+            document.getElementById('paymentModalOverlay').classList.add('open');
+        }
+
+        function closePaymentModal() {
+            document.getElementById('paymentModalOverlay').classList.remove('open');
+        }
+
+        function setModalState(icon, title, body, showDots) {
+            document.getElementById('modalIcon').textContent  = icon;
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalBody').innerHTML    = body;
+            document.getElementById('modalPollBox').style.display = showDots ? '' : 'none';
+        }
+
+        let _pollInterval = null;
+        let _pollCount    = 0;
+        const POLL_MAX    = 24;  // 2 minutes total (24 × 5s)
+
+        async function initiatePayment() {
+            const rawPhone = (document.getElementById('mpesaPhone').value || '').trim();
+            const token    = localStorage.getItem(TOKEN_KEY);
+
+            if (!rawPhone || rawPhone.length < 9) {
+                setCryptoStatus('Please enter a valid M-Pesa phone number.', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('btnPay');
+            btn.disabled    = true;
+            btn.textContent = 'Sending STK Push…';
+            setCryptoStatus('Sending payment request to your phone…', 'pending');
+
+            try {
+                const res = await fetchWithRetry(`${BACKEND_BASE_URL}/api/crypto/initiate-payment`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ phone: rawPhone })
+                }, { timeoutMs: 30000, retries: 1 });
+
+                const data = await res.json();
+
+                if (res.ok && data.status === 'pending') {
+                    openPaymentModal();
+                    startPolling(data.checkout_request_id);
+                } else {
+                    setCryptoStatus(data.message || 'Payment initiation failed. Please try again.', 'error');
+                    btn.disabled    = false;
+                    btn.innerHTML   = '<span class="mpesa-logo">M-Pesa</span> Pay KES 1,000 Now';
+                }
+            } catch (err) {
+                console.error('Payment initiation error:', err);
+                setCryptoStatus('Could not reach the payment server. Please try again.', 'error');
+                btn.disabled    = false;
+                btn.innerHTML   = '<span class="mpesa-logo">M-Pesa</span> Pay KES 1,000 Now';
+            }
+        }
+
+        function startPolling(checkoutRequestId) {
+            _pollCount = 0;
+            clearInterval(_pollInterval);
+            _pollInterval = setInterval(() => pollPaymentStatus(checkoutRequestId), 5000);
+        }
+
+        async function pollPaymentStatus(checkoutRequestId) {
+            _pollCount++;
+            if (_pollCount >= POLL_MAX) {
+                clearInterval(_pollInterval);
+                setModalState('⏱️', 'Payment Timed Out',
+                    'We did not receive confirmation within 2 minutes.<br>If you completed the payment, please contact support.', false);
+                const btn = document.getElementById('btnPay');
+                btn.disabled    = false;
+                btn.innerHTML   = '<span class="mpesa-logo">M-Pesa</span> Pay KES 1,000 Now';
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem(TOKEN_KEY);
+                const res   = await fetch(`${BACKEND_BASE_URL}/api/crypto/status?ref=${encodeURIComponent(checkoutRequestId)}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data  = await res.json();
+
+                if (data.payment_status === 'confirmed') {
+                    clearInterval(_pollInterval);
+                    localStorage.setItem(CRYPTO_PAID_KEY, 'true');
+
+                    setModalState('🎉', 'Payment Confirmed!',
+                        'Your Crypto Signals service is now active.<br>Daily signals will arrive in your inbox throughout the day.', false);
+
+                    setTimeout(() => {
+                        closePaymentModal();
+                        renderCryptoPanel();
+                        // Also reveal the binance link inside pay panel before switching
+                        const reveal = document.getElementById('binanceReveal');
+                        if (reveal) reveal.classList.add('visible');
+                    }, 2500);
+                } else if (data.payment_status === 'failed') {
+                    clearInterval(_pollInterval);
+                    setModalState('❌', 'Payment Failed',
+                        'The M-Pesa payment was declined or cancelled.<br>Please try again.', false);
+                    const btn = document.getElementById('btnPay');
+                    btn.disabled    = false;
+                    btn.innerHTML   = '<span class="mpesa-logo">M-Pesa</span> Pay KES 1,000 Now';
+                    setTimeout(closePaymentModal, 2500);
+                }
+                // 'pending' — keep polling silently
+            } catch (err) {
+                console.warn('Polling error (will retry):', err.message);
+            }
+        }
+
+        // Run on every page load to set correct panel state
+        renderCryptoPanel();
 
         // Slideshow Timer
         const slides = document.querySelectorAll('.slide');
