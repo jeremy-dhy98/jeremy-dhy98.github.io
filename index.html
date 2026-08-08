@@ -196,6 +196,114 @@
 
         @media(max-width: 900px) { .nav-links { display: none; } }
 
+        /* ── NAV AUTH STATES ── */
+        .nav-auth-area { display: flex; align-items: center; gap: 10px; }
+
+        .nav-user-chip {
+            display: none; align-items: center; gap: 8px;
+            background: rgba(56,189,248,0.1);
+            border: 1px solid rgba(56,189,248,0.3);
+            border-radius: 999px; padding: 5px 6px 5px 12px;
+            font-size: 0.82rem;
+        }
+        .nav-user-chip.visible { display: flex; }
+        .nav-user-email {
+            color: var(--accent); font-weight: 600;
+            max-width: 160px; overflow: hidden;
+            text-overflow: ellipsis; white-space: nowrap;
+        }
+        .btn-logout-nav {
+            background: rgba(239,68,68,0.15);
+            border: 1px solid rgba(239,68,68,0.35);
+            color: #fca5a5; padding: 4px 10px;
+            border-radius: 999px; font-size: 0.75rem;
+            font-weight: 700; cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        .btn-logout-nav:hover { background: rgba(239,68,68,0.3); }
+
+        /* ── PORTAL LOGGED-IN STATE ── */
+        .portal-logged-in {
+            display: none; flex-direction: column;
+            align-items: center; text-align: center;
+            padding: 32px 20px; gap: 16px;
+        }
+        .portal-logged-in.visible { display: flex; }
+        .portal-avatar {
+            width: 60px; height: 60px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #0284c7);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; font-weight: 800; color: #0f172a;
+        }
+        .portal-welcome-email {
+            color: var(--accent); font-weight: 700;
+            font-size: 1rem; word-break: break-all;
+        }
+        .portal-welcome-msg {
+            color: var(--text-muted); font-size: 0.9rem;
+            line-height: 1.6; max-width: 380px;
+        }
+        .portal-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+        .btn-portal-hub {
+            background: var(--accent); color: #0f172a;
+            padding: 10px 20px; border-radius: 8px;
+            font-weight: 700; font-size: 0.9rem;
+            border: none; cursor: pointer; transition: background 0.2s;
+        }
+        .btn-portal-hub:hover { background: var(--accent-hover); }
+        .btn-portal-logout {
+            background: transparent;
+            border: 1px solid rgba(239,68,68,0.4);
+            color: #fca5a5; padding: 10px 20px;
+            border-radius: 8px; font-weight: 700;
+            font-size: 0.9rem; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-portal-logout:hover {
+            background: rgba(239,68,68,0.12);
+            border-color: #ef4444;
+        }
+        .portal-crypto-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(16,185,129,0.1);
+            border: 1px solid rgba(16,185,129,0.3);
+            color: #6ee7b7; padding: 4px 12px;
+            border-radius: 999px; font-size: 0.78rem; font-weight: 600;
+        }
+
+        /* ── LOGOUT CONFIRMATION MODAL ── */
+        .logout-modal-overlay {
+            display: none; position: fixed; inset: 0;
+            z-index: 2000; background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            align-items: center; justify-content: center; padding: 20px;
+        }
+        .logout-modal-overlay.open { display: flex; }
+        .logout-modal {
+            background: #1e293b; border: 1px solid #334155;
+            border-radius: 16px; padding: 32px 28px;
+            width: 100%; max-width: 360px; text-align: center;
+            animation: modal-in 0.22s ease;
+        }
+        .logout-modal h3 { color: var(--text-main); font-size: 1.1rem; margin-bottom: 10px; }
+        .logout-modal p  { color: var(--text-muted); font-size: 0.88rem; line-height: 1.6; margin-bottom: 24px; }
+        .logout-modal-btns { display: flex; gap: 12px; justify-content: center; }
+        .btn-logout-confirm {
+            background: #ef4444; color: #fff;
+            border: none; padding: 10px 22px;
+            border-radius: 8px; font-weight: 700;
+            cursor: pointer; transition: opacity 0.2s;
+        }
+        .btn-logout-confirm:hover { opacity: 0.85; }
+        .btn-logout-cancel {
+            background: transparent;
+            border: 1px solid #334155; color: var(--text-muted);
+            padding: 10px 22px; border-radius: 8px;
+            font-weight: 600; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-logout-cancel:hover { border-color: var(--accent); color: var(--accent); }
+
         /* ── CRYPTO SIGNALS NAV CHIP ── */
         .nav-crypto-chip {
             display: inline-flex; align-items: center; gap: 6px;
@@ -406,7 +514,22 @@
                             📈 Crypto Signals <span class="nav-chip-new">NEW</span>
                         </button>
                     </li>
-                    <li><button class="btn-auth-nav" onclick="document.getElementById('portal').scrollIntoView({behavior: 'smooth'})">Sign Up / Login</button></li>
+                    <li>
+                        <div class="nav-auth-area">
+                            <!-- Logged-out state -->
+                            <button id="navSignupBtn" class="btn-auth-nav"
+                                onclick="document.getElementById('portal').scrollIntoView({behavior:'smooth'})">
+                                Sign Up / Login
+                            </button>
+                            <!-- Logged-in state (hidden until session detected) -->
+                            <div class="nav-user-chip" id="navUserChip">
+                                <span class="nav-user-email" id="navUserEmail">subscriber</span>
+                                <button class="btn-logout-nav" onclick="confirmLogout()">
+                                    Sign Out
+                                </button>
+                            </div>
+                        </div>
+                    </li>
                 </ul>
             </nav>
         </div>
@@ -597,8 +720,50 @@
                 <button type="submit" class="btn-submit" id="loginSubmitBtn">Login to Access Media</button>
             </form>
 
+            <!-- LOGGED-IN STATE (replaces forms when session active) -->
+            <div class="portal-logged-in" id="portalLoggedIn">
+                <div class="portal-avatar" id="portalAvatar">?</div>
+                <div>
+                    <div style="color:var(--text-muted);font-size:0.78rem;margin-bottom:4px;">Signed in as</div>
+                    <div class="portal-welcome-email" id="portalEmail">—</div>
+                </div>
+                <p class="portal-welcome-msg">
+                    You have full access to the Daily Hub media library and all subscriber features.
+                    Your session is saved — you will remain logged in until you sign out.
+                </p>
+                <div id="portalCryptoBadge" style="display:none;">
+                    <span class="portal-crypto-badge">
+                        📈 Crypto Signals Active
+                    </span>
+                </div>
+                <div class="portal-actions">
+                    <button class="btn-portal-hub"
+                        onclick="document.getElementById('media-hub').scrollIntoView({behavior:'smooth'})">
+                        Go to Media Hub
+                    </button>
+                    <button class="btn-portal-logout" onclick="confirmLogout()">
+                        Sign Out
+                    </button>
+                </div>
+            </div>
+
             <div id="statusMessage" class="status-msg"></div>
         </section>
+
+        <!-- LOGOUT CONFIRMATION MODAL -->
+        <div class="logout-modal-overlay" id="logoutModalOverlay">
+            <div class="logout-modal">
+                <h3>Sign out of Coding For Freedom?</h3>
+                <p>
+                    You will need to log in again to access the Media Hub and subscriber features.
+                    Your account and payment history will be saved.
+                </p>
+                <div class="logout-modal-btns">
+                    <button class="btn-logout-cancel" onclick="closeLogoutModal()">Stay Signed In</button>
+                    <button class="btn-logout-confirm" onclick="executeLogout()">Sign Out</button>
+                </div>
+            </div>
+        </div>
 
         <section id="apond" class="card" style="margin-bottom: 40px; border-color: var(--accent);">
             <span class="badge" style="background: #1e3a8a;">API Integration</span>
@@ -854,8 +1019,9 @@
         // CONFIG
         // ==========================================
         const BACKEND_BASE_URL = 'https://cff-dispatcher-api.onrender.com';
-        const SESSION_KEY = 'cff_user_session';
-        const TOKEN_KEY = 'cff_user_token';
+        const SESSION_KEY   = 'cff_user_session';
+        const TOKEN_KEY     = 'cff_user_token';
+        const EMAIL_KEY     = 'cff_user_email';   // stored on login/signup
         let cachedVideoManifest = null;
         // In-flight promise guards — prevents the same endpoint being called
         // multiple times concurrently (e.g. session restore + auth response
@@ -887,15 +1053,17 @@
         }
 
         document.addEventListener("DOMContentLoaded", function () {
-            // Wake the Render backend early so subsequent API calls
-            // (media-manifest, auth) hit a warm instance.
+            // Wake the Render backend early
             fetch(`${BACKEND_BASE_URL}/api/health`).catch(() => {
                 console.warn('Backend health ping failed — backend may be down.');
             });
 
-            // Local assets render immediately; Cloudinary upgrade happens
-            // in the background inside loadStaticBranding().
+            // Local branding assets render immediately
             loadStaticBranding();
+
+            // Restore session state — must run before any UI is interacted with
+            updateNavAuthState();
+            updatePortalState();
 
             const activeSession = localStorage.getItem(SESSION_KEY);
             if (activeSession) {
@@ -1072,14 +1240,16 @@
 
         function unlockMediaHub() {
             document.querySelectorAll('.media-gate-container').forEach(container => {
-                const visitorView = container.querySelector('.visitor-view');
+                const visitorView    = container.querySelector('.visitor-view');
                 const subscriberView = container.querySelector('.subscriber-view');
                 if (visitorView && subscriberView) {
-                    visitorView.style.display = 'none';
+                    visitorView.style.display    = 'none';
                     subscriberView.style.display = 'flex';
                 }
             });
-            // Update crypto panel now that the user is logged in
+            // Sync all auth-dependent UI
+            updateNavAuthState();
+            updatePortalState();
             if (typeof renderCryptoPanel === 'function') renderCryptoPanel();
         }
 
@@ -1260,6 +1430,135 @@
             setInterval(nextSlide, 10000);
         }
 
+
+        // ==========================================
+        // AUTH STATE MANAGEMENT
+        // Handles nav chip, portal panel, and all
+        // login/logout UI transitions in one place.
+        // ==========================================
+
+        function getStoredEmail() {
+            return localStorage.getItem(EMAIL_KEY) || '';
+        }
+
+        function avatarLetter(email) {
+            return email ? email.charAt(0).toUpperCase() : '?';
+        }
+
+        function updateNavAuthState() {
+            const isLoggedIn   = !!localStorage.getItem(SESSION_KEY);
+            const email        = getStoredEmail();
+
+            const signupBtn    = document.getElementById('navSignupBtn');
+            const userChip     = document.getElementById('navUserChip');
+            const userEmailEl  = document.getElementById('navUserEmail');
+
+            if (isLoggedIn) {
+                if (signupBtn)   signupBtn.style.display   = 'none';
+                if (userChip)    userChip.classList.add('visible');
+                if (userEmailEl) userEmailEl.textContent   =
+                    email.length > 22 ? email.substring(0, 20) + '…' : email;
+            } else {
+                if (signupBtn)   signupBtn.style.display   = '';
+                if (userChip)    userChip.classList.remove('visible');
+            }
+        }
+
+        function updatePortalState() {
+            const isLoggedIn    = !!localStorage.getItem(SESSION_KEY);
+            const email         = getStoredEmail();
+            const isCryptoPaid  = localStorage.getItem(CRYPTO_PAID_KEY) === 'true';
+
+            const signupForm    = document.getElementById('signupForm');
+            const loginForm     = document.getElementById('loginForm');
+            const tabButtons    = document.querySelector('.tab-buttons');
+            const portalLoggedIn = document.getElementById('portalLoggedIn');
+            const portalEmail   = document.getElementById('portalEmail');
+            const portalAvatar  = document.getElementById('portalAvatar');
+            const cryptoBadge   = document.getElementById('portalCryptoBadge');
+            const statusMessage = document.getElementById('statusMessage');
+
+            if (isLoggedIn) {
+                // Hide forms and tabs, show logged-in panel
+                if (signupForm)    signupForm.style.display    = 'none';
+                if (loginForm)     loginForm.style.display     = 'none';
+                if (tabButtons)    tabButtons.style.display    = 'none';
+                if (statusMessage) statusMessage.style.display = 'none';
+                if (portalLoggedIn) portalLoggedIn.classList.add('visible');
+                if (portalEmail)   portalEmail.textContent     = email || 'subscriber';
+                if (portalAvatar)  portalAvatar.textContent    = avatarLetter(email);
+                if (cryptoBadge)   cryptoBadge.style.display   = isCryptoPaid ? '' : 'none';
+            } else {
+                // Show forms, hide logged-in panel
+                if (portalLoggedIn) portalLoggedIn.classList.remove('visible');
+                if (tabButtons)    tabButtons.style.display    = '';
+                if (signupForm)    signupForm.style.display    = 'flex';
+                if (loginForm)     loginForm.style.display     = 'none';
+            }
+        }
+
+        function lockMediaHub() {
+            // Reverse unlockMediaHub — show visitor views, hide subscriber views
+            document.querySelectorAll('.media-gate-container').forEach(container => {
+                const visitorView    = container.querySelector('.visitor-view');
+                const subscriberView = container.querySelector('.subscriber-view');
+                if (visitorView)    visitorView.style.display    = '';
+                if (subscriberView) subscriberView.style.display = 'none';
+            });
+            // Clear video sources so stale Cloudinary URLs don't linger
+            document.querySelectorAll('.media-gate-container video source').forEach(src => {
+                src.src = '';
+            });
+            document.querySelectorAll('.media-gate-container video').forEach(v => {
+                v.load();
+            });
+            cachedVideoManifest = null;
+        }
+
+        function confirmLogout() {
+            document.getElementById('logoutModalOverlay').classList.add('open');
+        }
+
+        function closeLogoutModal() {
+            document.getElementById('logoutModalOverlay').classList.remove('open');
+        }
+
+        async function executeLogout() {
+            closeLogoutModal();
+
+            // Notify backend (best-effort — don't block UI on failure)
+            const token = localStorage.getItem(TOKEN_KEY);
+            if (token) {
+                fetch(`${BACKEND_BASE_URL}/api/logout`, {
+                    method:  'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                }).catch(() => {});  // fire-and-forget
+            }
+
+            // Clear all session data from localStorage
+            localStorage.removeItem(SESSION_KEY);
+            localStorage.removeItem(TOKEN_KEY);
+            localStorage.removeItem(EMAIL_KEY);
+            // NOTE: CRYPTO_PAID_KEY is intentionally kept so returning
+            // subscribers don't re-see the payment panel after re-login.
+            // The backend is the source of truth — it re-confirms paid status
+            // on login via the crypto_paid field in the auth response.
+
+            // Lock all gated content
+            lockMediaHub();
+            renderCryptoPanel();
+
+            // Reset UI state
+            updateNavAuthState();
+            updatePortalState();
+
+            // Scroll to portal so they can log back in immediately
+            document.getElementById('portal').scrollIntoView({ behavior: 'smooth' });
+        }
+
         function switchTab(type) {
             const signupForm = document.getElementById('signupForm');
             const loginForm = document.getElementById('loginForm');
@@ -1312,6 +1611,15 @@
                 if (response.ok && data.status === 'success') {
                     localStorage.setItem(SESSION_KEY, 'active_subscriber');
                     if (data.token) localStorage.setItem(TOKEN_KEY, data.token);
+                    // Store email so nav chip and portal can display it
+                    if (data.email) localStorage.setItem(EMAIL_KEY, data.email);
+
+                    // Restore crypto_paid from backend auth response — ensures
+                    // returning subscribers always see the correct panel state
+                    // even if they cleared localStorage between sessions.
+                    if (data.crypto_paid === true) {
+                        localStorage.setItem(CRYPTO_PAID_KEY, 'true');
+                    }
 
                     unlockMediaHub();
                     await loadDynamicMediaUrls(data.media || data.media_urls || null);
@@ -1319,7 +1627,7 @@
                     showStatus(
                         data.action === 'registered'
                             ? 'Successfully subscribed and logged in! Media hub unlocked.'
-                            : 'Successfully logged in! Media hub unlocked.',
+                            : 'Welcome back! Media hub unlocked.',
                         false
                     );
 
