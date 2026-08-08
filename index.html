@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -575,6 +576,222 @@
             font-weight: 800; color: #4ade80; font-size: 0.85rem;
         }
 
+
+        /* ══════════════════════════════════════════════════════
+           UPGRADED DAILY ENGAGEMENT — PREMIUM SECTION
+           ══════════════════════════════════════════════════════ */
+
+        /* Nav chip */
+        .nav-upgrade-chip {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: linear-gradient(135deg,#10b981,#0d9488);
+            color:#fff; padding:5px 12px; border-radius:999px;
+            font-size:0.78rem; font-weight:800; cursor:pointer;
+            border:none; white-space:nowrap; transition:opacity 0.2s;
+            letter-spacing:0.02em;
+        }
+        .nav-upgrade-chip:hover { opacity:0.85; }
+
+        /* Outer wrapper */
+        .upgrade-hub-section {
+            margin:40px 0; position:relative;
+            border-radius:20px; overflow:hidden;
+            border:1px solid rgba(16,185,129,0.3);
+            background:linear-gradient(145deg,#061a14 0%,#0a1628 50%,#0d1f1a 100%);
+        }
+        .upgrade-hub-section::before {
+            content:''; position:absolute; inset:0; pointer-events:none;
+            background:
+                radial-gradient(ellipse at 8% 0%,rgba(16,185,129,0.13) 0%,transparent 52%),
+                radial-gradient(ellipse at 92% 100%,rgba(56,189,248,0.09) 0%,transparent 52%);
+        }
+        .upgrade-hub-section::after {
+            content:''; position:absolute; top:0; left:0; right:0; height:2px;
+            background:linear-gradient(90deg,
+                transparent 0%,#10b981 30%,#38bdf8 60%,#10b981 80%,transparent 100%);
+            animation:glow-sweep 3s ease-in-out infinite;
+        }
+        @keyframes glow-sweep { 0%,100%{opacity:.5} 50%{opacity:1} }
+
+        .upgrade-inner { padding:48px 40px; position:relative; z-index:1; }
+        @media(max-width:640px){ .upgrade-inner{padding:28px 16px;} }
+
+        /* Header badge */
+        .upgrade-eyebrow {
+            display:inline-flex; align-items:center; gap:8px;
+            background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(56,189,248,.1));
+            border:1px solid rgba(16,185,129,.4); color:#6ee7b7;
+            padding:5px 16px; border-radius:999px; font-size:0.73rem;
+            font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+            margin-bottom:22px;
+        }
+        .upgrade-eyebrow-dot {
+            width:7px; height:7px; border-radius:50%;
+            background:#10b981; animation:pulse-new 1.5s infinite;
+        }
+
+        /* Two-column layout */
+        .upgrade-grid {
+            display:grid; grid-template-columns:1fr 390px;
+            gap:40px; align-items:start;
+        }
+        @media(max-width:960px){ .upgrade-grid{grid-template-columns:1fr; gap:30px;} }
+
+        /* LEFT */
+        .upgrade-headline {
+            font-size:2rem; font-weight:900; line-height:1.2;
+            color:#fff; margin-bottom:10px; letter-spacing:-.02em;
+        }
+        .upgrade-headline em {
+            font-style:normal;
+            background:linear-gradient(90deg,#10b981,#38bdf8);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+        }
+        .upgrade-sub {
+            color:#94a3b8; font-size:.95rem; line-height:1.78;
+            margin-bottom:28px; max-width:520px;
+        }
+
+        /* Feature comparison table */
+        .upgrade-compare {
+            width:100%; border-collapse:collapse; margin-bottom:28px;
+            border-radius:10px; overflow:hidden;
+        }
+        .upgrade-compare thead tr { background:rgba(255,255,255,.04); }
+        .upgrade-compare th {
+            padding:10px 14px; font-size:.76rem; font-weight:700;
+            letter-spacing:.07em; text-transform:uppercase; text-align:center;
+        }
+        .upgrade-compare th:first-child { text-align:left; color:#475569; }
+        .upgrade-compare th.col-free  { color:#64748b; }
+        .upgrade-compare th.col-pro   { color:#10b981; }
+        .upgrade-compare td {
+            padding:10px 14px; font-size:.87rem;
+            border-top:1px solid rgba(255,255,255,.05);
+            text-align:center; color:#94a3b8;
+        }
+        .upgrade-compare td:first-child { text-align:left; color:#cbd5e1; font-weight:500; }
+        .upgrade-compare tr:nth-child(even){ background:rgba(255,255,255,.02); }
+        .uc-yes { color:#38bdf8; font-size:1.05rem; }
+        .uc-no  { color:#334155; font-size:1.1rem; }
+        .uc-pro { color:#10b981; font-size:1.05rem; }
+
+        /* Stat pills */
+        .upgrade-stats { display:flex; flex-wrap:wrap; gap:12px; margin-top:4px; }
+        .upgrade-stat {
+            background:rgba(255,255,255,.04);
+            border:1px solid rgba(255,255,255,.08);
+            border-radius:10px; padding:12px 18px; min-width:95px; text-align:center;
+        }
+        .upgrade-stat-val {
+            font-size:1.4rem; font-weight:900;
+            background:linear-gradient(90deg,#10b981,#38bdf8);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+        }
+        .upgrade-stat-lbl { font-size:.7rem; color:#64748b; margin-top:2px; }
+
+        /* RIGHT — payment panel wrapper */
+        .upgrade-payment-panel {
+            background:rgba(10,22,40,.85);
+            border:1px solid rgba(16,185,129,.25);
+            border-radius:16px; padding:28px 24px;
+        }
+
+        /* Shared panel child styles */
+        .upp-label {
+            font-size:.7rem; font-weight:700; letter-spacing:.1em;
+            text-transform:uppercase; color:#10b981; margin-bottom:5px;
+        }
+        .upp-title { font-size:1.05rem; font-weight:800; color:#fff; margin-bottom:4px; }
+        .upp-price-row { display:flex; align-items:baseline; gap:8px; margin-bottom:4px; }
+        .upp-price {
+            font-size:2.4rem; font-weight:900;
+            background:linear-gradient(90deg,#10b981,#38bdf8);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+        }
+        .upp-price-note { font-size:.83rem; color:#64748b; }
+        .upp-desc { font-size:.79rem; color:#475569; margin-bottom:22px; line-height:1.55; }
+
+        .upp-benefits { list-style:none; display:flex; flex-direction:column; gap:9px; margin-bottom:22px; }
+        .upp-benefits li {
+            display:flex; align-items:flex-start; gap:10px;
+            font-size:.87rem; color:#cbd5e1; line-height:1.4;
+        }
+        .upp-benefits li::before { content:'✦'; color:#10b981; font-size:.7rem; flex-shrink:0; margin-top:3px; }
+
+        .upp-divider { border:none; border-top:1px solid rgba(255,255,255,.07); margin:18px 0; }
+        .upp-step-label {
+            font-size:.7rem; font-weight:700; color:#10b981;
+            text-transform:uppercase; letter-spacing:.08em; margin-bottom:8px;
+        }
+        .upp-input {
+            width:100%; padding:10px 14px;
+            background:#0f172a; border:1px solid #1e3a2f;
+            border-radius:8px; color:#f8fafc; font-size:.9rem;
+            margin-bottom:14px; outline:none; transition:border-color .2s;
+        }
+        .upp-input:focus { border-color:#10b981; }
+
+        .btn-upgrade-pay {
+            width:100%; padding:13px;
+            background:linear-gradient(135deg,#10b981,#0d9488);
+            color:#fff; border:none; border-radius:8px;
+            font-weight:800; font-size:.95rem; cursor:pointer;
+            transition:opacity .2s;
+            display:flex; align-items:center; justify-content:center; gap:8px;
+        }
+        .btn-upgrade-pay:hover    { opacity:.88; }
+        .btn-upgrade-pay:disabled { opacity:.5; cursor:not-allowed; }
+
+        .upp-security {
+            display:flex; align-items:center; justify-content:center;
+            gap:5px; margin-top:9px; font-size:.7rem; color:#475569;
+        }
+
+        .upp-status {
+            margin-top:12px; padding:9px 12px; border-radius:7px;
+            font-size:.83rem; display:none; text-align:center;
+        }
+        .upp-status.pending { background:rgba(16,185,129,.1); border:1px solid #10b98144; color:#6ee7b7; }
+        .upp-status.success { background:rgba(16,185,129,.15); border:1px solid #10b98166; color:#6ee7b7; }
+        .upp-status.error   { background:rgba(239,68,68,.12);  border:1px solid #ef444444; color:#fca5a5; }
+
+        .upp-visitor-gate { text-align:center; }
+        .upp-visitor-gate p { color:#94a3b8; font-size:.88rem; line-height:1.6; margin-bottom:14px; }
+
+        /* Active state */
+        .upgrade-active-panel { text-align:center; }
+        .upgrade-active-badge {
+            display:inline-block;
+            background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(56,189,248,.1));
+            border:1px solid #10b98155; color:#6ee7b7;
+            padding:5px 14px; border-radius:999px;
+            font-size:.77rem; font-weight:700; margin-bottom:14px;
+        }
+        .upgrade-active-perks {
+            text-align:left; list-style:none;
+            display:flex; flex-direction:column; gap:8px; margin:16px 0;
+        }
+        .upgrade-active-perks li {
+            display:flex; align-items:center; gap:8px;
+            font-size:.86rem; color:#94a3b8;
+        }
+        .upgrade-active-perks li span { color:#10b981; font-size:.9rem; }
+
+        /* Upgrade polling modal */
+        .upgrade-modal-overlay {
+            display:none; position:fixed; inset:0; z-index:1500;
+            background:rgba(0,0,0,.8); backdrop-filter:blur(5px);
+            align-items:center; justify-content:center; padding:20px;
+        }
+        .upgrade-modal-overlay.open { display:flex; }
+        .upgrade-modal {
+            background:#061a14; border:1px solid #10b98144;
+            border-radius:18px; padding:36px 28px;
+            width:100%; max-width:400px; text-align:center;
+            position:relative; animation:modal-in .25s ease;
+        }
+
     </style>
 </head>
 <body>
@@ -599,6 +816,11 @@
                     <li>
                         <button class="nav-crypto-chip" onclick="openCryptoSection()">
                             📈 Crypto Signals <span class="nav-chip-new">NEW</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="nav-upgrade-chip" onclick="openUpgradeSection()">
+                            🎓 Upgrade Hub
                         </button>
                     </li>
                     <!-- Divider before auth -->
@@ -741,6 +963,236 @@
                 </div>
             </div>
         </section>
+
+
+        <!-- ═══════════════════════════════════════════════════════════
+             UPGRADED DAILY ENGAGEMENT HUB — PREMIUM TIER
+             ═══════════════════════════════════════════════════════════ -->
+        <section id="upgrade-hub" class="upgrade-hub-section" aria-label="Upgraded Daily Engagement Hub">
+            <div class="upgrade-inner">
+
+                <!-- Eye-brow badge -->
+                <div class="upgrade-eyebrow">
+                    <span class="upgrade-eyebrow-dot"></span>
+                    Premium Tier &nbsp;·&nbsp; Limited Access
+                </div>
+
+                <div class="upgrade-grid">
+
+                    <!-- ── LEFT: pitch ── -->
+                    <div>
+                        <h2 class="upgrade-headline">
+                            Upgrade to the<br>
+                            <em>Enhanced Daily Engagement Hub</em>
+                        </h2>
+                        <p class="upgrade-sub">
+                            Your free account already unlocks the media library. Upgrading gives you
+                            hands-on live Python classes, expert crypto trade signals the moment the
+                            market moves, and a direct path onto Binance using our referral — turning
+                            daily content into a complete learning and trading edge.
+                        </p>
+
+                        <!-- Feature comparison -->
+                        <table class="upgrade-compare">
+                            <thead>
+                                <tr>
+                                    <th style="width:52%;">Feature</th>
+                                    <th class="col-free">Free</th>
+                                    <th class="col-pro">Upgraded</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Daily media library access</td>
+                                    <td><span class="uc-yes">✔</span></td>
+                                    <td><span class="uc-pro">✔</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Educational motivation videos</td>
+                                    <td><span class="uc-yes">✔</span></td>
+                                    <td><span class="uc-pro">✔</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Live Python programming classes</td>
+                                    <td><span class="uc-no">—</span></td>
+                                    <td><span class="uc-pro">✔</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Daily content class sessions</td>
+                                    <td><span class="uc-no">—</span></td>
+                                    <td><span class="uc-pro">✔</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Crypto trading basics course</td>
+                                    <td><span class="uc-no">—</span></td>
+                                    <td><span class="uc-pro">✔</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Professional trade signals</td>
+                                    <td><span class="uc-no">—</span></td>
+                                    <td><span class="uc-pro">✔</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Real-time market alerts to email</td>
+                                    <td><span class="uc-no">—</span></td>
+                                    <td><span class="uc-pro">✔</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Exclusive Binance referral access</td>
+                                    <td><span class="uc-no">—</span></td>
+                                    <td><span class="uc-pro">✔</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Stats row -->
+                        <div class="upgrade-stats">
+                            <div class="upgrade-stat">
+                                <div class="upgrade-stat-val">Daily</div>
+                                <div class="upgrade-stat-lbl">Live Classes</div>
+                            </div>
+                            <div class="upgrade-stat">
+                                <div class="upgrade-stat-val">3–8×</div>
+                                <div class="upgrade-stat-lbl">Trade Signals</div>
+                            </div>
+                            <div class="upgrade-stat">
+                                <div class="upgrade-stat-val">95%+</div>
+                                <div class="upgrade-stat-lbl">Signal Accuracy</div>
+                            </div>
+                            <div class="upgrade-stat">
+                                <div class="upgrade-stat-val">24/7</div>
+                                <div class="upgrade-stat-lbl">Market Coverage</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── RIGHT: payment panel (three states) ── -->
+                    <div>
+
+                        <!-- STATE A: visitor (not logged in) -->
+                        <div class="upgrade-payment-panel" id="upgradeVisitorGate">
+                            <div class="upp-visitor-gate">
+                                <div style="font-size:2.6rem;margin-bottom:12px;">🔐</div>
+                                <div class="upp-title" style="margin-bottom:8px;">
+                                    Create a free account first
+                                </div>
+                                <p>
+                                    Sign up for free to access the media library, then upgrade here
+                                    for <strong style="color:#10b981;">KES 3,000</strong> to unlock
+                                    live classes, trade signals, and Binance referral access.
+                                </p>
+                                <button class="btn-upgrade-pay" style="margin-top:16px;"
+                                    onclick="document.getElementById('portal').scrollIntoView({behavior:'smooth'})">
+                                    🔓 Sign Up Free to Continue
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- STATE B: logged in, not yet upgraded -->
+                        <div class="upgrade-payment-panel" id="upgradePayPanel" style="display:none;">
+                            <div class="upp-label">Upgrade Plan</div>
+                            <div class="upp-title">Enhanced Daily Engagement Hub</div>
+                            <div class="upp-price-row">
+                                <span class="upp-price">KES 3,000</span>
+                                <span class="upp-price-note">/ one-time</span>
+                            </div>
+                            <div class="upp-desc">
+                                Full access activated permanently after a single payment.
+                                No subscription, no recurring charges.
+                            </div>
+
+                            <ul class="upp-benefits">
+                                <li>Live Python programming classes covering each day's content</li>
+                                <li>Crypto trading basics — foundations to first trade</li>
+                                <li>Professional signals emailed the moment the market moves</li>
+                                <li>Exclusive Binance referral link to open your trading account</li>
+                                <li>Everything in the free tier, permanently unlocked</li>
+                            </ul>
+
+                            <hr class="upp-divider">
+
+                            <div class="upp-step-label">Enter your M-Pesa number</div>
+                            <input type="tel" class="upp-input" id="upgradePhone"
+                                placeholder="e.g. 0712 345 678" maxlength="13">
+
+                            <button class="btn-upgrade-pay" id="btnUpgradePay"
+                                onclick="initiateUpgradePayment()">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2.5">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <path d="M12 6v6l4 2"/>
+                                </svg>
+                                Pay KES 3,000 via M-Pesa
+                            </button>
+
+                            <div class="upp-security">
+                                🔒 Secured by Safaricom Daraja &nbsp;·&nbsp; STK Push
+                            </div>
+
+                            <div class="upp-status" id="upgradePayStatus"></div>
+                        </div>
+
+                        <!-- STATE C: upgraded (active) -->
+                        <div class="upgrade-payment-panel" id="upgradeActivePanel" style="display:none;">
+                            <div class="upgrade-active-panel">
+                                <div style="font-size:2.8rem;margin-bottom:10px;">🏆</div>
+                                <div class="upgrade-active-badge">✦ Enhanced Hub — Active</div>
+                                <div style="color:#f8fafc;font-weight:800;font-size:1rem;margin-bottom:6px;">
+                                    You have full premium access
+                                </div>
+                                <ul class="upgrade-active-perks">
+                                    <li><span>✔</span> Live Python classes — check your email daily</li>
+                                    <li><span>✔</span> Crypto basics course — delivered to inbox</li>
+                                    <li><span>✔</span> Trade signals active — sent when market moves</li>
+                                    <li><span>✔</span> Binance account ready to open below</li>
+                                </ul>
+                                <a href="YOUR_BINANCE_REFERRAL_LINK_HERE"
+                                   target="_blank" rel="noopener"
+                                   class="btn-upgrade-pay" id="upgradeBinanceLink"
+                                   style="text-decoration:none;margin-top:4px;">
+                                    <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                                    </svg>
+                                    Open Binance Account
+                                </a>
+                                <p style="font-size:.72rem;color:#475569;margin-top:10px;line-height:1.5;">
+                                    Not receiving class emails? Check your spam folder or contact support.
+                                </p>
+                            </div>
+                        </div>
+
+                    </div><!-- /right -->
+                </div><!-- /grid -->
+            </div><!-- /inner -->
+        </section>
+
+        <!-- UPGRADE PAYMENT POLLING MODAL -->
+        <div class="upgrade-modal-overlay" id="upgradeModalOverlay">
+            <div class="upgrade-modal">
+                <div style="font-size:2.8rem;margin-bottom:12px;" id="upgModalIcon">📱</div>
+                <div style="font-weight:800;font-size:1.05rem;color:#fff;margin-bottom:8px;"
+                     id="upgModalTitle">Check Your Phone</div>
+                <div style="color:#94a3b8;font-size:.88rem;line-height:1.65;margin-bottom:18px;"
+                     id="upgModalBody">
+                    An M-Pesa STK push has been sent.<br>
+                    Enter your PIN to complete the <strong style="color:#10b981;">KES 3,000</strong> payment.
+                </div>
+                <div style="background:#0a1628;border-radius:8px;padding:14px;margin-bottom:14px;"
+                     id="upgModalPollBox">
+                    <div style="color:#10b981;font-size:.8rem;font-weight:600;margin-bottom:8px;">
+                        Waiting for confirmation…
+                    </div>
+                    <div style="display:flex;justify-content:center;gap:6px;">
+                        <span style="width:8px;height:8px;border-radius:50%;background:#10b981;animation:pulse-new 1.2s infinite;display:block;"></span>
+                        <span style="width:8px;height:8px;border-radius:50%;background:#10b981;animation:pulse-new 1.2s .3s infinite;display:block;"></span>
+                        <span style="width:8px;height:8px;border-radius:50%;background:#10b981;animation:pulse-new 1.2s .6s infinite;display:block;"></span>
+                    </div>
+                </div>
+                <p style="font-size:.72rem;color:#475569;line-height:1.5;">
+                    This screen updates automatically.<br>Do not refresh the page.
+                </p>
+            </div>
+        </div>
 
         <section id="socials" class="card" style="margin-bottom: 40px; border-color: var(--accent);">
             <span class="badge" style="background: #0369a1;">Community & Channels</span>
@@ -1394,7 +1846,8 @@
             // Sync all auth-dependent UI
             updateNavAuthState();
             updatePortalState();
-            if (typeof renderCryptoPanel === 'function') renderCryptoPanel();
+            if (typeof renderCryptoPanel === 'function')  renderCryptoPanel();
+            if (typeof renderUpgradePanel === 'function') renderUpgradePanel();
         }
 
 
@@ -1560,6 +2013,161 @@
         // Run on every page load to set correct panel state
         renderCryptoPanel();
 
+
+        // ==========================================
+        // UPGRADED HUB — PAYMENT CLIENT LOGIC
+        // ==========================================
+        const UPGRADE_PAID_KEY = 'cff_upgrade_paid';
+
+        function openUpgradeSection() {
+            document.getElementById('upgrade-hub').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function renderUpgradePanel() {
+            const isLoggedIn    = !!localStorage.getItem(SESSION_KEY);
+            const isUpgraded    = localStorage.getItem(UPGRADE_PAID_KEY) === 'true';
+
+            const visitorGate   = document.getElementById('upgradeVisitorGate');
+            const payPanel      = document.getElementById('upgradePayPanel');
+            const activePanel   = document.getElementById('upgradeActivePanel');
+
+            if (!isLoggedIn) {
+                if (visitorGate)  visitorGate.style.display  = '';
+                if (payPanel)     payPanel.style.display      = 'none';
+                if (activePanel)  activePanel.style.display   = 'none';
+                return;
+            }
+            if (isUpgraded) {
+                if (visitorGate)  visitorGate.style.display  = 'none';
+                if (payPanel)     payPanel.style.display      = 'none';
+                if (activePanel)  activePanel.style.display   = '';
+                return;
+            }
+            if (visitorGate)  visitorGate.style.display  = 'none';
+            if (payPanel)     payPanel.style.display      = '';
+            if (activePanel)  activePanel.style.display   = 'none';
+        }
+
+        function setUpgradeStatus(msg, type) {
+            const el = document.getElementById('upgradePayStatus');
+            if (!el) return;
+            el.textContent  = msg;
+            el.className    = `upp-status ${type}`;
+            el.style.display = msg ? 'block' : 'none';
+        }
+
+        function openUpgradeModal() {
+            document.getElementById('upgradeModalOverlay').classList.add('open');
+        }
+
+        function closeUpgradeModal() {
+            document.getElementById('upgradeModalOverlay').classList.remove('open');
+        }
+
+        function setUpgradeModalState(icon, title, body, showDots) {
+            document.getElementById('upgModalIcon').textContent  = icon;
+            document.getElementById('upgModalTitle').textContent = title;
+            document.getElementById('upgModalBody').innerHTML    = body;
+            document.getElementById('upgModalPollBox').style.display = showDots ? '' : 'none';
+        }
+
+        let _upgPollInterval = null;
+        let _upgPollCount    = 0;
+        const UPG_POLL_MAX   = 24;
+
+        async function initiateUpgradePayment() {
+            const phone = (document.getElementById('upgradePhone').value || '').trim();
+            const token = localStorage.getItem(TOKEN_KEY);
+
+            if (!phone || phone.replace(/\D/g,'').length < 9) {
+                setUpgradeStatus('Please enter a valid M-Pesa phone number.', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('btnUpgradePay');
+            btn.disabled    = true;
+            btn.textContent = 'Sending STK Push…';
+            setUpgradeStatus('Sending payment request to your phone…', 'pending');
+
+            try {
+                const res = await fetchWithRetry(`${BACKEND_BASE_URL}/api/upgrade/initiate-payment`, {
+                    method:  'POST',
+                    headers: {
+                        'Content-Type':  'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ phone })
+                }, { timeoutMs: 30000, retries: 1 });
+
+                const data = await res.json();
+
+                if (res.ok && data.status === 'pending') {
+                    openUpgradeModal();
+                    _upgPollCount = 0;
+                    clearInterval(_upgPollInterval);
+                    _upgPollInterval = setInterval(
+                        () => pollUpgradeStatus(data.checkout_request_id), 5000
+                    );
+                } else {
+                    setUpgradeStatus(data.message || 'Payment initiation failed. Please try again.', 'error');
+                    btn.disabled    = false;
+                    btn.textContent = 'Pay KES 3,000 via M-Pesa';
+                }
+            } catch (err) {
+                console.error('Upgrade payment error:', err);
+                setUpgradeStatus('Could not reach the payment server. Please try again.', 'error');
+                btn.disabled    = false;
+                btn.textContent = 'Pay KES 3,000 via M-Pesa';
+            }
+        }
+
+        async function pollUpgradeStatus(checkoutId) {
+            _upgPollCount++;
+            if (_upgPollCount >= UPG_POLL_MAX) {
+                clearInterval(_upgPollInterval);
+                setUpgradeModalState('⏱️', 'Payment Timed Out',
+                    'We did not receive confirmation within 2 minutes.<br>' +
+                    'If you completed the payment, please contact support.', false);
+                const btn = document.getElementById('btnUpgradePay');
+                btn.disabled    = false;
+                btn.textContent = 'Pay KES 3,000 via M-Pesa';
+                return;
+            }
+            try {
+                const token = localStorage.getItem(TOKEN_KEY);
+                const res   = await fetch(
+                    `${BACKEND_BASE_URL}/api/upgrade/status?ref=${encodeURIComponent(checkoutId)}`,
+                    { headers: { 'Authorization': `Bearer ${token}` } }
+                );
+                const data = await res.json();
+
+                if (data.payment_status === 'confirmed') {
+                    clearInterval(_upgPollInterval);
+                    localStorage.setItem(UPGRADE_PAID_KEY, 'true');
+                    setUpgradeModalState('🏆', 'Upgrade Confirmed!',
+                        'Your Enhanced Daily Engagement Hub is now active.<br>' +
+                        'Live classes and trade signals will begin arriving in your inbox.', false);
+                    setTimeout(() => {
+                        closeUpgradeModal();
+                        renderUpgradePanel();
+                    }, 2800);
+                } else if (data.payment_status === 'failed') {
+                    clearInterval(_upgPollInterval);
+                    setUpgradeModalState('❌', 'Payment Failed',
+                        'The M-Pesa payment was declined or cancelled.<br>Please try again.', false);
+                    const btn = document.getElementById('btnUpgradePay');
+                    btn.disabled    = false;
+                    btn.textContent = 'Pay KES 3,000 via M-Pesa';
+                    setTimeout(closeUpgradeModal, 2800);
+                }
+            } catch (err) {
+                console.warn('Upgrade poll error (will retry):', err.message);
+            }
+        }
+
+        // Initialise panel state on page load
+        renderUpgradePanel();
+
         // Slideshow Timer
         const slides = document.querySelectorAll('.slide');
         let currentSlide = 0;
@@ -1708,6 +2316,7 @@
             // Lock all gated content
             lockMediaHub();
             renderCryptoPanel();
+            renderUpgradePanel();
 
             // Reset UI state
             updateNavAuthState();
