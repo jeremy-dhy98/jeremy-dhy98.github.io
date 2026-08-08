@@ -28,14 +28,44 @@
             backdrop-filter: blur(8px);
             z-index: 100;
         }
-        nav { display: flex; justify-content: space-between; align-items: center; }
-        .logo { font-size: 1.15rem; font-weight: 700; color: var(--accent); text-decoration: none; display: flex; align-items: center; gap: 10px; white-space: nowrap; }
-        .logo-img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: var(--card-bg); }
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 24px;
+        }
+        .logo {
+            font-size: 1.1rem; font-weight: 700; color: var(--accent);
+            text-decoration: none; display: flex; align-items: center;
+            gap: 8px; white-space: nowrap; flex-shrink: 0;
+        }
+        .logo-img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; background: var(--card-bg); }
 
-        .nav-links { display: flex; gap: 18px; list-style: none; align-items: center; }
-        .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
-        .nav-links a:hover { color: var(--accent); }
-        .btn-auth-nav { background: var(--accent); color: #0f172a !important; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; border: none; font-size: 0.9rem; transition: background 0.2s; white-space: nowrap; }
+        .nav-links {
+            display: flex; gap: 4px; list-style: none; align-items: center;
+            flex-wrap: nowrap; margin-left: auto;
+        }
+        .nav-links li { display: flex; align-items: center; }
+        .nav-links a {
+            color: var(--text-muted); text-decoration: none;
+            font-size: 0.82rem; font-weight: 500; transition: color 0.2s;
+            padding: 5px 8px; border-radius: 4px; white-space: nowrap;
+        }
+        .nav-links a:hover { color: var(--accent); background: rgba(56,189,248,0.06); }
+
+        /* Thin divider before auth section */
+        .nav-divider {
+            width: 1px; height: 20px;
+            background: var(--border);
+            margin: 0 6px; flex-shrink: 0;
+        }
+
+        .btn-auth-nav {
+            background: var(--accent); color: #0f172a !important;
+            padding: 7px 14px; border-radius: 6px; font-weight: 700;
+            cursor: pointer; border: none; font-size: 0.82rem;
+            transition: background 0.2s; white-space: nowrap;
+        }
         .btn-auth-nav:hover { background: var(--accent-hover); }
 
         .hero {
@@ -99,6 +129,61 @@
         .status-msg { margin-top: 15px; padding: 10px; border-radius: 6px; font-size: 0.9rem; display: none; width: 100%; text-align: center; }
         .status-msg.success { background: rgba(16, 185, 129, 0.2); border: 1px solid var(--success); color: #6ee7b7; }
         .status-msg.error { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; }
+
+        /* Forgot password link */
+        .forgot-link {
+            background: none; border: none; color: var(--accent);
+            font-size: 0.82rem; cursor: pointer; text-decoration: underline;
+            margin-top: 6px; padding: 0; display: block; text-align: right;
+            width: 100%;
+        }
+        .forgot-link:hover { color: var(--accent-hover); }
+
+        /* Password reset modal */
+        .reset-modal-overlay {
+            display: none; position: fixed; inset: 0; z-index: 3000;
+            background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
+            align-items: center; justify-content: center; padding: 20px;
+        }
+        .reset-modal-overlay.open { display: flex; }
+        .reset-modal {
+            background: #1e293b; border: 1px solid var(--accent);
+            border-radius: 16px; padding: 32px 28px;
+            width: 100%; max-width: 400px;
+            position: relative; animation: modal-in 0.22s ease;
+        }
+        .reset-modal h3 { color: var(--text-main); font-size: 1.1rem; margin-bottom: 6px; }
+        .reset-modal p  { color: var(--text-muted); font-size: 0.85rem; line-height:1.6; margin-bottom: 18px; }
+        .reset-modal-close {
+            position: absolute; top: 12px; right: 16px;
+            background: none; border: none; color: #64748b;
+            font-size: 1.3rem; cursor: pointer; line-height:1;
+        }
+        .reset-modal-close:hover { color: #f8fafc; }
+        .reset-step { display: none; }
+        .reset-step.active { display: block; }
+        .reset-input {
+            width: 100%; padding: 10px 14px;
+            background: var(--bg-color); border: 1px solid var(--border);
+            border-radius: 6px; color: var(--text-main); font-size: 0.95rem;
+            margin-bottom: 14px; outline: none;
+        }
+        .reset-input:focus { border-color: var(--accent); }
+        .btn-reset-submit {
+            width: 100%; padding: 11px;
+            background: var(--accent); color: #0f172a;
+            border: none; border-radius: 6px; font-weight: 700;
+            font-size: 0.95rem; cursor: pointer; transition: background 0.2s;
+        }
+        .btn-reset-submit:hover { background: var(--accent-hover); }
+        .btn-reset-submit:disabled { opacity: 0.55; cursor: not-allowed; }
+        .reset-status {
+            margin-top: 12px; padding: 8px 12px; border-radius: 6px;
+            font-size: 0.83rem; display: none; text-align: center;
+        }
+        .reset-status.success { background:rgba(16,185,129,0.15); border:1px solid #10b98144; color:#6ee7b7; }
+        .reset-status.error   { background:rgba(239,68,68,0.15);  border:1px solid #ef444444; color:#fca5a5; }
+        .otp-hint { font-size:0.78rem; color:#64748b; margin-bottom:14px; line-height:1.5; }
 
         footer { border-top: 1px solid var(--border); margin-top: 80px; padding: 40px 0; text-align: center; color: var(--text-muted); font-size: 0.9rem; }
         footer a { color: var(--accent); text-decoration: none; }
@@ -509,11 +594,15 @@
                     <li><a href="#portal">Portal</a></li>
                     <li><a href="privacy.html">Privacy</a></li>
                     <li><a href="terms.html">Terms</a></li>
+                    <!-- Divider before action items -->
+                    <li class="nav-divider" aria-hidden="true"></li>
                     <li>
                         <button class="nav-crypto-chip" onclick="openCryptoSection()">
                             📈 Crypto Signals <span class="nav-chip-new">NEW</span>
                         </button>
                     </li>
+                    <!-- Divider before auth -->
+                    <li class="nav-divider" aria-hidden="true"></li>
                     <li>
                         <div class="nav-auth-area">
                             <!-- Logged-out state -->
@@ -521,7 +610,7 @@
                                 onclick="document.getElementById('portal').scrollIntoView({behavior:'smooth'})">
                                 Sign Up / Login
                             </button>
-                            <!-- Logged-in state (hidden until session detected) -->
+                            <!-- Logged-in state -->
                             <div class="nav-user-chip" id="navUserChip">
                                 <span class="nav-user-email" id="navUserEmail">subscriber</span>
                                 <button class="btn-logout-nav" onclick="confirmLogout()">
@@ -717,8 +806,63 @@
                     <label for="loginPassword">Password</label>
                     <input type="password" id="loginPassword" placeholder="••••••••" required>
                 </div>
+                <button class="forgot-link" type="button" onclick="openResetModal()">
+                    Forgot your password?
+                </button>
                 <button type="submit" class="btn-submit" id="loginSubmitBtn">Login to Access Media</button>
             </form>
+
+            <!-- PASSWORD RESET MODAL -->
+            <div class="reset-modal-overlay" id="resetModalOverlay">
+                <div class="reset-modal">
+                    <button class="reset-modal-close" onclick="closeResetModal()">×</button>
+
+                    <!-- Step 1: Enter email -->
+                    <div class="reset-step active" id="resetStep1">
+                        <h3>🔑 Reset Your Password</h3>
+                        <p>Enter the email address linked to your account. We will send you a 6-digit verification code.</p>
+                        <input type="email" class="reset-input" id="resetEmail"
+                            placeholder="name@example.com">
+                        <button class="btn-reset-submit" id="resetSendBtn" onclick="sendResetOtp()">
+                            Send Verification Code
+                        </button>
+                        <div class="reset-status" id="resetStatus1"></div>
+                    </div>
+
+                    <!-- Step 2: Enter OTP + new password -->
+                    <div class="reset-step" id="resetStep2">
+                        <h3>✉️ Check Your Email</h3>
+                        <p>A 6-digit code was sent to <strong id="resetEmailDisplay"></strong>. Enter it below along with your new password.</p>
+                        <p class="otp-hint">⏱ The code expires in 15 minutes. Check your spam folder if you don't see it.</p>
+                        <input type="text" class="reset-input" id="resetOtp"
+                            placeholder="6-digit code" maxlength="6" inputmode="numeric">
+                        <input type="password" class="reset-input" id="resetNewPassword"
+                            placeholder="New password (min 6 characters)" minlength="6">
+                        <input type="password" class="reset-input" id="resetConfirmPassword"
+                            placeholder="Confirm new password" minlength="6">
+                        <button class="btn-reset-submit" id="resetConfirmBtn" onclick="confirmResetOtp()">
+                            Reset Password
+                        </button>
+                        <div class="reset-status" id="resetStatus2"></div>
+                        <button style="margin-top:12px;background:none;border:none;color:var(--text-muted);font-size:0.8rem;cursor:pointer;text-decoration:underline;"
+                            onclick="backToResetStep1()">
+                            Use a different email
+                        </button>
+                    </div>
+
+                    <!-- Step 3: Success -->
+                    <div class="reset-step" id="resetStep3">
+                        <div style="text-align:center;padding:10px 0;">
+                            <div style="font-size:3rem;margin-bottom:12px;">✅</div>
+                            <h3>Password Updated!</h3>
+                            <p>Your password has been reset successfully. You can now log in with your new password.</p>
+                            <button class="btn-reset-submit" onclick="closeResetModal();switchTab('login')">
+                                Go to Login
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- LOGGED-IN STATE (replaces forms when session active) -->
             <div class="portal-logged-in" id="portalLoggedIn">
@@ -1538,6 +1682,20 @@
                 }).catch(() => {});  // fire-and-forget
             }
 
+            // Clear all form input fields so next user must re-enter credentials
+            const formFields = [
+                'signupEmail', 'signupPhone', 'signupPassword',
+                'loginEmail', 'loginPassword',
+                'resetEmail', 'resetOtp', 'resetNewPassword', 'resetConfirmPassword'
+            ];
+            formFields.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            // Clear status messages
+            const statusEl = document.getElementById('statusMessage');
+            if (statusEl) { statusEl.style.display = 'none'; statusEl.textContent = ''; }
+
             // Clear all session data from localStorage
             localStorage.removeItem(SESSION_KEY);
             localStorage.removeItem(TOKEN_KEY);
@@ -1557,6 +1715,119 @@
 
             // Scroll to portal so they can log back in immediately
             document.getElementById('portal').scrollIntoView({ behavior: 'smooth' });
+        }
+
+
+        // ==========================================
+        // PASSWORD RESET FLOW
+        // ==========================================
+        function openResetModal() {
+            document.getElementById('resetModalOverlay').classList.add('open');
+            // Reset to step 1
+            ['resetStep1','resetStep2','resetStep3'].forEach((id,i) => {
+                document.getElementById(id).className = 'reset-step' + (i===0 ? ' active' : '');
+            });
+            document.getElementById('resetEmail').value = '';
+            document.getElementById('resetOtp').value = '';
+            document.getElementById('resetNewPassword').value = '';
+            document.getElementById('resetConfirmPassword').value = '';
+            setResetStatus(1, '', '');
+            setResetStatus(2, '', '');
+        }
+
+        function closeResetModal() {
+            document.getElementById('resetModalOverlay').classList.remove('open');
+        }
+
+        function backToResetStep1() {
+            document.getElementById('resetStep2').classList.remove('active');
+            document.getElementById('resetStep1').classList.add('active');
+        }
+
+        function setResetStatus(step, msg, type) {
+            const el = document.getElementById(`resetStatus${step}`);
+            if (!el) return;
+            el.textContent  = msg;
+            el.className    = `reset-status${type ? ' ' + type : ''}`;
+            el.style.display = msg ? 'block' : 'none';
+        }
+
+        async function sendResetOtp() {
+            const email = document.getElementById('resetEmail').value.trim();
+            if (!email || !/\S+@\S+\.\S+/.test(email)) {
+                setResetStatus(1, 'Please enter a valid email address.', 'error');
+                return;
+            }
+            const btn = document.getElementById('resetSendBtn');
+            btn.disabled    = true;
+            btn.textContent = 'Sending…';
+            setResetStatus(1, '', '');
+
+            try {
+                const res  = await fetchWithRetry(`${BACKEND_BASE_URL}/api/reset-password/request`, {
+                    method:  'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body:    JSON.stringify({ email })
+                }, { timeoutMs: 30000, retries: 1 });
+
+                const data = await res.json();
+                if (res.ok && data.status === 'success') {
+                    document.getElementById('resetEmailDisplay').textContent = email;
+                    document.getElementById('resetStep1').classList.remove('active');
+                    document.getElementById('resetStep2').classList.add('active');
+                } else {
+                    setResetStatus(1, data.message || 'Could not send code. Please try again.', 'error');
+                }
+            } catch(err) {
+                setResetStatus(1, 'Network error. Please check your connection.', 'error');
+            } finally {
+                btn.disabled    = false;
+                btn.textContent = 'Send Verification Code';
+            }
+        }
+
+        async function confirmResetOtp() {
+            const email    = document.getElementById('resetEmail').value.trim();
+            const otp      = document.getElementById('resetOtp').value.trim();
+            const newPw    = document.getElementById('resetNewPassword').value;
+            const confirmPw = document.getElementById('resetConfirmPassword').value;
+
+            if (!otp || otp.length !== 6) {
+                setResetStatus(2, 'Please enter the 6-digit code from your email.', 'error'); return;
+            }
+            if (!newPw || newPw.length < 6) {
+                setResetStatus(2, 'Password must be at least 6 characters.', 'error'); return;
+            }
+            if (newPw !== confirmPw) {
+                setResetStatus(2, 'Passwords do not match.', 'error'); return;
+            }
+
+            const btn = document.getElementById('resetConfirmBtn');
+            btn.disabled    = true;
+            btn.textContent = 'Verifying…';
+            setResetStatus(2, '', '');
+
+            try {
+                const res  = await fetchWithRetry(`${BACKEND_BASE_URL}/api/reset-password/confirm`, {
+                    method:  'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body:    JSON.stringify({ email, otp, new_password: newPw })
+                }, { timeoutMs: 30000, retries: 1 });
+
+                const data = await res.json();
+                if (res.ok && data.status === 'success') {
+                    // Show success step
+                    document.getElementById('resetStep2').classList.remove('active');
+                    document.getElementById('resetStep3').classList.add('active');
+                } else {
+                    setResetStatus(2, data.message || 'Invalid or expired code. Please try again.', 'error');
+                }
+            } catch(err) {
+                setResetStatus(2, 'Network error. Please try again.', 'error');
+            } finally {
+                btn.disabled    = false;
+                btn.textContent = 'Reset Password';
+            }
         }
 
         function switchTab(type) {
