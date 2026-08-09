@@ -220,232 +220,147 @@
         .reset-status.error   { background:rgba(239,68,68,0.15);  border:1px solid #ef444444; color:#fca5a5; }
         .otp-hint { font-size:0.78rem; color:#64748b; margin-bottom:14px; line-height:1.5; }
 
-        /* ═══════════════════════════════════════════════════════
-           INFORMATION CENTER — NAV BELL ICON + UPDATE PANEL
-           ═══════════════════════════════════════════════════════ */
-
-        /* Bell button in the nav */
-        .nav-info-btn {
+        /* ══════════════════════════════════════════════════
+           AT CODING FOR FREEDOM — TRUST PILLAR CAROUSEL
+           ══════════════════════════════════════════════════ */
+        .cff-trust-section {
+            margin: 60px 0 20px;
+            padding: 56px 40px 48px;
+            background: linear-gradient(145deg,#0a1628 0%,#0f172a 50%,#071220 100%);
+            border: 1px solid rgba(56,189,248,0.18);
+            border-radius: 20px;
             position: relative;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 5px 6px;
-            border-radius: 8px;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: color 0.2s, background 0.2s;
-            flex-shrink: 0;
-        }
-        .nav-info-btn:hover { color: var(--accent); background: rgba(56,189,248,0.08); }
-        .nav-info-btn svg { width: 20px; height: 20px; display: block; }
-
-        /* Animated unread badge on the bell */
-        .nav-info-badge {
-            position: absolute;
-            top: 2px; right: 2px;
-            min-width: 16px; height: 16px;
-            background: #ef4444;
-            color: #fff;
-            font-size: 0.6rem;
-            font-weight: 900;
-            border-radius: 999px;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 0 4px;
-            line-height: 1;
-            border: 2px solid rgba(15,23,42,0.95);
-            animation: info-badge-in 0.3s cubic-bezier(.4,0,.2,1),
-                       info-badge-pulse 2.4s 0.4s ease-in-out infinite;
-            pointer-events: none;
-        }
-        .nav-info-badge.visible { display: flex; }
-        @keyframes info-badge-in {
-            from { transform: scale(0); opacity: 0; }
-            to   { transform: scale(1); opacity: 1; }
-        }
-        @keyframes info-badge-pulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); }
-            50%       { box-shadow: 0 0 0 5px rgba(239,68,68,0); }
-        }
-
-        /* Bell ring animation triggered briefly on new update arrival */
-        @keyframes bell-ring {
-            0%,100% { transform: rotate(0deg); }
-            10%      { transform: rotate(12deg); }
-            25%      { transform: rotate(-10deg); }
-            40%      { transform: rotate(8deg); }
-            55%      { transform: rotate(-6deg); }
-            70%      { transform: rotate(4deg); }
-            85%      { transform: rotate(-2deg); }
-        }
-        .nav-info-btn.ringing svg { animation: bell-ring 0.8s ease; }
-
-        /* ── Info panel (slide-down dropdown) ── */
-        .info-panel-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            z-index: 4000;
-        }
-        .info-panel-overlay.open { display: block; }
-
-        .info-panel {
-            position: fixed;
-            top: 58px;
-            right: 12px;
-            width: 360px;
-            max-width: calc(100vw - 24px);
-            max-height: calc(100vh - 80px);
-            background: #1e293b;
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            box-shadow: 0 16px 48px rgba(0,0,0,0.55);
-            display: flex;
-            flex-direction: column;
             overflow: hidden;
-            z-index: 4001;
-            transform: translateY(-8px);
+        }
+        .cff-trust-section::before {
+            content: '';
+            position: absolute; inset: 0; pointer-events: none;
+            background:
+                radial-gradient(ellipse at 5% 0%, rgba(56,189,248,0.09) 0%, transparent 55%),
+                radial-gradient(ellipse at 95% 100%, rgba(16,185,129,0.07) 0%, transparent 55%);
+        }
+        .cff-trust-section::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent 0%, var(--accent) 35%, var(--success) 65%, transparent 100%);
+            opacity: 0.7;
+        }
+        @media(max-width:640px) {
+            .cff-trust-section { padding: 36px 18px 32px; margin: 40px 0; }
+        }
+        .cff-trust-eyebrow {
+            font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em;
+            text-transform: uppercase; color: var(--accent);
+            margin-bottom: 6px; display: flex; align-items: center; gap: 8px;
+        }
+        .cff-trust-eyebrow-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--accent); animation: pulse-new 1.8s infinite;
+            flex-shrink: 0;
+        }
+        .cff-trust-heading {
+            font-size: 1.75rem; font-weight: 800; color: var(--text-main);
+            margin: 0 0 6px; letter-spacing: -0.02em; line-height: 1.25;
+        }
+        @media(max-width:600px) { .cff-trust-heading { font-size: 1.35rem; } }
+        .cff-trust-sub {
+            font-size: 0.93rem; color: var(--text-muted);
+            margin: 0 0 36px; line-height: 1.7; max-width: 560px;
+        }
+
+        /* Stack area */
+        .cff-stack-wrap {
+            position: relative; min-height: 260px;
+            margin-bottom: 22px;
+        }
+        .cff-card {
+            position: absolute; inset: 0;
+            background: rgba(30,41,59,0.75);
+            border: 1px solid rgba(56,189,248,0.14);
+            border-radius: 14px;
+            padding: 28px 28px 22px;
+            display: flex; flex-direction: column; gap: 14px;
             opacity: 0;
-            transition: transform 0.22s cubic-bezier(.4,0,.2,1),
-                        opacity   0.22s cubic-bezier(.4,0,.2,1);
+            transform: translateY(20px) scale(0.985);
+            transition: opacity 0.52s cubic-bezier(.4,0,.2,1),
+                        transform 0.52s cubic-bezier(.4,0,.2,1);
             pointer-events: none;
+            backdrop-filter: blur(4px);
         }
-        .info-panel-overlay.open .info-panel {
-            transform: translateY(0);
-            opacity: 1;
-            pointer-events: auto;
+        @media(max-width:520px) { .cff-card { padding: 20px 16px 18px; } }
+        .cff-card.active {
+            opacity: 1; transform: translateY(0) scale(1); pointer-events: auto;
         }
-        @media(max-width:420px) {
-            .info-panel { right: 8px; left: 8px; width: auto; top: 62px; }
+        .cff-card.exit {
+            opacity: 0; transform: translateY(-20px) scale(0.985);
+            transition: opacity 0.38s cubic-bezier(.4,0,.2,1),
+                        transform 0.38s cubic-bezier(.4,0,.2,1);
         }
-
-        /* Header bar inside panel */
-        .info-panel-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 14px 16px 12px;
-            border-bottom: 1px solid var(--border);
-            flex-shrink: 0;
+        .cff-card-header { display: flex; align-items: flex-start; gap: 14px; }
+        .cff-icon-circle {
+            width: 46px; height: 46px; border-radius: 12px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
         }
-        .info-panel-title {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 700;
-            font-size: 0.9rem;
-            color: var(--text-main);
+        .cff-card-meta { flex: 1; min-width: 0; }
+        .cff-pillar-label {
+            font-size: 0.68rem; font-weight: 700;
+            letter-spacing: 0.1em; text-transform: uppercase;
+            margin-bottom: 4px;
         }
-        .info-panel-title-dot {
-            width: 8px; height: 8px; border-radius: 50%;
-            background: var(--accent);
-            animation: pulse-new 2s infinite;
-            flex-shrink: 0;
+        .cff-card-title {
+            font-size: 1.05rem; font-weight: 800;
+            color: var(--text-main); line-height: 1.35;
         }
-        .info-panel-mark-all {
-            background: none; border: none;
-            color: var(--accent); font-size: 0.75rem;
-            font-weight: 600; cursor: pointer; padding: 0;
-            transition: color 0.2s;
+        @media(max-width:520px) { .cff-card-title { font-size: 0.95rem; } }
+        .cff-card-body {
+            font-size: 0.88rem; color: var(--text-muted);
+            line-height: 1.75;
         }
-        .info-panel-mark-all:hover { color: var(--accent-hover); }
-        .info-panel-close {
-            background: none; border: none;
-            color: #64748b; font-size: 1.2rem;
-            cursor: pointer; line-height: 1;
-            padding: 2px 4px; margin-left: 8px;
-            border-radius: 4px;
-            transition: color 0.15s;
+        .cff-card-tags {
+            display: flex; flex-wrap: wrap; gap: 7px;
+            margin-top: 2px;
         }
-        .info-panel-close:hover { color: var(--text-main); }
-
-        /* Scrollable update list */
-        .info-panel-list {
-            overflow-y: auto;
-            flex: 1;
-            padding: 8px 0;
-        }
-        .info-panel-list::-webkit-scrollbar { width: 4px; }
-        .info-panel-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
-
-        /* Individual update card */
-        .info-update-item {
-            padding: 12px 16px;
-            border-left: 3px solid transparent;
-            transition: background 0.15s;
-            cursor: default;
-            position: relative;
-        }
-        .info-update-item:hover { background: rgba(255,255,255,0.03); }
-        .info-update-item.unread { border-left-color: var(--accent); background: rgba(56,189,248,0.04); }
-        .info-update-item + .info-update-item { border-top: 1px solid rgba(51,65,85,0.5); }
-
-        /* Type badge on each update */
-        .info-update-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 0.65rem;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            padding: 2px 8px;
-            border-radius: 999px;
-            margin-bottom: 6px;
-        }
-        .info-update-badge.info    { background: rgba(56,189,248,0.12);  color: #38bdf8; border: 1px solid rgba(56,189,248,0.25); }
-        .info-update-badge.warning { background: rgba(245,158,11,0.12);  color: #f59e0b; border: 1px solid rgba(245,158,11,0.25); }
-        .info-update-badge.success { background: rgba(16,185,129,0.12);  color: #10b981; border: 1px solid rgba(16,185,129,0.25); }
-        .info-update-badge.outage  { background: rgba(239,68,68,0.12);   color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
-        .info-update-badge.tip     { background: rgba(139,92,246,0.12);  color: #a78bfa; border: 1px solid rgba(139,92,246,0.25); }
-
-        .info-update-msg {
-            font-size: 0.84rem;
-            color: var(--text-main);
-            line-height: 1.55;
-            margin-bottom: 5px;
-        }
-        .info-update-time {
-            font-size: 0.71rem;
-            color: #475569;
-        }
-        .info-unread-dot {
-            position: absolute;
-            top: 14px; right: 14px;
-            width: 7px; height: 7px;
-            border-radius: 50%;
-            background: var(--accent);
-        }
-        .info-update-item:not(.unread) .info-unread-dot { display: none; }
-
-        /* Empty state */
-        .info-panel-empty {
-            padding: 40px 20px;
-            text-align: center;
-            color: #475569;
-            font-size: 0.85rem;
-            line-height: 1.7;
-        }
-        .info-panel-empty-icon {
-            font-size: 2rem;
-            display: block;
-            margin-bottom: 10px;
-            opacity: 0.5;
+        .cff-tag {
+            font-size: 0.72rem; font-weight: 600;
+            padding: 3px 11px; border-radius: 999px; border: 1px solid;
+            white-space: nowrap;
         }
 
-        /* Footer inside panel */
-        .info-panel-foot {
-            padding: 10px 16px;
-            border-top: 1px solid var(--border);
-            font-size: 0.73rem;
-            color: #475569;
-            text-align: center;
-            flex-shrink: 0;
+        /* Controls */
+        .cff-controls {
+            display: flex; align-items: center; gap: 12px; margin-top: 4px;
         }
+        .cff-dots { display: flex; gap: 6px; align-items: center; }
+        .cff-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--border); cursor: pointer;
+            transition: background 0.28s, transform 0.28s;
+        }
+        .cff-dot.active {
+            background: var(--accent); transform: scale(1.5);
+        }
+        .cff-bar-track {
+            flex: 1; height: 2px; border-radius: 99px;
+            background: var(--border); overflow: hidden;
+        }
+        .cff-bar-fill {
+            height: 100%; border-radius: 99px;
+            background: linear-gradient(90deg, var(--accent), var(--success));
+            width: 0%; transition: width linear;
+        }
+        .cff-counter-txt {
+            font-size: 0.72rem; color: #475569;
+            flex-shrink: 0; min-width: 38px; text-align: right;
+        }
+        .cff-nav-btns { display: flex; gap: 6px; flex-shrink: 0; }
+        .cff-nav-btn {
+            width: 30px; height: 30px; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--card-bg);
+            color: var(--text-muted); cursor: pointer; font-size: 0.85rem;
+            display: flex; align-items: center; justify-content: center;
+            transition: border-color 0.2s, color 0.2s;
+        }
+        .cff-nav-btn:hover { border-color: var(--accent); color: var(--accent); }
 
         footer { border-top: 1px solid var(--border); margin-top: 80px; padding: 40px 0; text-align: center; color: var(--text-muted); font-size: 0.9rem; }
         footer a { color: var(--accent); text-decoration: none; }
@@ -1130,23 +1045,6 @@
                     <!-- Divider before auth -->
                     <li class="nav-divider" aria-hidden="true"></li>
 
-                    <!-- ── INFORMATION CENTER BELL ── -->
-                    <li>
-                        <button class="nav-info-btn" id="navInfoBtn"
-                                onclick="toggleInfoPanel(event)"
-                                aria-label="Information Centre — admin updates and notices"
-                                title="Information Centre">
-                            <svg viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="1.8"
-                                 stroke-linecap="round" stroke-linejoin="round"
-                                 aria-hidden="true">
-                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                            </svg>
-                            <span class="nav-info-badge" id="navInfoBadge" aria-label="unread updates">0</span>
-                        </button>
-                    </li>
-
                     <li>
                         <div class="nav-auth-area">
                             <!-- Logged-out state -->
@@ -1517,6 +1415,41 @@
                 </p>
             </div>
         </div>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             AT CODING FOR FREEDOM — TRUST PILLAR CAROUSEL
+             Positioned after the upgrade offer so visitors reaching the
+             bottom of the conversion funnel get a final confidence layer
+             before the portal and socials sections.
+             ═══════════════════════════════════════════════════════════ -->
+        <section class="cff-trust-section" id="our-principles" aria-label="At Coding For Freedom — our client commitments">
+            <div style="position:relative;z-index:1;">
+
+                <div class="cff-trust-eyebrow">
+                    <span class="cff-trust-eyebrow-dot"></span>
+                    At Coding For Freedom
+                </div>
+                <h2 class="cff-trust-heading">Why clients stay — and grow — with us</h2>
+                <p class="cff-trust-sub">Seven principles that shape every service, signal, and line of code we deliver.</p>
+
+                <!-- Card stack -->
+                <div class="cff-stack-wrap" id="cffStackWrap">
+                    <!-- Cards injected by JS -->
+                </div>
+
+                <!-- Controls -->
+                <div class="cff-controls">
+                    <div class="cff-dots" id="cffDots"></div>
+                    <div class="cff-bar-track"><div class="cff-bar-fill" id="cffBarFill"></div></div>
+                    <span class="cff-counter-txt" id="cffCounter">1 / 7</span>
+                    <div class="cff-nav-btns">
+                        <button class="cff-nav-btn" id="cffPrev" aria-label="Previous pillar">&#8592;</button>
+                        <button class="cff-nav-btn" id="cffNext" aria-label="Next pillar">&#8594;</button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
 
         <section id="socials" class="card" style="margin-bottom: 40px; border-color: var(--accent);">
             <span class="badge" style="background: #0369a1;">Community & Channels</span>
@@ -1918,53 +1851,7 @@
 
     </main>
 
-    <!-- ═══════════════════════════════════════════════════════════
-         INFORMATION CENTRE PANEL
-         Overlay closes on backdrop click; panel slides in from top.
-         Updates are fetched from /api/announcements on open and
-         polled every 5 minutes while the page is visible.
-         ═══════════════════════════════════════════════════════════ -->
-    <div class="info-panel-overlay" id="infoPanelOverlay"
-         onclick="handleInfoOverlayClick(event)"
-         role="dialog" aria-modal="true"
-         aria-label="Information Centre">
-
-        <div class="info-panel" id="infoPanel" role="document">
-
-            <!-- Header -->
-            <div class="info-panel-head">
-                <div class="info-panel-title">
-                    <span class="info-panel-title-dot" aria-hidden="true"></span>
-                    Information Centre
-                </div>
-                <div style="display:flex;align-items:center;gap:6px;">
-                    <button class="info-panel-mark-all"
-                            id="infoMarkAllBtn"
-                            onclick="markAllRead()"
-                            style="display:none;">
-                        Mark all read
-                    </button>
-                    <button class="info-panel-close"
-                            onclick="closeInfoPanel()"
-                            aria-label="Close information centre">×</button>
-                </div>
-            </div>
-
-            <!-- Update list (populated by JS) -->
-            <div class="info-panel-list" id="infoPanelList">
-                <div class="info-panel-empty">
-                    <span class="info-panel-empty-icon">🔔</span>
-                    Loading updates…
-                </div>
-            </div>
-
-            <!-- Footer -->
-            <div class="info-panel-foot" id="infoPanelFoot">
-                Updates are published by the Coding For Freedom admin team.
-            </div>
-
-        </div>
-    </div>
+    <footer>
         <div class="container">
             <p>&copy; 2026 Coding For Freedom. All rights reserved.</p>
             <p style="margin-top: 6px;">Support / Inquiries: <a href="mailto:support.codingforfreedom@gmail.com">support.codingforfreedom@gmail.com</a></p>
@@ -3063,283 +2950,195 @@
                 }
             }
         }
-        // ═══════════════════════════════════════════════════════════
-        // INFORMATION CENTRE
-        //
-        // Architecture:
-        //  • /api/announcements returns an array of update objects.
-        //    Shape: { id, type, message, timestamp, pinned? }
-        //    type: "info" | "warning" | "success" | "outage" | "tip"
-        //  • Read IDs are persisted in localStorage so the unread
-        //    count survives page refreshes without a server round-trip.
-        //  • Panel is polled every 5 minutes while the page is visible.
-        //    On tab-hidden → paused; tab-visible → immediate re-poll.
-        //  • If the backend is unreachable the panel shows curated
-        //    fallback announcements so visitors always see something.
-        // ═══════════════════════════════════════════════════════════
 
-        const INFO_READ_KEY    = 'cff_info_read_ids';
-        const INFO_POLL_MS     = 5 * 60 * 1000;   // 5 minutes
-        const ANNOUNCEMENTS_EP = `${BACKEND_BASE_URL}/api/announcements`;
+        // ══════════════════════════════════════════════════════
+        // AT CODING FOR FREEDOM — TRUST PILLAR CAROUSEL
+        // ══════════════════════════════════════════════════════
+        (function () {
+            const PILLARS = [
+                {
+                    num: '01', emoji: '📈',
+                    iconBg: 'rgba(56,189,248,0.12)', iconBorder: 'rgba(56,189,248,0.22)',
+                    labelColor: '#38bdf8',
+                    title: 'ROI and business impact',
+                    body: 'Every signal, lesson, and tool we build is measured against one question: does it move the needle for you? We track outcomes, not outputs — so your investment compounds over time, not just on day one.',
+                    tags: ['Measurable returns', 'Long-term value', 'Outcome-first'],
+                    tagBg: 'rgba(56,189,248,0.10)', tagBorder: 'rgba(56,189,248,0.28)', tagColor: '#38bdf8',
+                },
+                {
+                    num: '02', emoji: '🎯',
+                    iconBg: 'rgba(16,185,129,0.12)', iconBorder: 'rgba(16,185,129,0.22)',
+                    labelColor: '#10b981',
+                    title: 'Accuracy and reliability — foundational, not optional',
+                    body: 'Crypto signals that arrive late or wrong cost real money. Our systems are built from the ground up for precision: cross-validated data pipelines, automated quality checks, and zero tolerance for guesswork.',
+                    tags: ['Verified signals', 'Automated QA', 'Zero guesswork'],
+                    tagBg: 'rgba(16,185,129,0.10)', tagBorder: 'rgba(16,185,129,0.28)', tagColor: '#10b981',
+                },
+                {
+                    num: '03', emoji: '🤝',
+                    iconBg: 'rgba(139,92,246,0.12)', iconBorder: 'rgba(139,92,246,0.22)',
+                    labelColor: '#a78bfa',
+                    title: 'Trust, stability and risk reduction',
+                    body: 'We operate transparently — our methodology is documented, our track record is visible, and our clients are never left guessing. Trust is not claimed; it is built through consistency you can verify.',
+                    tags: ['Transparent methodology', 'Consistent delivery', 'Verifiable history'],
+                    tagBg: 'rgba(139,92,246,0.10)', tagBorder: 'rgba(139,92,246,0.28)', tagColor: '#a78bfa',
+                },
+                {
+                    num: '04', emoji: '🚀',
+                    iconBg: 'rgba(245,158,11,0.12)', iconBorder: 'rgba(245,158,11,0.22)',
+                    labelColor: '#f59e0b',
+                    title: 'Scalability enables sustainable growth',
+                    body: 'Whether you are a first-time trader or scaling an automated portfolio, our infrastructure grows with you. No re-onboarding, no plan switches — the same platform handles day one and year three.',
+                    tags: ['Grows with you', 'No plan ceilings', 'Built to scale'],
+                    tagBg: 'rgba(245,158,11,0.10)', tagBorder: 'rgba(245,158,11,0.28)', tagColor: '#f59e0b',
+                },
+                {
+                    num: '05', emoji: '🔒',
+                    iconBg: 'rgba(239,68,68,0.12)', iconBorder: 'rgba(239,68,68,0.22)',
+                    labelColor: '#f87171',
+                    title: 'Security and compliance — built in, not bolted on',
+                    body: 'Your data, payments, and account are protected by encrypted sessions, Safaricom-secured M-Pesa flows, and hardened backend infrastructure. Compliance is not an afterthought here — it is the starting point.',
+                    tags: ['Encrypted sessions', 'Secure payments', 'Compliance-first'],
+                    tagBg: 'rgba(239,68,68,0.10)', tagBorder: 'rgba(239,68,68,0.28)', tagColor: '#f87171',
+                },
+                {
+                    num: '06', emoji: '🔧',
+                    iconBg: 'rgba(56,189,248,0.10)', iconBorder: 'rgba(56,189,248,0.20)',
+                    labelColor: '#38bdf8',
+                    title: 'Solutions built for your business, not the average',
+                    body: 'Generic tools produce generic results. We tailor signals, class pacing, and automation pipelines to fit your trading style, learning pace, and business model — because the best fit is the one that actually fits.',
+                    tags: ['Tailored signals', 'Adaptive pacing', 'Your rules'],
+                    tagBg: 'rgba(56,189,248,0.10)', tagBorder: 'rgba(56,189,248,0.25)', tagColor: '#38bdf8',
+                },
+                {
+                    num: '07', emoji: '💡',
+                    iconBg: 'rgba(16,185,129,0.10)', iconBorder: 'rgba(16,185,129,0.20)',
+                    labelColor: '#10b981',
+                    title: 'Efficiency drives growth — cost savings sustain it',
+                    body: 'Automation, smart pipelines, and a single one-time payment model mean you spend less time on overhead and more time on trading. Lower cost of operation is not a feature — it is a competitive advantage we hand directly to you.',
+                    tags: ['One-time pricing', 'Automated pipelines', 'Lower overhead'],
+                    tagBg: 'rgba(16,185,129,0.10)', tagBorder: 'rgba(16,185,129,0.25)', tagColor: '#10b981',
+                },
+            ];
 
-        let _infoPanelOpen     = false;
-        let _infoUpdates       = [];      // current fetched array
-        let _infoPollTimer     = null;
+            const INTERVAL   = 5800;
+            const wrap       = document.getElementById('cffStackWrap');
+            const dotsEl     = document.getElementById('cffDots');
+            const barFill    = document.getElementById('cffBarFill');
+            const counterEl  = document.getElementById('cffCounter');
+            const prevBtn    = document.getElementById('cffPrev');
+            const nextBtn    = document.getElementById('cffNext');
 
-        // Fallback announcements shown when the backend is unreachable
-        const INFO_FALLBACKS = [
-            {
-                id: 'fb-001', type: 'info', pinned: true,
-                message: 'Welcome to the Coding For Freedom Information Centre. All platform updates, maintenance notices, and feature announcements will appear here.',
-                timestamp: new Date().toISOString(),
-            },
-            {
-                id: 'fb-002', type: 'tip',
-                message: 'Tip: Enable browser notifications so you never miss a new signal or class session announcement.',
-                timestamp: new Date(Date.now() - 3600000).toISOString(),
-            },
-        ];
+            if (!wrap) return;
 
-        // ── localStorage helpers ──────────────────────────────────────────
-        function _getReadIds() {
-            try { return new Set(JSON.parse(localStorage.getItem(INFO_READ_KEY) || '[]')); }
-            catch (_) { return new Set(); }
-        }
-        function _saveReadIds(set) {
-            try { localStorage.setItem(INFO_READ_KEY, JSON.stringify([...set])); }
-            catch (_) {}
-        }
+            let current = 0, timer = null, paused = false;
 
-        // ── Fetch from backend ────────────────────────────────────────────
-        async function _fetchAnnouncements() {
-            try {
-                const token = localStorage.getItem(TOKEN_KEY);
-                const headers = { 'Content-Type': 'application/json' };
-                if (token) headers['Authorization'] = `Bearer ${token}`;
+            // ── Build cards ──────────────────────────────────────────────────
+            PILLARS.forEach(function (p, i) {
+                var card = document.createElement('div');
+                card.className = 'cff-card' + (i === 0 ? ' active' : '');
+                card.setAttribute('aria-hidden', i !== 0 ? 'true' : 'false');
+                card.innerHTML =
+                    '<div class="cff-card-header">' +
+                        '<div class="cff-icon-circle" style="background:' + p.iconBg + ';border:1px solid ' + p.iconBorder + ';">' +
+                            '<span aria-hidden="true">' + p.emoji + '</span>' +
+                        '</div>' +
+                        '<div class="cff-card-meta">' +
+                            '<div class="cff-pillar-label" style="color:' + p.labelColor + ';">Pillar ' + p.num + '</div>' +
+                            '<div class="cff-card-title">' + p.title + '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="cff-card-body">' + p.body + '</div>' +
+                    '<div class="cff-card-tags">' +
+                        p.tags.map(function (t) {
+                            return '<span class="cff-tag" style="background:' + p.tagBg + ';border-color:' + p.tagBorder + ';color:' + p.tagColor + ';">' + t + '</span>';
+                        }).join('') +
+                    '</div>';
+                wrap.appendChild(card);
+            });
 
-                const res = await fetch(ANNOUNCEMENTS_EP, {
-                    headers,
-                    signal: AbortSignal.timeout ? AbortSignal.timeout(8000) : undefined,
+            // ── Fix container height after paint ─────────────────────────────
+            requestAnimationFrame(function () {
+                var cards = wrap.querySelectorAll('.cff-card');
+                var maxH  = 0;
+                cards.forEach(function (c) {
+                    c.style.opacity = '1';
+                    maxH = Math.max(maxH, c.offsetHeight);
+                    c.style.opacity = '';
                 });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const data = await res.json();
-                // Accept { announcements: [...] } or a bare array
-                return Array.isArray(data) ? data
-                     : Array.isArray(data.announcements) ? data.announcements
-                     : INFO_FALLBACKS;
-            } catch (_) {
-                return INFO_FALLBACKS;
-            }
-        }
-
-        // ── Compute unread count ──────────────────────────────────────────
-        function _unreadCount(updates) {
-            const read = _getReadIds();
-            return updates.filter(u => !read.has(u.id)).length;
-        }
-
-        // ── Update the badge on the bell ─────────────────────────────────
-        function _updateBadge(updates) {
-            const badge   = document.getElementById('navInfoBadge');
-            const btn     = document.getElementById('navInfoBtn');
-            if (!badge || !btn) return;
-
-            const count   = _unreadCount(updates);
-            const hadNone = !badge.classList.contains('visible');
-
-            if (count > 0) {
-                badge.textContent = count > 99 ? '99+' : String(count);
-                badge.classList.add('visible');
-
-                // Ring the bell briefly if new updates just arrived
-                if (hadNone) {
-                    btn.classList.add('ringing');
-                    setTimeout(() => btn.classList.remove('ringing'), 900);
-                }
-            } else {
-                badge.classList.remove('visible');
-            }
-        }
-
-        // ── Render updates into the panel ─────────────────────────────────
-        function _renderPanel(updates) {
-            const list       = document.getElementById('infoPanelList');
-            const markAllBtn = document.getElementById('infoMarkAllBtn');
-            const foot       = document.getElementById('infoPanelFoot');
-            if (!list) return;
-
-            const read    = _getReadIds();
-            const hasUnread = updates.some(u => !read.has(u.id));
-            if (markAllBtn) markAllBtn.style.display = hasUnread ? 'block' : 'none';
-
-            if (!updates.length) {
-                list.innerHTML = `
-                    <div class="info-panel-empty">
-                        <span class="info-panel-empty-icon">🔔</span>
-                        No updates yet.<br>Check back soon.
-                    </div>`;
-                return;
-            }
-
-            // Sort: pinned first, then newest first
-            const sorted = [...updates].sort((a, b) => {
-                if (a.pinned && !b.pinned) return -1;
-                if (!a.pinned && b.pinned) return  1;
-                return new Date(b.timestamp) - new Date(a.timestamp);
+                wrap.style.minHeight = (maxH + 8) + 'px';
             });
 
-            const TYPE_META = {
-                info:    { label: 'Update',      icon: 'ℹ' },
-                warning: { label: 'Notice',       icon: '⚠' },
-                success: { label: 'Resolved',     icon: '✓' },
-                outage:  { label: 'Outage',       icon: '⚡' },
-                tip:     { label: 'Tip',          icon: '💡' },
-            };
-
-            list.innerHTML = sorted.map(u => {
-                const isUnread = !read.has(u.id);
-                const meta     = TYPE_META[u.type] || TYPE_META.info;
-                const when     = _relativeTime(u.timestamp);
-                const pinMark  = u.pinned ? '<span style="font-size:0.65rem;color:#94a3b8;margin-left:4px;">📌 pinned</span>' : '';
-                return `
-                <div class="info-update-item ${isUnread ? 'unread' : ''}"
-                     data-id="${u.id}"
-                     onclick="markOneRead('${u.id}')">
-                    ${isUnread ? '<div class="info-unread-dot" aria-hidden="true"></div>' : ''}
-                    <div class="info-update-badge ${u.type}">
-                        <span aria-hidden="true">${meta.icon}</span>
-                        ${meta.label}${pinMark}
-                    </div>
-                    <div class="info-update-msg">${_escapeHtml(u.message)}</div>
-                    <div class="info-update-time">${when}</div>
-                </div>`;
-            }).join('');
-
-            // Update footer timestamp
-            if (foot) {
-                foot.textContent = 'Last checked ' + _relativeTime(new Date().toISOString());
-            }
-        }
-
-        // ── Mark a single item as read ────────────────────────────────────
-        function markOneRead(id) {
-            const read = _getReadIds();
-            if (read.has(id)) return;
-            read.add(id);
-            _saveReadIds(read);
-            // Update UI without a full re-render
-            const item = document.querySelector(`.info-update-item[data-id="${id}"]`);
-            if (item) item.classList.remove('unread');
-            const dot = item && item.querySelector('.info-unread-dot');
-            if (dot) dot.style.display = 'none';
-            _updateBadge(_infoUpdates);
-            const markAllBtn = document.getElementById('infoMarkAllBtn');
-            if (markAllBtn) {
-                const stillUnread = _infoUpdates.some(u => !_getReadIds().has(u.id));
-                markAllBtn.style.display = stillUnread ? 'block' : 'none';
-            }
-        }
-
-        // ── Mark all as read ──────────────────────────────────────────────
-        function markAllRead() {
-            const read = _getReadIds();
-            _infoUpdates.forEach(u => read.add(u.id));
-            _saveReadIds(read);
-            document.querySelectorAll('.info-update-item').forEach(el => {
-                el.classList.remove('unread');
-                const dot = el.querySelector('.info-unread-dot');
-                if (dot) dot.style.display = 'none';
+            // ── Build dots ───────────────────────────────────────────────────
+            PILLARS.forEach(function (_, i) {
+                var d = document.createElement('div');
+                d.className = 'cff-dot' + (i === 0 ? ' active' : '');
+                d.setAttribute('role', 'button');
+                d.setAttribute('aria-label', 'Pillar ' + (i + 1));
+                d.addEventListener('click', function () { stopTimer(); goTo(i); startTimer(); });
+                dotsEl.appendChild(d);
             });
-            _updateBadge(_infoUpdates);
-            const markAllBtn = document.getElementById('infoMarkAllBtn');
-            if (markAllBtn) markAllBtn.style.display = 'none';
-        }
 
-        // ── Poll logic ────────────────────────────────────────────────────
-        async function _pollAnnouncements(silent) {
-            const updates    = await _fetchAnnouncements();
-            _infoUpdates     = updates;
-            _updateBadge(updates);
-            // Only re-render the list if the panel is open
-            if (_infoPanelOpen) _renderPanel(updates);
-        }
+            // ── Helpers ───────────────────────────────────────────────────────
+            function cards() { return wrap.querySelectorAll('.cff-card'); }
+            function dots()  { return dotsEl.querySelectorAll('.cff-dot'); }
 
-        function _startInfoPolling() {
-            _pollAnnouncements(true);
-            clearInterval(_infoPollTimer);
-            _infoPollTimer = setInterval(() => _pollAnnouncements(true), INFO_POLL_MS);
-        }
-
-        // Pause polling when tab is hidden, resume (with immediate fetch) when visible
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden') {
-                clearInterval(_infoPollTimer);
-            } else {
-                _startInfoPolling();
+            function goTo(next) {
+                var all = cards();
+                all[current].classList.remove('active');
+                all[current].classList.add('exit');
+                all[current].setAttribute('aria-hidden', 'true');
+                var prev = current;
+                setTimeout(function () { all[prev].classList.remove('exit'); }, 400);
+                current = (next + PILLARS.length) % PILLARS.length;
+                all[current].classList.add('active');
+                all[current].setAttribute('aria-hidden', 'false');
+                dots().forEach(function (d, i) { d.classList.toggle('active', i === current); });
+                counterEl.textContent = (current + 1) + ' / ' + PILLARS.length;
             }
-        });
 
-        // ── Panel open / close ────────────────────────────────────────────
-        function toggleInfoPanel(event) {
-            event.stopPropagation();
-            if (_infoPanelOpen) closeInfoPanel();
-            else openInfoPanel();
-        }
+            function animateBar() {
+                barFill.style.transition = 'none';
+                barFill.style.width      = '0%';
+                requestAnimationFrame(function () {
+                    barFill.style.transition = 'width ' + INTERVAL + 'ms linear';
+                    barFill.style.width      = '100%';
+                });
+            }
 
-        function openInfoPanel() {
-            _infoPanelOpen = true;
-            document.getElementById('infoPanelOverlay').classList.add('open');
-            // Render latest data immediately; then fetch fresh copy
-            _renderPanel(_infoUpdates);
-            _fetchAnnouncements().then(updates => {
-                _infoUpdates = updates;
-                _renderPanel(updates);
-                _updateBadge(updates);
+            function stopTimer() {
+                clearInterval(timer);
+                barFill.style.transition = 'none';
+                barFill.style.width      = '0%';
+            }
+
+            function startTimer() {
+                animateBar();
+                timer = setInterval(function () {
+                    goTo(current + 1);
+                    animateBar();
+                }, INTERVAL);
+            }
+
+            // ── Controls ─────────────────────────────────────────────────────
+            prevBtn.addEventListener('click', function () { stopTimer(); goTo(current - 1); startTimer(); });
+            nextBtn.addEventListener('click', function () { stopTimer(); goTo(current + 1); startTimer(); });
+
+            // Pause on hover/touch, resume on leave
+            wrap.addEventListener('mouseenter', function () { stopTimer(); paused = true; });
+            wrap.addEventListener('mouseleave', function () { paused = false; startTimer(); });
+            wrap.addEventListener('touchstart', function () { stopTimer(); paused = true; }, { passive: true });
+            wrap.addEventListener('touchend',   function () { paused = false; startTimer(); });
+
+            // Pause when tab is hidden, resume when visible
+            document.addEventListener('visibilitychange', function () {
+                if (document.visibilityState === 'hidden') { stopTimer(); }
+                else if (!paused) { startTimer(); }
             });
-        }
 
-        function closeInfoPanel() {
-            _infoPanelOpen = false;
-            document.getElementById('infoPanelOverlay').classList.remove('open');
-        }
-
-        function handleInfoOverlayClick(event) {
-            // Close only when clicking the backdrop, not the panel itself
-            if (event.target === document.getElementById('infoPanelOverlay')) {
-                closeInfoPanel();
-            }
-        }
-
-        // Close on Escape key
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape' && _infoPanelOpen) closeInfoPanel();
-        });
-
-        // ── Utility: relative time string ─────────────────────────────────
-        function _relativeTime(iso) {
-            const diff = Date.now() - new Date(iso).getTime();
-            const mins = Math.floor(diff / 60000);
-            if (mins < 1)   return 'Just now';
-            if (mins < 60)  return `${mins}m ago`;
-            const hrs = Math.floor(mins / 60);
-            if (hrs  < 24)  return `${hrs}h ago`;
-            const days = Math.floor(hrs / 24);
-            if (days < 7)   return `${days}d ago`;
-            return new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
-        }
-
-        // ── Utility: escape HTML in update messages ───────────────────────
-        function _escapeHtml(str) {
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;');
-        }
-
-        // ── Boot ──────────────────────────────────────────────────────────
-        // Start polling as soon as the page loads
-        _startInfoPolling();
+            counterEl.textContent = '1 / ' + PILLARS.length;
+            startTimer();
+        })();
 
     </script>
 </body>
