@@ -1193,7 +1193,8 @@
 
                             <div class="upp-step-label">Enter your M-Pesa number</div>
                             <input type="tel" class="upp-input" id="upgradePhone"
-                                placeholder="e.g. 0712 345 678" maxlength="13">
+                                placeholder="e.g. 0712 345 678" maxlength="13"
+                                autocomplete="tel">
 
                             <button class="btn-upgrade-pay" id="btnUpgradePay"
                                 onclick="initiateUpgradePayment()">
@@ -1313,30 +1314,36 @@
                 <button class="tab-btn" id="tabLoginBtn" onclick="switchTab('login')">Login</button>
             </div>
 
-            <form id="signupForm" onsubmit="handleAuth(event, 'signup')">
+            <form id="signupForm" onsubmit="handleAuth(event, 'signup')" autocomplete="off">
                 <div class="form-group">
                     <label for="signupEmail">Email Address</label>
-                    <input type="email" id="signupEmail" placeholder="name@example.com" required>
+                    <input type="email" id="signupEmail" placeholder="name@example.com"
+                           autocomplete="off" required>
                 </div>
                 <div class="form-group">
                     <label for="signupPhone">Phone Number</label>
-                    <input type="tel" id="signupPhone" placeholder="+254..." required>
+                    <input type="tel" id="signupPhone" placeholder="e.g. 0712 345 678"
+                           autocomplete="off" required>
                 </div>
                 <div class="form-group">
                     <label for="signupPassword">Password</label>
-                    <input type="password" id="signupPassword" placeholder="••••••••" required>
+                    <input type="password" id="signupPassword" placeholder="••••••••"
+                           autocomplete="new-password" required>
                 </div>
                 <button type="submit" class="btn-submit" id="signupSubmitBtn">Subscribe & Unlock Downloads</button>
             </form>
 
-            <form id="loginForm" onsubmit="handleAuth(event, 'login')" style="display: none;">
+            <form id="loginForm" onsubmit="handleAuth(event, 'login')"
+                  style="display: none;" autocomplete="off">
                 <div class="form-group">
                     <label for="loginEmail">Email Address</label>
-                    <input type="email" id="loginEmail" placeholder="name@example.com" required>
+                    <input type="email" id="loginEmail" placeholder="name@example.com"
+                           autocomplete="off" required>
                 </div>
                 <div class="form-group">
                     <label for="loginPassword">Password</label>
-                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                    <input type="password" id="loginPassword" placeholder="••••••••"
+                           autocomplete="new-password" required>
                 </div>
                 <button class="forgot-link" type="button" onclick="openResetModal()">
                     Forgot your password?
@@ -1354,7 +1361,7 @@
                         <h3>🔑 Reset Your Password</h3>
                         <p>Enter the email address linked to your account. We will send you a 6-digit verification code.</p>
                         <input type="email" class="reset-input" id="resetEmail"
-                            placeholder="name@example.com">
+                            placeholder="name@example.com" autocomplete="off">
                         <button class="btn-reset-submit" id="resetSendBtn" onclick="sendResetOtp()">
                             Send Verification Code
                         </button>
@@ -1367,11 +1374,14 @@
                         <p>A 6-digit code was sent to <strong id="resetEmailDisplay"></strong>. Enter it below along with your new password.</p>
                         <p class="otp-hint">⏱ The code expires in 15 minutes. Check your spam folder if you don't see it.</p>
                         <input type="text" class="reset-input" id="resetOtp"
-                            placeholder="6-digit code" maxlength="6" inputmode="numeric">
+                            placeholder="6-digit code" maxlength="6" inputmode="numeric"
+                            autocomplete="one-time-code">
                         <input type="password" class="reset-input" id="resetNewPassword"
-                            placeholder="New password (min 6 characters)" minlength="6">
+                            placeholder="New password (min 6 characters)" minlength="6"
+                            autocomplete="new-password">
                         <input type="password" class="reset-input" id="resetConfirmPassword"
-                            placeholder="Confirm new password" minlength="6">
+                            placeholder="Confirm new password" minlength="6"
+                            autocomplete="new-password">
                         <button class="btn-reset-submit" id="resetConfirmBtn" onclick="confirmResetOtp()">
                             Reset Password
                         </button>
@@ -1584,8 +1594,8 @@
 
                             <div class="cpp-step">Step 1 — Enter your M-Pesa number</div>
                             <input type="tel" id="mpesaPhone" class="cpp-input"
-                                placeholder="e.g. 0712345678"
-                                maxlength="12">
+                                placeholder="e.g. 0712 345 678"
+                                maxlength="13" autocomplete="tel">
 
                             <button class="btn-pay" id="btnPay" onclick="initiatePayment()">
                                 <span class="mpesa-logo">
@@ -1697,13 +1707,45 @@
         const BACKEND_BASE_URL = 'https://cff-dispatcher-api.onrender.com';
         const SESSION_KEY   = 'cff_user_session';
         const TOKEN_KEY     = 'cff_user_token';
-        const EMAIL_KEY     = 'cff_user_email';   // stored on login/signup
+        const EMAIL_KEY     = 'cff_user_email';
         let cachedVideoManifest = null;
-        // In-flight promise guards — prevents the same endpoint being called
-        // multiple times concurrently (e.g. session restore + auth response
-        // both triggering loadDynamicMediaUrls at the same time).
         let _manifestInFlight = null;
         let _brandingInFlight = null;
+
+        // ==========================================
+        // FIELD CLEARING — called on every logout
+        // Wipes all auth/payment input fields and
+        // resets placeholders to logged-out defaults.
+        // ==========================================
+        const ALL_CLEARABLE_FIELDS = [
+            'signupEmail', 'signupPhone', 'signupPassword',
+            'loginEmail',  'loginPassword',
+            'resetEmail',  'resetOtp', 'resetNewPassword', 'resetConfirmPassword',
+            'mpesaPhone',  'upgradePhone',
+        ];
+
+        function clearAllInputFields() {
+            ALL_CLEARABLE_FIELDS.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.value = '';
+                    el.blur(); // drop focus so browser doesn't re-fill
+                }
+            });
+            // Reset placeholders to logged-out state
+            const mpesa = document.getElementById('mpesaPhone');
+            if (mpesa) mpesa.placeholder = 'e.g. 0712 345 678';
+            const upg = document.getElementById('upgradePhone');
+            if (upg)   upg.placeholder   = 'e.g. 0712 345 678';
+        }
+
+        // Also clear on page visibility — handles browser back-button restores
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                const isLoggedIn = !!localStorage.getItem(SESSION_KEY);
+                if (!isLoggedIn) clearAllInputFields();
+            }
+        });
 
         async function fetchWithRetry(url, options = {}, { timeoutMs = 20000, retries = 1 } = {}) {
             let lastErr;
@@ -1745,6 +1787,14 @@
             if (activeSession) {
                 unlockMediaHub();
                 loadDynamicMediaUrls();
+                // Ensure payment field placeholders reflect logged-in state
+                const mpesa = document.getElementById('mpesaPhone');
+                if (mpesa && !mpesa.value) mpesa.placeholder = 'e.g. 0712 345 678';
+                const upg = document.getElementById('upgradePhone');
+                if (upg && !upg.value)     upg.placeholder   = 'e.g. 0712 345 678';
+            } else {
+                // Not logged in — ensure fields are blank on fresh page load
+                clearAllInputFields();
             }
         });
 
@@ -1995,24 +2045,37 @@
         const POLL_MAX    = 24;  // 2 minutes total (24 × 5s)
 
         async function initiatePayment() {
-            const rawPhone = (document.getElementById('mpesaPhone').value || '').trim();
+            const rawPhone = (document.getElementById('mpesaPhone').value || '').trim().replace(/[\s\-]/g, '');
             const token    = localStorage.getItem(TOKEN_KEY);
 
-            if (!rawPhone || rawPhone.length < 9) {
-                setCryptoStatus('Please enter a valid M-Pesa phone number.', 'error');
+            // ── Auth guard ────────────────────────────────────────────────────
+            if (!token) {
+                setCryptoStatus('Please log in before making a payment.', 'error');
+                return;
+            }
+
+            // ── Phone validation ──────────────────────────────────────────────
+            // Accept: 07XXXXXXXX (10 digits), 2547XXXXXXXX (12 digits)
+            const digits = rawPhone.replace(/\D/g, '');
+            if (!digits || digits.length < 9) {
+                setCryptoStatus('Please enter a valid M-Pesa number (e.g. 0712 345 678).', 'error');
+                return;
+            }
+            if (digits.length > 12) {
+                setCryptoStatus('Phone number is too long. Use format: 07XXXXXXXX', 'error');
                 return;
             }
 
             const btn = document.getElementById('btnPay');
-            btn.disabled    = true;
-            btn.textContent = 'Sending STK Push…';
-            setCryptoStatus('Sending payment request to your phone…', 'pending');
+            btn.disabled  = true;
+            btn.innerHTML = '<span class="mpesa-logo">M-Pesa</span> Sending…';
+            setCryptoStatus('Sending STK push to your phone…', 'pending');
 
             try {
                 const res = await fetchWithRetry(`${BACKEND_BASE_URL}/api/crypto/initiate-payment`, {
-                    method: 'POST',
+                    method:  'POST',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type':  'application/json',
                         'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({ phone: rawPhone })
@@ -2020,19 +2083,28 @@
 
                 const data = await res.json();
 
+                if (res.status === 401) {
+                    setCryptoStatus('Session expired. Please log in again.', 'error');
+                    btn.disabled  = false;
+                    btn.innerHTML = '<span class="mpesa-logo">M-Pesa</span> Pay KES 1,000 Now';
+                    return;
+                }
+
                 if (res.ok && data.status === 'pending') {
+                    setCryptoStatus('', 'pending');
                     openPaymentModal();
                     startPolling(data.checkout_request_id);
                 } else {
-                    setCryptoStatus(data.message || 'Payment initiation failed. Please try again.', 'error');
-                    btn.disabled    = false;
-                    btn.innerHTML   = '<span class="mpesa-logo">M-Pesa</span> Pay KES 1,000 Now';
+                    const msg = data.message || 'Payment initiation failed. Please try again.';
+                    setCryptoStatus(msg, 'error');
+                    btn.disabled  = false;
+                    btn.innerHTML = '<span class="mpesa-logo">M-Pesa</span> Pay KES 1,000 Now';
                 }
             } catch (err) {
                 console.error('Payment initiation error:', err);
                 setCryptoStatus('Could not reach the payment server. Please try again.', 'error');
-                btn.disabled    = false;
-                btn.innerHTML   = '<span class="mpesa-logo">M-Pesa</span> Pay KES 1,000 Now';
+                btn.disabled  = false;
+                btn.innerHTML = '<span class="mpesa-logo">M-Pesa</span> Pay KES 1,000 Now';
             }
         }
 
@@ -2156,18 +2228,30 @@
         const UPG_POLL_MAX   = 24;
 
         async function initiateUpgradePayment() {
-            const phone = (document.getElementById('upgradePhone').value || '').trim();
-            const token = localStorage.getItem(TOKEN_KEY);
+            const rawPhone = (document.getElementById('upgradePhone').value || '').trim().replace(/[\s\-]/g, '');
+            const token    = localStorage.getItem(TOKEN_KEY);
 
-            if (!phone || phone.replace(/\D/g,'').length < 9) {
-                setUpgradeStatus('Please enter a valid M-Pesa phone number.', 'error');
+            // ── Auth guard ────────────────────────────────────────────────────
+            if (!token) {
+                setUpgradeStatus('Please log in before making a payment.', 'error');
+                return;
+            }
+
+            // ── Phone validation ──────────────────────────────────────────────
+            const digits = rawPhone.replace(/\D/g, '');
+            if (!digits || digits.length < 9) {
+                setUpgradeStatus('Please enter a valid M-Pesa number (e.g. 0712 345 678).', 'error');
+                return;
+            }
+            if (digits.length > 12) {
+                setUpgradeStatus('Phone number is too long. Use format: 07XXXXXXXX', 'error');
                 return;
             }
 
             const btn = document.getElementById('btnUpgradePay');
             btn.disabled    = true;
             btn.textContent = 'Sending STK Push…';
-            setUpgradeStatus('Sending payment request to your phone…', 'pending');
+            setUpgradeStatus('Sending STK push to your phone…', 'pending');
 
             try {
                 const res = await fetchWithRetry(`${BACKEND_BASE_URL}/api/upgrade/initiate-payment`, {
@@ -2176,12 +2260,20 @@
                         'Content-Type':  'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ phone })
+                    body: JSON.stringify({ phone: rawPhone })
                 }, { timeoutMs: 30000, retries: 1 });
 
                 const data = await res.json();
 
+                if (res.status === 401) {
+                    setUpgradeStatus('Session expired. Please log in again.', 'error');
+                    btn.disabled    = false;
+                    btn.textContent = 'Pay KES 3,000 via M-Pesa';
+                    return;
+                }
+
                 if (res.ok && data.status === 'pending') {
+                    setUpgradeStatus('', 'pending');
                     openUpgradeModal();
                     _upgPollCount = 0;
                     clearInterval(_upgPollInterval);
@@ -2189,7 +2281,8 @@
                         () => pollUpgradeStatus(data.checkout_request_id), 5000
                     );
                 } else {
-                    setUpgradeStatus(data.message || 'Payment initiation failed. Please try again.', 'error');
+                    const msg = data.message || 'Payment initiation failed. Please try again.';
+                    setUpgradeStatus(msg, 'error');
                     btn.disabled    = false;
                     btn.textContent = 'Pay KES 3,000 via M-Pesa';
                 }
@@ -2367,51 +2460,66 @@
         async function executeLogout() {
             closeLogoutModal();
 
-            // Notify backend (best-effort — don't block UI on failure)
+            // Notify backend (best-effort)
             const token = localStorage.getItem(TOKEN_KEY);
             if (token) {
                 fetch(`${BACKEND_BASE_URL}/api/logout`, {
                     method:  'POST',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type':  'application/json',
                         'Authorization': `Bearer ${token}`
                     }
-                }).catch(() => {});  // fire-and-forget
+                }).catch(() => {});
             }
 
-            // Clear all form input fields so next user must re-enter credentials
-            const formFields = [
-                'signupEmail', 'signupPhone', 'signupPassword',
-                'loginEmail', 'loginPassword',
-                'resetEmail', 'resetOtp', 'resetNewPassword', 'resetConfirmPassword'
-            ];
-            formFields.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.value = '';
-            });
-            // Clear status messages
+            // ── Wipe EVERY input field immediately ───────────────────────────
+            clearAllInputFields();
+
+            // ── Reset payment status banners ─────────────────────────────────
+            const cryptoStatus  = document.getElementById('cryptoPayStatus');
+            if (cryptoStatus) { cryptoStatus.style.display = 'none'; cryptoStatus.textContent = ''; }
+            const upgradeStatus = document.getElementById('upgradePayStatus');
+            if (upgradeStatus) { upgradeStatus.style.display = 'none'; upgradeStatus.textContent = ''; }
+
+            // ── Clear portal status message ──────────────────────────────────
             const statusEl = document.getElementById('statusMessage');
             if (statusEl) { statusEl.style.display = 'none'; statusEl.textContent = ''; }
 
-            // Clear all session data from localStorage
+            // ── Stop any in-progress payment polling ─────────────────────────
+            if (_pollInterval)    { clearInterval(_pollInterval);    _pollInterval = null; }
+            if (_upgPollInterval) { clearInterval(_upgPollInterval); _upgPollInterval = null; }
+            closePaymentModal();
+            closeUpgradeModal();
+
+            // ── Re-enable payment buttons in case they were mid-flow ─────────
+            const btnPay = document.getElementById('btnPay');
+            if (btnPay) {
+                btnPay.disabled  = false;
+                btnPay.innerHTML = '<span class="mpesa-logo">M-Pesa</span> Pay KES 1,000 Now';
+            }
+            const btnUpg = document.getElementById('btnUpgradePay');
+            if (btnUpg) {
+                btnUpg.disabled     = false;
+                btnUpg.textContent  = 'Pay KES 3,000 via M-Pesa';
+            }
+
+            // ── Clear localStorage session data ──────────────────────────────
             localStorage.removeItem(SESSION_KEY);
             localStorage.removeItem(TOKEN_KEY);
             localStorage.removeItem(EMAIL_KEY);
-            // NOTE: CRYPTO_PAID_KEY is intentionally kept so returning
-            // subscribers don't re-see the payment panel after re-login.
-            // The backend is the source of truth — it re-confirms paid status
-            // on login via the crypto_paid field in the auth response.
+            // NOTE: CRYPTO_PAID_KEY intentionally kept — backend re-confirms
+            // paid status on next login via crypto_paid field in auth response.
 
-            // Lock all gated content
+            // ── Reset all gated UI ───────────────────────────────────────────
             lockMediaHub();
             renderCryptoPanel();
             renderUpgradePanel();
-
-            // Reset UI state
             updateNavAuthState();
             updatePortalState();
 
-            // Scroll to portal so they can log back in immediately
+            // Switch portal back to signup tab so the next user sees a clean form
+            switchTab('signup');
+
             document.getElementById('portal').scrollIntoView({ behavior: 'smooth' });
         }
 
@@ -2580,18 +2688,21 @@
                 if (response.ok && data.status === 'success') {
                     localStorage.setItem(SESSION_KEY, 'active_subscriber');
                     if (data.token) localStorage.setItem(TOKEN_KEY, data.token);
-                    // Store email so nav chip and portal can display it
                     if (data.email) localStorage.setItem(EMAIL_KEY, data.email);
 
-                    // Restore crypto_paid and upgrade_paid from backend auth response — ensures
-                    // returning subscribers always see the correct panel state
-                    // even if they cleared localStorage between sessions.
                     if (data.crypto_paid === true) {
                         localStorage.setItem(CRYPTO_PAID_KEY, 'true');
                     }
                     if (data.upgrade_paid === true) {
                         localStorage.setItem(UPGRADE_PAID_KEY, 'true');
                     }
+
+                    // Clear credential fields immediately after successful auth
+                    // so they don't remain readable in the DOM
+                    ['signupEmail','signupPhone','signupPassword','loginEmail','loginPassword'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.value = '';
+                    });
 
                     unlockMediaHub();
                     await loadDynamicMediaUrls(data.media || data.media_urls || null);
