@@ -220,6 +220,148 @@
         .reset-status.error   { background:rgba(239,68,68,0.15);  border:1px solid #ef444444; color:#fca5a5; }
         .otp-hint { font-size:0.78rem; color:#64748b; margin-bottom:14px; line-height:1.5; }
 
+        /* ══════════════════════════════════════════════════
+           AT CODING FOR FREEDOM — TRUST PILLAR CAROUSEL
+           ══════════════════════════════════════════════════ */
+        .cff-trust-section {
+            margin: 60px 0 20px;
+            padding: 56px 40px 48px;
+            background: linear-gradient(145deg,#0a1628 0%,#0f172a 50%,#071220 100%);
+            border: 1px solid rgba(56,189,248,0.18);
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .cff-trust-section::before {
+            content: '';
+            position: absolute; inset: 0; pointer-events: none;
+            background:
+                radial-gradient(ellipse at 5% 0%, rgba(56,189,248,0.09) 0%, transparent 55%),
+                radial-gradient(ellipse at 95% 100%, rgba(16,185,129,0.07) 0%, transparent 55%);
+        }
+        .cff-trust-section::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent 0%, var(--accent) 35%, var(--success) 65%, transparent 100%);
+            opacity: 0.7;
+        }
+        @media(max-width:640px) {
+            .cff-trust-section { padding: 36px 18px 32px; margin: 40px 0; }
+        }
+        .cff-trust-eyebrow {
+            font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em;
+            text-transform: uppercase; color: var(--accent);
+            margin-bottom: 6px; display: flex; align-items: center; gap: 8px;
+        }
+        .cff-trust-eyebrow-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--accent); animation: pulse-new 1.8s infinite;
+            flex-shrink: 0;
+        }
+        .cff-trust-heading {
+            font-size: 1.75rem; font-weight: 800; color: var(--text-main);
+            margin: 0 0 6px; letter-spacing: -0.02em; line-height: 1.25;
+        }
+        @media(max-width:600px) { .cff-trust-heading { font-size: 1.35rem; } }
+        .cff-trust-sub {
+            font-size: 0.93rem; color: var(--text-muted);
+            margin: 0 0 36px; line-height: 1.7; max-width: 560px;
+        }
+
+        /* Stack area */
+        .cff-stack-wrap {
+            position: relative; min-height: 260px;
+            margin-bottom: 22px;
+        }
+        .cff-card {
+            position: absolute; inset: 0;
+            background: rgba(30,41,59,0.75);
+            border: 1px solid rgba(56,189,248,0.14);
+            border-radius: 14px;
+            padding: 28px 28px 22px;
+            display: flex; flex-direction: column; gap: 14px;
+            opacity: 0;
+            transform: translateY(20px) scale(0.985);
+            transition: opacity 0.52s cubic-bezier(.4,0,.2,1),
+                        transform 0.52s cubic-bezier(.4,0,.2,1);
+            pointer-events: none;
+            backdrop-filter: blur(4px);
+        }
+        @media(max-width:520px) { .cff-card { padding: 20px 16px 18px; } }
+        .cff-card.active {
+            opacity: 1; transform: translateY(0) scale(1); pointer-events: auto;
+        }
+        .cff-card.exit {
+            opacity: 0; transform: translateY(-20px) scale(0.985);
+            transition: opacity 0.38s cubic-bezier(.4,0,.2,1),
+                        transform 0.38s cubic-bezier(.4,0,.2,1);
+        }
+        .cff-card-header { display: flex; align-items: flex-start; gap: 14px; }
+        .cff-icon-circle {
+            width: 46px; height: 46px; border-radius: 12px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+        }
+        .cff-card-meta { flex: 1; min-width: 0; }
+        .cff-pillar-label {
+            font-size: 0.68rem; font-weight: 700;
+            letter-spacing: 0.1em; text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .cff-card-title {
+            font-size: 1.05rem; font-weight: 800;
+            color: var(--text-main); line-height: 1.35;
+        }
+        @media(max-width:520px) { .cff-card-title { font-size: 0.95rem; } }
+        .cff-card-body {
+            font-size: 0.88rem; color: var(--text-muted);
+            line-height: 1.75;
+        }
+        .cff-card-tags {
+            display: flex; flex-wrap: wrap; gap: 7px;
+            margin-top: 2px;
+        }
+        .cff-tag {
+            font-size: 0.72rem; font-weight: 600;
+            padding: 3px 11px; border-radius: 999px; border: 1px solid;
+            white-space: nowrap;
+        }
+
+        /* Controls */
+        .cff-controls {
+            display: flex; align-items: center; gap: 12px; margin-top: 4px;
+        }
+        .cff-dots { display: flex; gap: 6px; align-items: center; }
+        .cff-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--border); cursor: pointer;
+            transition: background 0.28s, transform 0.28s;
+        }
+        .cff-dot.active {
+            background: var(--accent); transform: scale(1.5);
+        }
+        .cff-bar-track {
+            flex: 1; height: 2px; border-radius: 99px;
+            background: var(--border); overflow: hidden;
+        }
+        .cff-bar-fill {
+            height: 100%; border-radius: 99px;
+            background: linear-gradient(90deg, var(--accent), var(--success));
+            width: 0%; transition: width linear;
+        }
+        .cff-counter-txt {
+            font-size: 0.72rem; color: #475569;
+            flex-shrink: 0; min-width: 38px; text-align: right;
+        }
+        .cff-nav-btns { display: flex; gap: 6px; flex-shrink: 0; }
+        .cff-nav-btn {
+            width: 30px; height: 30px; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--card-bg);
+            color: var(--text-muted); cursor: pointer; font-size: 0.85rem;
+            display: flex; align-items: center; justify-content: center;
+            transition: border-color 0.2s, color 0.2s;
+        }
+        .cff-nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+
         footer { border-top: 1px solid var(--border); margin-top: 80px; padding: 40px 0; text-align: center; color: var(--text-muted); font-size: 0.9rem; }
         footer a { color: var(--accent); text-decoration: none; }
         footer a:hover { text-decoration: underline; }
@@ -1273,6 +1415,41 @@
                 </p>
             </div>
         </div>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             AT CODING FOR FREEDOM — TRUST PILLAR CAROUSEL
+             Positioned after the upgrade offer so visitors reaching the
+             bottom of the conversion funnel get a final confidence layer
+             before the portal and socials sections.
+             ═══════════════════════════════════════════════════════════ -->
+        <section class="cff-trust-section" id="our-principles" aria-label="At Coding For Freedom — our client commitments">
+            <div style="position:relative;z-index:1;">
+
+                <div class="cff-trust-eyebrow">
+                    <span class="cff-trust-eyebrow-dot"></span>
+                    At Coding For Freedom
+                </div>
+                <h2 class="cff-trust-heading">Why clients stay — and grow — with us</h2>
+                <p class="cff-trust-sub">Seven principles that shape every service, signal, and line of code we deliver.</p>
+
+                <!-- Card stack -->
+                <div class="cff-stack-wrap" id="cffStackWrap">
+                    <!-- Cards injected by JS -->
+                </div>
+
+                <!-- Controls -->
+                <div class="cff-controls">
+                    <div class="cff-dots" id="cffDots"></div>
+                    <div class="cff-bar-track"><div class="cff-bar-fill" id="cffBarFill"></div></div>
+                    <span class="cff-counter-txt" id="cffCounter">1 / 7</span>
+                    <div class="cff-nav-btns">
+                        <button class="cff-nav-btn" id="cffPrev" aria-label="Previous pillar">&#8592;</button>
+                        <button class="cff-nav-btn" id="cffNext" aria-label="Next pillar">&#8594;</button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
 
         <section id="socials" class="card" style="margin-bottom: 40px; border-color: var(--accent);">
             <span class="badge" style="background: #0369a1;">Community & Channels</span>
@@ -2773,6 +2950,196 @@
                 }
             }
         }
+
+        // ══════════════════════════════════════════════════════
+        // AT CODING FOR FREEDOM — TRUST PILLAR CAROUSEL
+        // ══════════════════════════════════════════════════════
+        (function () {
+            const PILLARS = [
+                {
+                    num: '01', emoji: '📈',
+                    iconBg: 'rgba(56,189,248,0.12)', iconBorder: 'rgba(56,189,248,0.22)',
+                    labelColor: '#38bdf8',
+                    title: 'ROI and business impact',
+                    body: 'Every signal, lesson, and tool we build is measured against one question: does it move the needle for you? We track outcomes, not outputs — so your investment compounds over time, not just on day one.',
+                    tags: ['Measurable returns', 'Long-term value', 'Outcome-first'],
+                    tagBg: 'rgba(56,189,248,0.10)', tagBorder: 'rgba(56,189,248,0.28)', tagColor: '#38bdf8',
+                },
+                {
+                    num: '02', emoji: '🎯',
+                    iconBg: 'rgba(16,185,129,0.12)', iconBorder: 'rgba(16,185,129,0.22)',
+                    labelColor: '#10b981',
+                    title: 'Accuracy and reliability — foundational, not optional',
+                    body: 'Crypto signals that arrive late or wrong cost real money. Our systems are built from the ground up for precision: cross-validated data pipelines, automated quality checks, and zero tolerance for guesswork.',
+                    tags: ['Verified signals', 'Automated QA', 'Zero guesswork'],
+                    tagBg: 'rgba(16,185,129,0.10)', tagBorder: 'rgba(16,185,129,0.28)', tagColor: '#10b981',
+                },
+                {
+                    num: '03', emoji: '🤝',
+                    iconBg: 'rgba(139,92,246,0.12)', iconBorder: 'rgba(139,92,246,0.22)',
+                    labelColor: '#a78bfa',
+                    title: 'Trust, stability and risk reduction',
+                    body: 'We operate transparently — our methodology is documented, our track record is visible, and our clients are never left guessing. Trust is not claimed; it is built through consistency you can verify.',
+                    tags: ['Transparent methodology', 'Consistent delivery', 'Verifiable history'],
+                    tagBg: 'rgba(139,92,246,0.10)', tagBorder: 'rgba(139,92,246,0.28)', tagColor: '#a78bfa',
+                },
+                {
+                    num: '04', emoji: '🚀',
+                    iconBg: 'rgba(245,158,11,0.12)', iconBorder: 'rgba(245,158,11,0.22)',
+                    labelColor: '#f59e0b',
+                    title: 'Scalability enables sustainable growth',
+                    body: 'Whether you are a first-time trader or scaling an automated portfolio, our infrastructure grows with you. No re-onboarding, no plan switches — the same platform handles day one and year three.',
+                    tags: ['Grows with you', 'No plan ceilings', 'Built to scale'],
+                    tagBg: 'rgba(245,158,11,0.10)', tagBorder: 'rgba(245,158,11,0.28)', tagColor: '#f59e0b',
+                },
+                {
+                    num: '05', emoji: '🔒',
+                    iconBg: 'rgba(239,68,68,0.12)', iconBorder: 'rgba(239,68,68,0.22)',
+                    labelColor: '#f87171',
+                    title: 'Security and compliance — built in, not bolted on',
+                    body: 'Your data, payments, and account are protected by encrypted sessions, Safaricom-secured M-Pesa flows, and hardened backend infrastructure. Compliance is not an afterthought here — it is the starting point.',
+                    tags: ['Encrypted sessions', 'Secure payments', 'Compliance-first'],
+                    tagBg: 'rgba(239,68,68,0.10)', tagBorder: 'rgba(239,68,68,0.28)', tagColor: '#f87171',
+                },
+                {
+                    num: '06', emoji: '🔧',
+                    iconBg: 'rgba(56,189,248,0.10)', iconBorder: 'rgba(56,189,248,0.20)',
+                    labelColor: '#38bdf8',
+                    title: 'Solutions built for your business, not the average',
+                    body: 'Generic tools produce generic results. We tailor signals, class pacing, and automation pipelines to fit your trading style, learning pace, and business model — because the best fit is the one that actually fits.',
+                    tags: ['Tailored signals', 'Adaptive pacing', 'Your rules'],
+                    tagBg: 'rgba(56,189,248,0.10)', tagBorder: 'rgba(56,189,248,0.25)', tagColor: '#38bdf8',
+                },
+                {
+                    num: '07', emoji: '💡',
+                    iconBg: 'rgba(16,185,129,0.10)', iconBorder: 'rgba(16,185,129,0.20)',
+                    labelColor: '#10b981',
+                    title: 'Efficiency drives growth — cost savings sustain it',
+                    body: 'Automation, smart pipelines, and a single one-time payment model mean you spend less time on overhead and more time on trading. Lower cost of operation is not a feature — it is a competitive advantage we hand directly to you.',
+                    tags: ['One-time pricing', 'Automated pipelines', 'Lower overhead'],
+                    tagBg: 'rgba(16,185,129,0.10)', tagBorder: 'rgba(16,185,129,0.25)', tagColor: '#10b981',
+                },
+            ];
+
+            const INTERVAL   = 5800;
+            const wrap       = document.getElementById('cffStackWrap');
+            const dotsEl     = document.getElementById('cffDots');
+            const barFill    = document.getElementById('cffBarFill');
+            const counterEl  = document.getElementById('cffCounter');
+            const prevBtn    = document.getElementById('cffPrev');
+            const nextBtn    = document.getElementById('cffNext');
+
+            if (!wrap) return;
+
+            let current = 0, timer = null, paused = false;
+
+            // ── Build cards ──────────────────────────────────────────────────
+            PILLARS.forEach(function (p, i) {
+                var card = document.createElement('div');
+                card.className = 'cff-card' + (i === 0 ? ' active' : '');
+                card.setAttribute('aria-hidden', i !== 0 ? 'true' : 'false');
+                card.innerHTML =
+                    '<div class="cff-card-header">' +
+                        '<div class="cff-icon-circle" style="background:' + p.iconBg + ';border:1px solid ' + p.iconBorder + ';">' +
+                            '<span aria-hidden="true">' + p.emoji + '</span>' +
+                        '</div>' +
+                        '<div class="cff-card-meta">' +
+                            '<div class="cff-pillar-label" style="color:' + p.labelColor + ';">Pillar ' + p.num + '</div>' +
+                            '<div class="cff-card-title">' + p.title + '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="cff-card-body">' + p.body + '</div>' +
+                    '<div class="cff-card-tags">' +
+                        p.tags.map(function (t) {
+                            return '<span class="cff-tag" style="background:' + p.tagBg + ';border-color:' + p.tagBorder + ';color:' + p.tagColor + ';">' + t + '</span>';
+                        }).join('') +
+                    '</div>';
+                wrap.appendChild(card);
+            });
+
+            // ── Fix container height after paint ─────────────────────────────
+            requestAnimationFrame(function () {
+                var cards = wrap.querySelectorAll('.cff-card');
+                var maxH  = 0;
+                cards.forEach(function (c) {
+                    c.style.opacity = '1';
+                    maxH = Math.max(maxH, c.offsetHeight);
+                    c.style.opacity = '';
+                });
+                wrap.style.minHeight = (maxH + 8) + 'px';
+            });
+
+            // ── Build dots ───────────────────────────────────────────────────
+            PILLARS.forEach(function (_, i) {
+                var d = document.createElement('div');
+                d.className = 'cff-dot' + (i === 0 ? ' active' : '');
+                d.setAttribute('role', 'button');
+                d.setAttribute('aria-label', 'Pillar ' + (i + 1));
+                d.addEventListener('click', function () { stopTimer(); goTo(i); startTimer(); });
+                dotsEl.appendChild(d);
+            });
+
+            // ── Helpers ───────────────────────────────────────────────────────
+            function cards() { return wrap.querySelectorAll('.cff-card'); }
+            function dots()  { return dotsEl.querySelectorAll('.cff-dot'); }
+
+            function goTo(next) {
+                var all = cards();
+                all[current].classList.remove('active');
+                all[current].classList.add('exit');
+                all[current].setAttribute('aria-hidden', 'true');
+                var prev = current;
+                setTimeout(function () { all[prev].classList.remove('exit'); }, 400);
+                current = (next + PILLARS.length) % PILLARS.length;
+                all[current].classList.add('active');
+                all[current].setAttribute('aria-hidden', 'false');
+                dots().forEach(function (d, i) { d.classList.toggle('active', i === current); });
+                counterEl.textContent = (current + 1) + ' / ' + PILLARS.length;
+            }
+
+            function animateBar() {
+                barFill.style.transition = 'none';
+                barFill.style.width      = '0%';
+                requestAnimationFrame(function () {
+                    barFill.style.transition = 'width ' + INTERVAL + 'ms linear';
+                    barFill.style.width      = '100%';
+                });
+            }
+
+            function stopTimer() {
+                clearInterval(timer);
+                barFill.style.transition = 'none';
+                barFill.style.width      = '0%';
+            }
+
+            function startTimer() {
+                animateBar();
+                timer = setInterval(function () {
+                    goTo(current + 1);
+                    animateBar();
+                }, INTERVAL);
+            }
+
+            // ── Controls ─────────────────────────────────────────────────────
+            prevBtn.addEventListener('click', function () { stopTimer(); goTo(current - 1); startTimer(); });
+            nextBtn.addEventListener('click', function () { stopTimer(); goTo(current + 1); startTimer(); });
+
+            // Pause on hover/touch, resume on leave
+            wrap.addEventListener('mouseenter', function () { stopTimer(); paused = true; });
+            wrap.addEventListener('mouseleave', function () { paused = false; startTimer(); });
+            wrap.addEventListener('touchstart', function () { stopTimer(); paused = true; }, { passive: true });
+            wrap.addEventListener('touchend',   function () { paused = false; startTimer(); });
+
+            // Pause when tab is hidden, resume when visible
+            document.addEventListener('visibilitychange', function () {
+                if (document.visibilityState === 'hidden') { stopTimer(); }
+                else if (!paused) { startTimer(); }
+            });
+
+            counterEl.textContent = '1 / ' + PILLARS.length;
+            startTimer();
+        })();
+
     </script>
 </body>
 </html>
