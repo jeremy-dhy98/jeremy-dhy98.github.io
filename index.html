@@ -2583,11 +2583,14 @@
                     // Store email so nav chip and portal can display it
                     if (data.email) localStorage.setItem(EMAIL_KEY, data.email);
 
-                    // Restore crypto_paid from backend auth response — ensures
+                    // Restore crypto_paid and upgrade_paid from backend auth response — ensures
                     // returning subscribers always see the correct panel state
                     // even if they cleared localStorage between sessions.
                     if (data.crypto_paid === true) {
                         localStorage.setItem(CRYPTO_PAID_KEY, 'true');
+                    }
+                    if (data.upgrade_paid === true) {
+                        localStorage.setItem(UPGRADE_PAID_KEY, 'true');
                     }
 
                     unlockMediaHub();
