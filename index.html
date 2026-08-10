@@ -1203,6 +1203,184 @@
             width:100%; max-width:400px; text-align:center;
             position:relative; animation:modal-in .25s ease;
         }
+        
+        /* ═══════════════════════════════════════════════════
+           INFORMATION CENTRE — BELL ICON + SLIDE-DOWN PANEL
+           ═══════════════════════════════════════════════════ */
+
+        /* Bell button */
+        .nav-info-btn {
+            position: relative; background: none; border: none;
+            cursor: pointer; padding: 5px 6px; border-radius: 8px;
+            color: var(--text-muted); display: flex; align-items: center;
+            justify-content: center; flex-shrink: 0;
+            transition: color 0.2s, background 0.2s;
+        }
+        .nav-info-btn:hover { color: var(--accent); background: rgba(56,189,248,0.08); }
+        .nav-info-btn svg   { width: 20px; height: 20px; display: block; }
+
+        /* Pulsing red badge */
+        .nav-info-badge {
+            position: absolute; top: 1px; right: 1px;
+            min-width: 16px; height: 16px;
+            background: #ef4444; color: #fff;
+            font-size: 0.58rem; font-weight: 900;
+            border-radius: 999px; display: none;
+            align-items: center; justify-content: center;
+            padding: 0 3px; line-height: 1;
+            border: 2px solid rgba(15,23,42,0.95);
+            pointer-events: none;
+        }
+        .nav-info-badge.has-unread {
+            display: flex;
+            animation: ibadge-in 0.3s cubic-bezier(.4,0,.2,1),
+                       ibadge-pulse 2.2s 0.35s ease-in-out infinite;
+        }
+        @keyframes ibadge-in {
+            from { transform: scale(0); opacity: 0; }
+            to   { transform: scale(1); opacity: 1; }
+        }
+        @keyframes ibadge-pulse {
+            0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.55); }
+            55%     { box-shadow: 0 0 0 5px rgba(239,68,68,0); }
+        }
+
+        /* Bell rings briefly when a new update arrives */
+        @keyframes bell-ring {
+            0%,100% { transform: rotate(0); }
+            10%     { transform: rotate(14deg); }
+            28%     { transform: rotate(-12deg); }
+            45%     { transform: rotate(9deg); }
+            60%     { transform: rotate(-6deg); }
+            75%     { transform: rotate(3deg); }
+            88%     { transform: rotate(-1deg); }
+        }
+        .nav-info-btn.ringing svg { animation: bell-ring 0.75s ease; }
+
+        /* Full-screen close layer — click outside panel to dismiss */
+        .info-overlay {
+            display: none; position: fixed; inset: 0; z-index: 3999;
+        }
+        .info-overlay.open { display: block; }
+
+        /* Slide-down panel */
+        .info-panel {
+            position: fixed; top: 58px; right: 12px;
+            width: 360px; max-width: calc(100vw - 24px);
+            max-height: calc(100vh - 78px);
+            background: #1a2742;
+            border: 1px solid rgba(56,189,248,0.22);
+            border-radius: 16px;
+            box-shadow: 0 20px 52px rgba(0,0,0,0.6), 0 0 0 1px rgba(56,189,248,0.07);
+            display: flex; flex-direction: column; overflow: hidden;
+            z-index: 4000;
+            transform: translateY(-10px) scale(0.97);
+            opacity: 0;
+            transition: transform 0.22s cubic-bezier(.4,0,.2,1),
+                        opacity   0.22s cubic-bezier(.4,0,.2,1);
+            pointer-events: none;
+        }
+        .info-panel.open {
+            transform: translateY(0) scale(1); opacity: 1; pointer-events: auto;
+        }
+        .info-panel::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent) 40%, var(--success) 70%, transparent);
+            border-radius: 16px 16px 0 0;
+        }
+        @media(max-width: 420px) {
+            .info-panel { right: 8px; left: 8px; width: auto; top: 62px; }
+        }
+
+        /* Panel header */
+        .info-panel-head {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 13px 16px 11px;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            flex-shrink: 0; background: rgba(10,22,48,0.6);
+        }
+        .info-panel-title {
+            display: flex; align-items: center; gap: 8px;
+            font-weight: 800; font-size: 0.88rem; color: var(--text-main);
+        }
+        .info-live-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--accent); flex-shrink: 0;
+            animation: pulse-new 2s infinite;
+        }
+        .info-head-actions { display: flex; align-items: center; gap: 6px; }
+        .info-mark-all {
+            background: none; border: none; color: var(--accent);
+            font-size: 0.72rem; font-weight: 700; cursor: pointer;
+            padding: 3px 7px; border-radius: 4px;
+            transition: background 0.15s;
+        }
+        .info-mark-all:hover { background: rgba(56,189,248,0.1); }
+        .info-mark-all:disabled { opacity: 0.35; cursor: default; }
+        .info-panel-close {
+            background: none; border: none; color: #475569;
+            font-size: 1.2rem; cursor: pointer; padding: 2px 5px;
+            border-radius: 5px; line-height: 1;
+            transition: color 0.15s, background 0.15s;
+        }
+        .info-panel-close:hover { color: var(--text-main); background: rgba(255,255,255,0.06); }
+
+        /* Scrollable list */
+        .info-panel-list {
+            overflow-y: auto; flex: 1; padding: 6px 0;
+        }
+        .info-panel-list::-webkit-scrollbar { width: 3px; }
+        .info-panel-list::-webkit-scrollbar-thumb {
+            background: rgba(56,189,248,0.25); border-radius: 99px;
+        }
+
+        /* Individual update item */
+        .info-item {
+            padding: 11px 16px; position: relative; cursor: default;
+            transition: background 0.14s;
+            border-left: 3px solid transparent;
+        }
+        .info-item + .info-item { border-top: 1px solid rgba(255,255,255,0.04); }
+        .info-item:hover  { background: rgba(255,255,255,0.025); }
+        .info-item.unread { border-left-color: var(--accent); background: rgba(56,189,248,0.04); }
+        .info-item.unread:hover { background: rgba(56,189,248,0.07); }
+
+        /* Unread dot — top-right of item */
+        .info-item-dot {
+            position: absolute; top: 13px; right: 13px;
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--accent);
+        }
+        .info-item:not(.unread) .info-item-dot { display: none; }
+
+        /* Type badge row */
+        .info-item-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 0.63rem; font-weight: 800; letter-spacing: 0.07em;
+            text-transform: uppercase; padding: 2px 9px;
+            border-radius: 999px; border: 1px solid; margin-bottom: 5px;
+        }
+        .info-item-badge.type-info    { background:rgba(56,189,248,0.1);  color:#38bdf8; border-color:rgba(56,189,248,0.28); }
+        .info-item-badge.type-warning { background:rgba(245,158,11,0.12); color:#f59e0b; border-color:rgba(245,158,11,0.3);  }
+        .info-item-badge.type-success { background:rgba(16,185,129,0.11); color:#10b981; border-color:rgba(16,185,129,0.28); }
+        .info-item-badge.type-outage  { background:rgba(239,68,68,0.11);  color:#f87171; border-color:rgba(239,68,68,0.28);  }
+        .info-item-badge.type-tip     { background:rgba(139,92,246,0.11); color:#a78bfa; border-color:rgba(139,92,246,0.28); }
+
+        .info-item-msg  { font-size: 0.83rem; color: var(--text-main); line-height: 1.58; margin-bottom: 4px; }
+        .info-item-time { font-size: 0.7rem;  color: #475569; }
+
+        /* Empty / loading state */
+        .info-panel-empty {
+            padding: 38px 20px; text-align: center;
+            color: #475569; font-size: 0.84rem; line-height: 1.7;
+        }
+        .info-panel-empty-icon { font-size: 2rem; display: block; margin-bottom: 9px; opacity: 0.45; }
+
+        /* Footer */
+        .info-panel-foot {
+            padding: 9px 16px; border-top: 1px solid rgba(255,255,255,0.06);
+            font-size: 0.7rem; color: #334155; text-align: center; flex-shrink: 0;
+        }
 
     </style>
 </head>
