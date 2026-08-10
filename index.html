@@ -34,13 +34,32 @@
             align-items: center;
             gap: 24px;
         }
+        /* ═══════════════════════════════════════════════════
+           HEADER / NAV — desktop unchanged, mobile = drawer
+           ═══════════════════════════════════════════════════ */
+        header {
+            border-bottom: 1px solid var(--border);
+            padding: 12px 0;
+            background: rgba(15,23,42,0.97);
+            position: sticky; top: 0;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 500;
+        }
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
         .logo {
-            font-size: 1.1rem; font-weight: 700; color: var(--accent);
+            font-size: 1.05rem; font-weight: 700; color: var(--accent);
             text-decoration: none; display: flex; align-items: center;
             gap: 8px; white-space: nowrap; flex-shrink: 0;
         }
-        .logo-img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; background: var(--card-bg); }
+        .logo-img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--card-bg); }
 
+        /* Desktop nav list */
         .nav-links {
             display: flex; gap: 2px; list-style: none; align-items: center;
             flex-wrap: nowrap; margin-left: auto; flex-shrink: 1; min-width: 0;
@@ -48,15 +67,14 @@
         .nav-links li { display: flex; align-items: center; }
         .nav-links a {
             color: var(--text-muted); text-decoration: none;
-            font-size: 0.8rem; font-weight: 500; transition: color 0.2s, background 0.2s;
+            font-size: 0.8rem; font-weight: 500;
             padding: 5px 7px; border-radius: 4px; white-space: nowrap;
+            transition: color 0.2s, background 0.2s;
         }
         .nav-links a:hover { color: var(--accent); background: rgba(56,189,248,0.06); }
 
-        /* "More" dropdown for less-critical links */
-        .nav-more-wrap {
-            position: relative; display: flex; align-items: center;
-        }
+        /* "More" dropdown */
+        .nav-more-wrap { position: relative; display: flex; align-items: center; }
         .nav-more-btn {
             background: none; border: none; color: var(--text-muted);
             font-size: 0.8rem; font-weight: 500; cursor: pointer;
@@ -67,7 +85,6 @@
         .nav-more-btn:hover { color: var(--accent); background: rgba(56,189,248,0.06); }
         .nav-more-btn svg { transition: transform 0.2s; }
         .nav-more-wrap:hover .nav-more-btn svg { transform: rotate(180deg); }
-
         .nav-more-dropdown {
             display: none; position: absolute; top: calc(100% + 8px); right: 0;
             background: #1e293b; border: 1px solid var(--border);
@@ -81,20 +98,16 @@
             color: var(--text-muted); font-size: 0.82rem; font-weight: 500;
             text-decoration: none; transition: color 0.15s, background 0.15s;
         }
-        .nav-more-dropdown a:hover {
-            color: var(--accent); background: rgba(56,189,248,0.06);
-        }
-        .nav-more-divider {
-            border: none; border-top: 1px solid var(--border); margin: 5px 0;
-        }
+        .nav-more-dropdown a:hover { color: var(--accent); background: rgba(56,189,248,0.06); }
+        .nav-more-divider { border: none; border-top: 1px solid var(--border); margin: 5px 0; }
 
-        /* Thin divider before auth section */
+        /* Thin divider before auth */
         .nav-divider {
             width: 1px; height: 20px;
-            background: var(--border);
-            margin: 0 6px; flex-shrink: 0;
+            background: var(--border); margin: 0 6px; flex-shrink: 0;
         }
 
+        /* Auth button */
         .btn-auth-nav {
             background: var(--accent); color: #0f172a !important;
             padding: 7px 14px; border-radius: 6px; font-weight: 700;
@@ -103,9 +116,166 @@
         }
         .btn-auth-nav:hover { background: var(--accent-hover); }
 
+        /* ── Hamburger button — visible only on mobile ── */
+        .nav-hamburger {
+            display: none;
+            flex-direction: column; justify-content: center; gap: 5px;
+            background: none; border: none; cursor: pointer;
+            padding: 6px; border-radius: 6px;
+            transition: background 0.2s;
+            flex-shrink: 0; margin-left: auto;
+        }
+        .nav-hamburger:hover { background: rgba(56,189,248,0.08); }
+        .nav-hamburger span {
+            display: block; width: 22px; height: 2px;
+            background: var(--text-muted); border-radius: 2px;
+            transition: transform 0.28s cubic-bezier(.4,0,.2,1),
+                        opacity 0.2s,
+                        background 0.2s;
+            transform-origin: center;
+        }
+        .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); background: var(--accent); }
+        .nav-hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+        .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); background: var(--accent); }
+
+        /* ── Mobile drawer ── */
+        .nav-drawer-overlay {
+            display: none; position: fixed; inset: 0; z-index: 490;
+            background: rgba(0,0,0,0.55); backdrop-filter: blur(3px);
+        }
+        .nav-drawer-overlay.open { display: block; }
+
+        .nav-drawer {
+            position: fixed; top: 0; right: 0; bottom: 0;
+            width: min(300px, 82vw);
+            background: #111c2e;
+            border-left: 1px solid var(--border);
+            z-index: 495;
+            display: flex; flex-direction: column;
+            padding: 0 0 24px;
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+            box-shadow: -8px 0 32px rgba(0,0,0,0.45);
+        }
+        .nav-drawer.open { transform: translateX(0); }
+
+        /* Drawer header row */
+        .nav-drawer-head {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .nav-drawer-logo {
+            font-size: 0.95rem; font-weight: 700; color: var(--accent);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .nav-drawer-close {
+            background: none; border: none; color: #64748b;
+            font-size: 1.5rem; cursor: pointer; line-height: 1; padding: 2px 6px;
+            border-radius: 6px; transition: color 0.15s, background 0.15s;
+        }
+        .nav-drawer-close:hover { color: var(--text-main); background: rgba(255,255,255,0.05); }
+
+        /* Drawer nav links */
+        .nav-drawer-links {
+            list-style: none; flex: 1; overflow-y: auto; padding: 12px 0;
+        }
+        .nav-drawer-links li { border-bottom: 1px solid rgba(51,65,85,0.4); }
+        .nav-drawer-links li:last-child { border-bottom: none; }
+        .nav-drawer-links a,
+        .nav-drawer-links button {
+            display: flex; align-items: center; gap: 12px;
+            width: 100%; padding: 13px 20px;
+            color: var(--text-muted); text-decoration: none;
+            font-size: 0.92rem; font-weight: 500;
+            background: none; border: none; cursor: pointer; text-align: left;
+            transition: color 0.15s, background 0.15s;
+        }
+        .nav-drawer-links a:hover,
+        .nav-drawer-links button:hover {
+            color: var(--accent); background: rgba(56,189,248,0.05);
+        }
+        .nav-drawer-links .drawer-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+
+        /* Drawer action buttons */
+        .nav-drawer-actions { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
+        .nav-drawer-cta {
+            width: 100%; padding: 12px;
+            background: var(--accent); color: #0f172a;
+            border: none; border-radius: 8px; font-weight: 700;
+            font-size: 0.92rem; cursor: pointer; text-align: center;
+            transition: background 0.2s;
+        }
+        .nav-drawer-cta:hover { background: var(--accent-hover); }
+        .nav-drawer-cta.green {
+            background: linear-gradient(135deg,#10b981,#0d9488); color: #fff;
+        }
+        .nav-drawer-cta.green:hover { opacity: 0.88; }
+
+        /* Drawer auth chip (logged-in state) */
+        .nav-drawer-user {
+            display: flex; align-items: center; gap: 10px;
+            padding: 12px 20px;
+            border-top: 1px solid var(--border);
+        }
+        .nav-drawer-avatar {
+            width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+            background: linear-gradient(135deg, var(--accent), #0284c7);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 0.85rem; color: #0f172a;
+        }
+        .nav-drawer-email { font-size: 0.78rem; color: var(--text-muted); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .nav-drawer-signout {
+            background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3);
+            color: #fca5a5; padding: 5px 10px; border-radius: 999px;
+            font-size: 0.72rem; font-weight: 700; cursor: pointer; white-space: nowrap;
+            transition: background 0.2s;
+        }
+        .nav-drawer-signout:hover { background: rgba(239,68,68,0.25); }
+
+        /* ── Sticky mobile CTA bar — floats above bottom edge ── */
+        .sticky-cta-bar {
+            display: none;
+            position: fixed; bottom: 0; left: 0; right: 0;
+            z-index: 480;
+            padding: 10px 16px 12px;
+            background: rgba(11,18,35,0.97);
+            border-top: 1px solid rgba(56,189,248,0.18);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .sticky-cta-bar.visible { display: flex; gap: 10px; align-items: center; }
+        .sticky-cta-bar .s-cta-main {
+            flex: 1; padding: 11px;
+            background: var(--accent); color: #0f172a;
+            border: none; border-radius: 8px; font-weight: 800;
+            font-size: 0.92rem; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .sticky-cta-bar .s-cta-main:hover { background: var(--accent-hover); }
+        .sticky-cta-bar .s-cta-secondary {
+            flex: 1; padding: 11px;
+            background: rgba(56,189,248,0.1); color: var(--accent);
+            border: 1px solid rgba(56,189,248,0.3); border-radius: 8px;
+            font-weight: 700; font-size: 0.9rem; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .sticky-cta-bar .s-cta-secondary:hover { background: rgba(56,189,248,0.18); }
+        /* Hide sticky bar when user is logged in */
+        .sticky-cta-bar.logged-in { display: none !important; }
+
+        /* Add bottom padding to body so sticky bar never hides content */
+        body.has-sticky-cta { padding-bottom: 64px; }
+
+        @media(max-width: 900px) {
+            .nav-links { display: none; }
+            .nav-hamburger { display: flex; }
+        }
+
         .hero {
             position: relative;
-            padding: 100px 20px 80px;
+            padding: 90px 20px 72px;
             text-align: center;
             border-radius: 16px;
             margin: 20px 0 40px;
@@ -113,17 +283,41 @@
             border: 1px solid var(--border);
             background-color: var(--bg-color);
         }
+        @media(max-width:600px) {
+            .hero { padding: 64px 16px 52px; margin: 12px 0 28px; border-radius: 12px; }
+        }
         .slideshow-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
         .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: 0; transition: opacity 1.5s ease-in-out; background: var(--card-bg); }
         .slide.active { opacity: 0.55; }
-        /* Person slide: shift down so the full face is visible */
         .slide-person { object-position: center 20%; }
-        .slideshow-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.65); z-index: 2; }
+        /* Stronger overlay on mobile for readability in sunlight */
+        .slideshow-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15,23,42,0.68); z-index: 2;
+        }
+        @media(max-width:600px) {
+            .slideshow-overlay { background: rgba(10,18,40,0.78); }
+        }
         .hero-content { position: relative; z-index: 3; }
 
         .badge { background: #0369a1; color: #e0f2fe; padding: 4px 12px; border-radius: 999px; font-size: 0.85rem; font-weight: 600; display: inline-block; margin-bottom: 16px; }
+
         h1 { font-size: 2.5rem; margin-bottom: 16px; font-weight: 800; letter-spacing: -0.025em; }
-        .hero p { font-size: 1.15rem; color: var(--text-muted); max-width: 700px; margin: 0 auto 30px; }
+        @media(max-width:600px) {
+            h1 { font-size: 1.7rem; letter-spacing: -0.02em; margin-bottom: 12px; }
+        }
+        /* Hero subtext — brighter and larger on mobile for sunlight legibility */
+        .hero p {
+            font-size: 1.15rem; color: var(--text-muted);
+            max-width: 700px; margin: 0 auto 30px;
+        }
+        @media(max-width:600px) {
+            .hero p {
+                font-size: 1rem;
+                color: #cbd5e1;   /* brighter than text-muted on mobile */
+                margin-bottom: 22px;
+            }
+        }
 
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin: 40px 0; }
         .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 30px; text-align: left; }
@@ -132,16 +326,32 @@
 
         .social-links-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 15px; }
         .social-chip { display: flex; align-items: center; gap: 8px; background: var(--bg-color); border: 1px solid var(--border); padding: 8px 16px; border-radius: 8px; color: var(--text-main); text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; }
-        .social-chip:hover { border-color: var(--accent); background: rgba(56, 189, 248, 0.1); color: var(--accent); }
+        .social-chip:hover { border-color: var(--accent); background: rgba(56,189,248,0.1); color: var(--accent); }
         .social-chip svg { width: 18px; height: 18px; fill: currentColor; }
 
-        .media-item-box { background: var(--bg-color); border: 1px solid var(--border); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; }
+        /* Media cards — tighter on mobile */
+        .media-item-box {
+            background: var(--bg-color); border: 1px solid var(--border);
+            border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
         .media-element-wrapper { position: relative; border-radius: 6px; overflow: hidden; width: 100%; min-height: 280px; max-height: 420px; background: #000; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
         .media-element-wrapper video, .media-element-wrapper img { width: 100%; height: 100%; max-height: 400px; object-fit: contain; background: #000; border-radius: 4px; }
         .media-status { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
 
         .subscriber-view { display: none; flex-direction: column; gap: 8px; }
-        .visitor-view { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 20px; background: rgba(15, 23, 42, 0.6); border-radius: 6px; border: 1px dashed var(--border); }
+
+        /* Visitor-view — compact on mobile, reduced empty space */
+        .visitor-view {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; text-align: center;
+            padding: 28px 16px;
+            background: rgba(15,23,42,0.6);
+            border-radius: 6px; border: 1px dashed var(--border);
+        }
+        @media(max-width:600px) {
+            .visitor-view { padding: 18px 12px; }
+        }
         .visitor-view p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 12px; }
         .btn-unlock { background: var(--accent); color: #0f172a; border: none; padding: 8px 16px; font-weight: 700; font-size: 0.85rem; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; }
         .btn-unlock:hover { background: var(--accent-hover); }
@@ -456,8 +666,6 @@
             color: var(--text-main);
         }
 
-        @media(max-width: 900px) { .nav-links { display: none; } }
-
         /* ── NAV AUTH STATES ── */
         .nav-auth-area { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 
@@ -670,13 +878,16 @@
             border: 1px solid #334155;
             border-radius: 14px; padding: 28px 24px;
         }
+        @media(max-width:480px) {
+            .crypto-payment-panel { padding: 20px 16px; }
+        }
         .cpp-title {
             font-size: 1rem; font-weight: 800; color: #fff;
             margin-bottom: 4px;
         }
         .cpp-price {
             font-size: 2.2rem; font-weight: 900; color: #f59e0b;
-            line-height: 1; margin-bottom: 6px;
+            line-height: 1; margin-bottom: 8px;
         }
         .cpp-price span { font-size: 1rem; color: #94a3b8; font-weight: 500; }
         .cpp-desc { font-size: 0.82rem; color: #64748b; margin-bottom: 20px; }
@@ -686,19 +897,19 @@
             text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px;
         }
         .cpp-input {
-            width: 100%; padding: 10px 14px;
+            width: 100%; padding: 12px 14px;
             background: #0f172a; border: 1px solid #334155;
-            border-radius: 8px; color: #f8fafc; font-size: 0.95rem;
+            border-radius: 8px; color: #f8fafc; font-size: 1rem;
             margin-bottom: 14px; outline: none;
             transition: border-color 0.2s;
         }
         .cpp-input:focus { border-color: #f59e0b; }
 
         .btn-pay {
-            width: 100%; padding: 13px;
+            width: 100%; padding: 14px;
             background: linear-gradient(135deg,#f59e0b,#f97316);
             color: #0f172a; border: none; border-radius: 8px;
-            font-weight: 800; font-size: 1rem; cursor: pointer;
+            font-weight: 800; font-size: 1.05rem; cursor: pointer;
             transition: opacity 0.2s; display: flex; align-items: center;
             justify-content: center; gap: 8px;
         }
@@ -871,6 +1082,11 @@
         .uc-yes { color:#38bdf8; font-size:1.05rem; }
         .uc-no  { color:#334155; font-size:1.1rem; }
         .uc-pro { color:#10b981; font-size:1.05rem; }
+        /* Mobile — larger text, more padding, easier to scan */
+        @media(max-width:540px) {
+            .upgrade-compare th { font-size:.82rem; padding:8px 10px; }
+            .upgrade-compare td { font-size:.88rem; padding:9px 10px; }
+        }
 
         /* Stat pills */
         .upgrade-stats { display:flex; flex-wrap:wrap; gap:12px; margin-top:4px; }
@@ -988,184 +1204,6 @@
             position:relative; animation:modal-in .25s ease;
         }
 
-        /* ═══════════════════════════════════════════════════
-           INFORMATION CENTRE — BELL ICON + SLIDE-DOWN PANEL
-           ═══════════════════════════════════════════════════ */
-
-        /* Bell button */
-        .nav-info-btn {
-            position: relative; background: none; border: none;
-            cursor: pointer; padding: 5px 6px; border-radius: 8px;
-            color: var(--text-muted); display: flex; align-items: center;
-            justify-content: center; flex-shrink: 0;
-            transition: color 0.2s, background 0.2s;
-        }
-        .nav-info-btn:hover { color: var(--accent); background: rgba(56,189,248,0.08); }
-        .nav-info-btn svg   { width: 20px; height: 20px; display: block; }
-
-        /* Pulsing red badge */
-        .nav-info-badge {
-            position: absolute; top: 1px; right: 1px;
-            min-width: 16px; height: 16px;
-            background: #ef4444; color: #fff;
-            font-size: 0.58rem; font-weight: 900;
-            border-radius: 999px; display: none;
-            align-items: center; justify-content: center;
-            padding: 0 3px; line-height: 1;
-            border: 2px solid rgba(15,23,42,0.95);
-            pointer-events: none;
-        }
-        .nav-info-badge.has-unread {
-            display: flex;
-            animation: ibadge-in 0.3s cubic-bezier(.4,0,.2,1),
-                       ibadge-pulse 2.2s 0.35s ease-in-out infinite;
-        }
-        @keyframes ibadge-in {
-            from { transform: scale(0); opacity: 0; }
-            to   { transform: scale(1); opacity: 1; }
-        }
-        @keyframes ibadge-pulse {
-            0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.55); }
-            55%     { box-shadow: 0 0 0 5px rgba(239,68,68,0); }
-        }
-
-        /* Bell rings briefly when a new update arrives */
-        @keyframes bell-ring {
-            0%,100% { transform: rotate(0); }
-            10%     { transform: rotate(14deg); }
-            28%     { transform: rotate(-12deg); }
-            45%     { transform: rotate(9deg); }
-            60%     { transform: rotate(-6deg); }
-            75%     { transform: rotate(3deg); }
-            88%     { transform: rotate(-1deg); }
-        }
-        .nav-info-btn.ringing svg { animation: bell-ring 0.75s ease; }
-
-        /* Full-screen close layer — click outside panel to dismiss */
-        .info-overlay {
-            display: none; position: fixed; inset: 0; z-index: 3999;
-        }
-        .info-overlay.open { display: block; }
-
-        /* Slide-down panel */
-        .info-panel {
-            position: fixed; top: 58px; right: 12px;
-            width: 360px; max-width: calc(100vw - 24px);
-            max-height: calc(100vh - 78px);
-            background: #1a2742;
-            border: 1px solid rgba(56,189,248,0.22);
-            border-radius: 16px;
-            box-shadow: 0 20px 52px rgba(0,0,0,0.6), 0 0 0 1px rgba(56,189,248,0.07);
-            display: flex; flex-direction: column; overflow: hidden;
-            z-index: 4000;
-            transform: translateY(-10px) scale(0.97);
-            opacity: 0;
-            transition: transform 0.22s cubic-bezier(.4,0,.2,1),
-                        opacity   0.22s cubic-bezier(.4,0,.2,1);
-            pointer-events: none;
-        }
-        .info-panel.open {
-            transform: translateY(0) scale(1); opacity: 1; pointer-events: auto;
-        }
-        .info-panel::before {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-            background: linear-gradient(90deg, transparent, var(--accent) 40%, var(--success) 70%, transparent);
-            border-radius: 16px 16px 0 0;
-        }
-        @media(max-width: 420px) {
-            .info-panel { right: 8px; left: 8px; width: auto; top: 62px; }
-        }
-
-        /* Panel header */
-        .info-panel-head {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 13px 16px 11px;
-            border-bottom: 1px solid rgba(255,255,255,0.07);
-            flex-shrink: 0; background: rgba(10,22,48,0.6);
-        }
-        .info-panel-title {
-            display: flex; align-items: center; gap: 8px;
-            font-weight: 800; font-size: 0.88rem; color: var(--text-main);
-        }
-        .info-live-dot {
-            width: 7px; height: 7px; border-radius: 50%;
-            background: var(--accent); flex-shrink: 0;
-            animation: pulse-new 2s infinite;
-        }
-        .info-head-actions { display: flex; align-items: center; gap: 6px; }
-        .info-mark-all {
-            background: none; border: none; color: var(--accent);
-            font-size: 0.72rem; font-weight: 700; cursor: pointer;
-            padding: 3px 7px; border-radius: 4px;
-            transition: background 0.15s;
-        }
-        .info-mark-all:hover { background: rgba(56,189,248,0.1); }
-        .info-mark-all:disabled { opacity: 0.35; cursor: default; }
-        .info-panel-close {
-            background: none; border: none; color: #475569;
-            font-size: 1.2rem; cursor: pointer; padding: 2px 5px;
-            border-radius: 5px; line-height: 1;
-            transition: color 0.15s, background 0.15s;
-        }
-        .info-panel-close:hover { color: var(--text-main); background: rgba(255,255,255,0.06); }
-
-        /* Scrollable list */
-        .info-panel-list {
-            overflow-y: auto; flex: 1; padding: 6px 0;
-        }
-        .info-panel-list::-webkit-scrollbar { width: 3px; }
-        .info-panel-list::-webkit-scrollbar-thumb {
-            background: rgba(56,189,248,0.25); border-radius: 99px;
-        }
-
-        /* Individual update item */
-        .info-item {
-            padding: 11px 16px; position: relative; cursor: default;
-            transition: background 0.14s;
-            border-left: 3px solid transparent;
-        }
-        .info-item + .info-item { border-top: 1px solid rgba(255,255,255,0.04); }
-        .info-item:hover  { background: rgba(255,255,255,0.025); }
-        .info-item.unread { border-left-color: var(--accent); background: rgba(56,189,248,0.04); }
-        .info-item.unread:hover { background: rgba(56,189,248,0.07); }
-
-        /* Unread dot — top-right of item */
-        .info-item-dot {
-            position: absolute; top: 13px; right: 13px;
-            width: 7px; height: 7px; border-radius: 50%;
-            background: var(--accent);
-        }
-        .info-item:not(.unread) .info-item-dot { display: none; }
-
-        /* Type badge row */
-        .info-item-badge {
-            display: inline-flex; align-items: center; gap: 5px;
-            font-size: 0.63rem; font-weight: 800; letter-spacing: 0.07em;
-            text-transform: uppercase; padding: 2px 9px;
-            border-radius: 999px; border: 1px solid; margin-bottom: 5px;
-        }
-        .info-item-badge.type-info    { background:rgba(56,189,248,0.1);  color:#38bdf8; border-color:rgba(56,189,248,0.28); }
-        .info-item-badge.type-warning { background:rgba(245,158,11,0.12); color:#f59e0b; border-color:rgba(245,158,11,0.3);  }
-        .info-item-badge.type-success { background:rgba(16,185,129,0.11); color:#10b981; border-color:rgba(16,185,129,0.28); }
-        .info-item-badge.type-outage  { background:rgba(239,68,68,0.11);  color:#f87171; border-color:rgba(239,68,68,0.28);  }
-        .info-item-badge.type-tip     { background:rgba(139,92,246,0.11); color:#a78bfa; border-color:rgba(139,92,246,0.28); }
-
-        .info-item-msg  { font-size: 0.83rem; color: var(--text-main); line-height: 1.58; margin-bottom: 4px; }
-        .info-item-time { font-size: 0.7rem;  color: #475569; }
-
-        /* Empty / loading state */
-        .info-panel-empty {
-            padding: 38px 20px; text-align: center;
-            color: #475569; font-size: 0.84rem; line-height: 1.7;
-        }
-        .info-panel-empty-icon { font-size: 2rem; display: block; margin-bottom: 9px; opacity: 0.45; }
-
-        /* Footer */
-        .info-panel-foot {
-            padding: 9px 16px; border-top: 1px solid rgba(255,255,255,0.06);
-            font-size: 0.7rem; color: #334155; text-align: center; flex-shrink: 0;
-        }
-
     </style>
 </head>
 <body>
@@ -1223,26 +1261,6 @@
                     <!-- Divider before auth -->
                     <li class="nav-divider" aria-hidden="true"></li>
 
-                    <!-- ── INFORMATION CENTRE BELL ─────────────────────── -->
-                    <li>
-                        <button class="nav-info-btn" id="navInfoBtn"
-                                onclick="toggleInfoPanel(event)"
-                                aria-label="Information Centre — updates and notices"
-                                title="Information Centre">
-                            <!-- Bell SVG — inline so stroke colour inherits from CSS -->
-                            <svg viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="1.9"
-                                 stroke-linecap="round" stroke-linejoin="round"
-                                 aria-hidden="true">
-                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                            </svg>
-                            <span class="nav-info-badge" id="navInfoBadge"
-                                  aria-label="unread updates"></span>
-                        </button>
-                    </li>
-                    <!-- ─────────────────────────────────────────────────── -->
-
                     <li>
                         <div class="nav-auth-area">
                             <!-- Logged-out state -->
@@ -1262,9 +1280,87 @@
                         </div>
                     </li>
                 </ul>
+
+                <!-- ── MOBILE hamburger (hidden on desktop via CSS) ── -->
+                <button class="nav-hamburger" id="navHamburger"
+                        onclick="openDrawer()"
+                        aria-label="Open navigation menu"
+                        aria-expanded="false">
+                    <span></span><span></span><span></span>
+                </button>
+
             </nav>
         </div>
     </header>
+
+    <!-- ═══════════════════════════════════════════════════
+         MOBILE DRAWER — slides in from the right on mobile
+         Backdrop click and Escape key close it.
+         JS syncs logged-in/out state via updateDrawerState().
+         ═══════════════════════════════════════════════════ -->
+    <div class="nav-drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+
+    <nav class="nav-drawer" id="navDrawer" aria-label="Mobile navigation">
+
+        <div class="nav-drawer-head">
+            <span class="nav-drawer-logo">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <polyline points="16 18 22 12 16 6"/>
+                    <polyline points="8 6 2 12 8 18"/>
+                </svg>
+                Coding For Freedom
+            </span>
+            <button class="nav-drawer-close" onclick="closeDrawer()" aria-label="Close menu">×</button>
+        </div>
+
+        <ul class="nav-drawer-links">
+            <li><a href="#about"    onclick="closeDrawer()"><span class="drawer-icon">🏠</span>About</a></li>
+            <li><a href="#media-hub" onclick="closeDrawer()"><span class="drawer-icon">🎬</span>Daily Hub</a></li>
+            <li><a href="#upgrade-hub" onclick="closeDrawer()"><span class="drawer-icon">🎓</span>Upgrade Hub</a></li>
+            <li><a href="#crypto-signals" onclick="closeDrawer()"><span class="drawer-icon">📈</span>Crypto Signals</a></li>
+            <li><a href="#apond"   onclick="closeDrawer()"><span class="drawer-icon">⚡</span>APOND App</a></li>
+            <li><a href="#portal"  onclick="closeDrawer()"><span class="drawer-icon">🔓</span>Portal / Login</a></li>
+            <li><a href="#socials" onclick="closeDrawer()"><span class="drawer-icon">🌐</span>Socials</a></li>
+            <li><a href="privacy.html"><span class="drawer-icon">🔒</span>Privacy Policy</a></li>
+            <li><a href="terms.html"><span class="drawer-icon">📄</span>Terms of Service</a></li>
+        </ul>
+
+        <!-- Logged-OUT actions -->
+        <div class="nav-drawer-actions" id="drawerActionsLoggedOut">
+            <button class="nav-drawer-cta"
+                    onclick="closeDrawer();document.getElementById('portal').scrollIntoView({behavior:'smooth'})">
+                Sign Up / Login
+            </button>
+            <button class="nav-drawer-cta green"
+                    onclick="closeDrawer();openUpgradeSection()">
+                🎓 Upgrade Hub
+            </button>
+        </div>
+
+        <!-- Logged-IN actions (hidden by default, shown by updateDrawerState) -->
+        <div class="nav-drawer-user" id="drawerUserRow" style="display:none;">
+            <div class="nav-drawer-avatar" id="drawerAvatar">?</div>
+            <div class="nav-drawer-email" id="drawerEmail">—</div>
+            <button class="nav-drawer-signout" onclick="closeDrawer();confirmLogout()">Sign Out</button>
+        </div>
+
+    </nav>
+
+    <!-- ═══════════════════════════════════════════════════
+         STICKY BOTTOM CTA — shown on mobile to logged-out
+         visitors. Hides when user scrolls to portal or logs in.
+         ═══════════════════════════════════════════════════ -->
+    <div class="sticky-cta-bar" id="stickyCta">
+        <button class="s-cta-main"
+                onclick="document.getElementById('portal').scrollIntoView({behavior:'smooth'})">
+            Sign Up Free
+        </button>
+        <button class="s-cta-secondary"
+                onclick="openUpgradeSection()">
+            📈 View Plans
+        </button>
+    </div>
 
     <main class="container">
         <section class="hero" id="about">
@@ -1533,8 +1629,7 @@
 
                             <div class="upp-step-label">Enter your M-Pesa number</div>
                             <input type="tel" class="upp-input" id="upgradePhone"
-                                placeholder="e.g. 0712 345 678" maxlength="13"
-                                autocomplete="off">
+                                placeholder="e.g. 0712 345 678" maxlength="13">
 
                             <button class="btn-upgrade-pay" id="btnUpgradePay"
                                 onclick="initiateUpgradePayment()">
@@ -1689,36 +1784,30 @@
                 <button class="tab-btn" id="tabLoginBtn" onclick="switchTab('login')">Login</button>
             </div>
 
-            <form id="signupForm" onsubmit="handleAuth(event, 'signup')" autocomplete="off">
+            <form id="signupForm" onsubmit="handleAuth(event, 'signup')">
                 <div class="form-group">
                     <label for="signupEmail">Email Address</label>
-                    <input type="email" id="signupEmail" placeholder="name@example.com"
-                           autocomplete="off" required>
+                    <input type="email" id="signupEmail" placeholder="name@example.com" required>
                 </div>
                 <div class="form-group">
-                    <label for="signupPhone">Phone Number (M-Pesa)</label>
-                    <input type="tel" id="signupPhone" placeholder="e.g. 0712 345 678"
-                           autocomplete="off" maxlength="13" required>
+                    <label for="signupPhone">Phone Number</label>
+                    <input type="tel" id="signupPhone" placeholder="+254..." required>
                 </div>
                 <div class="form-group">
                     <label for="signupPassword">Password</label>
-                    <input type="password" id="signupPassword" placeholder="••••••••"
-                           autocomplete="new-password" required>
+                    <input type="password" id="signupPassword" placeholder="••••••••" required>
                 </div>
                 <button type="submit" class="btn-submit" id="signupSubmitBtn">Subscribe & Unlock Downloads</button>
             </form>
 
-            <form id="loginForm" onsubmit="handleAuth(event, 'login')"
-                  style="display: none;" autocomplete="off">
+            <form id="loginForm" onsubmit="handleAuth(event, 'login')" style="display: none;">
                 <div class="form-group">
                     <label for="loginEmail">Email Address</label>
-                    <input type="email" id="loginEmail" placeholder="name@example.com"
-                           autocomplete="off" required>
+                    <input type="email" id="loginEmail" placeholder="name@example.com" required>
                 </div>
                 <div class="form-group">
                     <label for="loginPassword">Password</label>
-                    <input type="password" id="loginPassword" placeholder="••••••••"
-                           autocomplete="new-password" required>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
                 </div>
                 <button class="forgot-link" type="button" onclick="openResetModal()">
                     Forgot your password?
@@ -1736,7 +1825,7 @@
                         <h3>🔑 Reset Your Password</h3>
                         <p>Enter the email address linked to your account. We will send you a 6-digit verification code.</p>
                         <input type="email" class="reset-input" id="resetEmail"
-                            placeholder="name@example.com" autocomplete="off">
+                            placeholder="name@example.com">
                         <button class="btn-reset-submit" id="resetSendBtn" onclick="sendResetOtp()">
                             Send Verification Code
                         </button>
@@ -1966,8 +2055,8 @@
 
                             <div class="cpp-step">Step 1 — Enter your M-Pesa number</div>
                             <input type="tel" id="mpesaPhone" class="cpp-input"
-                                placeholder="e.g. 0712 345 678"
-                                maxlength="13" autocomplete="off">
+                                placeholder="e.g. 0712345678"
+                                maxlength="12">
 
                             <button class="btn-pay" id="btnPay" onclick="initiatePayment()">
                                 <span class="mpesa-logo">
@@ -2056,51 +2145,6 @@
 
     </main>
 
-    <!-- ═══════════════════════════════════════════════════════
-         INFORMATION CENTRE — backdrop + slide-down panel
-         Backdrop click handled by JS; panel opened/closed
-         via toggleInfoPanel() called from the nav bell.
-         ═══════════════════════════════════════════════════════ -->
-    <div class="info-overlay" id="infoOverlay"
-         onclick="closeInfoPanel()" aria-hidden="true"></div>
-
-    <div class="info-panel" id="infoPanel"
-         role="dialog" aria-modal="true"
-         aria-label="Information Centre">
-
-        <!-- Header -->
-        <div class="info-panel-head">
-            <div class="info-panel-title">
-                <span class="info-live-dot" aria-hidden="true"></span>
-                Information Centre
-            </div>
-            <div class="info-head-actions">
-                <button class="info-mark-all" id="infoMarkAllBtn"
-                        onclick="markAllRead()" disabled
-                        aria-label="Mark all updates as read">
-                    Mark all read
-                </button>
-                <button class="info-panel-close"
-                        onclick="closeInfoPanel()"
-                        aria-label="Close Information Centre">×</button>
-            </div>
-        </div>
-
-        <!-- Update list — populated by JS -->
-        <div class="info-panel-list" id="infoPanelList">
-            <div class="info-panel-empty">
-                <span class="info-panel-empty-icon">🔔</span>
-                Loading updates…
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="info-panel-foot" id="infoPanelFoot">
-            Updates published by the Coding For Freedom team
-        </div>
-
-    </div>
-
     <footer>
         <div class="container">
             <p>&copy; 2026 Coding For Freedom. All rights reserved.</p>
@@ -2164,39 +2208,15 @@
             // Local branding assets render immediately
             loadStaticBranding();
 
-            const activeSession = localStorage.getItem(SESSION_KEY);
-
-            if (!activeSession) {
-                // Logged-out state: forcibly blank all inputs and restore placeholders
-                // so browser-cached credentials cannot pre-fill payment fields.
-                [
-                    'signupEmail','signupPhone','signupPassword',
-                    'loginEmail','loginPassword',
-                    'resetEmail','resetOtp','resetNewPassword','resetConfirmPassword',
-                ].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-
-                ['mpesaPhone','upgradePhone'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) { el.value = ''; el.placeholder = 'e.g. 0712 345 678'; }
-                });
-            }
-
             // Restore session state — must run before any UI is interacted with
             updateNavAuthState();
             updatePortalState();
 
+            const activeSession = localStorage.getItem(SESSION_KEY);
             if (activeSession) {
                 unlockMediaHub();
                 loadDynamicMediaUrls();
-                // Ensure payment phone fields have correct placeholder when logged in
-                ['mpesaPhone','upgradePhone'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el && !el.value) el.placeholder = 'e.g. 0712 345 678';
-                });
             }
-
-            // Boot the Information Centre — fetch updates and start polling
-            _startInfoPolling();
         });
 
         // ==========================================
@@ -2894,9 +2914,7 @@
                 if (signupBtn)  signupBtn.style.display = 'none';
                 if (userChip)   userChip.classList.add('visible');
                 if (navAvatar) {
-                    // Show first letter of email as avatar
                     navAvatar.textContent        = avatarLetter(email);
-                    // Full email appears in CSS tooltip on hover
                     navAvatar.setAttribute('data-email', email);
                     navAvatar.setAttribute('title', email);
                 }
@@ -2908,6 +2926,11 @@
                     navAvatar.removeAttribute('data-email');
                 }
             }
+
+            // Keep mobile drawer auth state in sync
+            if (typeof updateDrawerState === 'function') updateDrawerState();
+            // Refresh sticky CTA visibility
+            if (typeof window._refreshSticky === 'function') window._refreshSticky();
         }
 
         function updatePortalState() {
@@ -2972,93 +2995,51 @@
         async function executeLogout() {
             closeLogoutModal();
 
-            // ── 1. Notify backend (fire-and-forget) ───────────────────────────
+            // Notify backend (best-effort — don't block UI on failure)
             const token = localStorage.getItem(TOKEN_KEY);
             if (token) {
                 fetch(`${BACKEND_BASE_URL}/api/logout`, {
                     method:  'POST',
-                    headers: { 'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${token}` }
-                }).catch(() => {});
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                }).catch(() => {});  // fire-and-forget
             }
 
-            // ── 2. Stop any in-progress payment polling ───────────────────────
-            _stopCryptoPoll();
-            _stopUpgradePoll();
-
-            // ── 3. Close any open payment modals ─────────────────────────────
-            const pmOverlay = document.getElementById('paymentModalOverlay');
-            if (pmOverlay)  pmOverlay.classList.remove('open');
-            const upgOverlay = document.getElementById('upgradeModalOverlay');
-            if (upgOverlay) upgOverlay.classList.remove('open');
-
-            // ── 4. Re-enable payment buttons (they may be disabled mid-flow) ─
-            const btnPay = document.getElementById('btnPay');
-            if (btnPay) {
-                btnPay.disabled  = false;
-                btnPay.innerHTML = '<span class="mpesa-logo">M-Pesa</span> Pay KES 1,000 Now';
-            }
-            const btnUpg = document.getElementById('btnUpgradePay');
-            if (btnUpg) {
-                btnUpg.disabled     = false;
-                btnUpg.textContent  = 'Pay KES 3,000 via M-Pesa';
-            }
-
-            // ── 5. Clear EVERY input field and reset ALL placeholders ─────────
-            //    Auth fields
-            const AUTH_FIELDS = [
+            // Clear all form input fields so next user must re-enter credentials
+            const formFields = [
                 'signupEmail', 'signupPhone', 'signupPassword',
-                'loginEmail',  'loginPassword',
-                'resetEmail',  'resetOtp', 'resetNewPassword', 'resetConfirmPassword',
+                'loginEmail', 'loginPassword',
+                'resetEmail', 'resetOtp', 'resetNewPassword', 'resetConfirmPassword'
             ];
-            AUTH_FIELDS.forEach(id => {
+            formFields.forEach(id => {
                 const el = document.getElementById(id);
-                if (!el) return;
-                el.value = '';
-                el.blur();   // drop focus so browser won't auto-refill
+                if (el) el.value = '';
             });
-
-            //    Payment phone fields — clear value AND restore placeholder
-            const PHONE_FIELDS = [
-                { id: 'mpesaPhone',   ph: 'e.g. 0712 345 678' },
-                { id: 'upgradePhone', ph: 'e.g. 0712 345 678' },
-            ];
-            PHONE_FIELDS.forEach(({ id, ph }) => {
-                const el = document.getElementById(id);
-                if (!el) return;
-                el.value       = '';
-                el.placeholder = ph;
-                el.blur();
-            });
-
-            // ── 6. Clear status banners ───────────────────────────────────────
+            // Clear status messages
             const statusEl = document.getElementById('statusMessage');
             if (statusEl) { statusEl.style.display = 'none'; statusEl.textContent = ''; }
-            const cStatus = document.getElementById('cryptoPayStatus');
-            if (cStatus)  { cStatus.style.display  = 'none'; cStatus.textContent  = ''; }
-            const uStatus = document.getElementById('upgradePayStatus');
-            if (uStatus)  { uStatus.style.display  = 'none'; uStatus.textContent  = ''; }
 
-            // ── 7. Clear localStorage session (keep CRYPTO/UPGRADE_PAID_KEY ──
-            //    so returning subscribers don't see the payment panel again.
-            //    Backend re-confirms paid status on next login.
+            // Clear all session data from localStorage
             localStorage.removeItem(SESSION_KEY);
             localStorage.removeItem(TOKEN_KEY);
             localStorage.removeItem(EMAIL_KEY);
+            // NOTE: CRYPTO_PAID_KEY is intentionally kept so returning
+            // subscribers don't re-see the payment panel after re-login.
+            // The backend is the source of truth — it re-confirms paid status
+            // on login via the crypto_paid field in the auth response.
 
-            // ── 8. Lock media + re-render gated panels ────────────────────────
+            // Lock all gated content
             lockMediaHub();
             renderCryptoPanel();
             renderUpgradePanel();
 
-            // ── 9. Update nav + portal state ──────────────────────────────────
+            // Reset UI state
             updateNavAuthState();
             updatePortalState();
 
-            // ── 10. Switch portal back to Sign Up tab (clean slate for next user)
-            switchTab('signup');
-
-            // ── 11. Scroll to portal ───────────────────────────────────────────
+            // Scroll to portal so they can log back in immediately
             document.getElementById('portal').scrollIntoView({ behavior: 'smooth' });
         }
 
@@ -3227,20 +3208,18 @@
                 if (response.ok && data.status === 'success') {
                     localStorage.setItem(SESSION_KEY, 'active_subscriber');
                     if (data.token) localStorage.setItem(TOKEN_KEY, data.token);
+                    // Store email so nav chip and portal can display it
                     if (data.email) localStorage.setItem(EMAIL_KEY, data.email);
 
-                    if (data.crypto_paid  === true) localStorage.setItem(CRYPTO_PAID_KEY,  'true');
-                    if (data.upgrade_paid === true) localStorage.setItem(UPGRADE_PAID_KEY, 'true');
-
-                    // Clear credential fields immediately — they must not linger in the DOM
-                    ['signupEmail','signupPhone','signupPassword','loginEmail','loginPassword']
-                        .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-
-                    // Ensure payment phone fields show correct placeholder (never an email address)
-                    ['mpesaPhone','upgradePhone'].forEach(id => {
-                        const el = document.getElementById(id);
-                        if (el) { el.value = ''; el.placeholder = 'e.g. 0712 345 678'; }
-                    });
+                    // Restore crypto_paid and upgrade_paid from backend auth response — ensures
+                    // returning subscribers always see the correct panel state
+                    // even if they cleared localStorage between sessions.
+                    if (data.crypto_paid === true) {
+                        localStorage.setItem(CRYPTO_PAID_KEY, 'true');
+                    }
+                    if (data.upgrade_paid === true) {
+                        localStorage.setItem(UPGRADE_PAID_KEY, 'true');
+                    }
 
                     unlockMediaHub();
                     await loadDynamicMediaUrls(data.media || data.media_urls || null);
@@ -3268,241 +3247,6 @@
                 }
             }
         }
-
-        // ═══════════════════════════════════════════════════════════════
-        // INFORMATION CENTRE
-        //
-        // Fetches from GET /api/announcements on open + every 5 minutes.
-        // Read IDs are persisted in localStorage — badge count survives
-        // page refreshes without a server round-trip.
-        // Falls back to curated local announcements when backend is down.
-        // ═══════════════════════════════════════════════════════════════
-        const INFO_READ_KEY    = 'cff_info_read_ids';
-        const INFO_POLL_MS     = 5 * 60 * 1000;   // 5 min
-        const ANNOUNCEMENTS_EP = `${BACKEND_BASE_URL}/api/announcements`;
-
-        let _infoPanelOpen  = false;
-        let _infoUpdates    = [];
-        let _infoPollTimer  = null;
-
-        // Fallback shown when backend is unreachable
-        const _INFO_FALLBACKS = [
-            {
-                id: 'fb-001', type: 'info', pinned: true,
-                message: 'Welcome to the CFF Information Centre. Platform updates, maintenance notices, and feature announcements will appear here.',
-                timestamp: new Date().toISOString(),
-            },
-            {
-                id: 'fb-002', type: 'tip',
-                message: '💡 Tip: enable browser notifications so you never miss a new signal or class session.',
-                timestamp: new Date(Date.now() - 3_600_000).toISOString(),
-            },
-        ];
-
-        // ── localStorage helpers ────────────────────────────────────────────
-        function _getReadIds() {
-            try { return new Set(JSON.parse(localStorage.getItem(INFO_READ_KEY) || '[]')); }
-            catch(_) { return new Set(); }
-        }
-        function _saveReadIds(s) {
-            try { localStorage.setItem(INFO_READ_KEY, JSON.stringify([...s])); } catch(_) {}
-        }
-
-        // ── Fetch from backend ─────────────────────────────────────────────
-        async function _fetchUpdates() {
-            try {
-                const hdrs = { 'Content-Type': 'application/json' };
-                const tok  = localStorage.getItem(TOKEN_KEY);
-                if (tok) hdrs['Authorization'] = `Bearer ${tok}`;
-                const res  = await fetch(ANNOUNCEMENTS_EP, { headers: hdrs,
-                    signal: (typeof AbortSignal.timeout === 'function')
-                        ? AbortSignal.timeout(8000) : undefined });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const d = await res.json();
-                return Array.isArray(d) ? d
-                     : Array.isArray(d.announcements) ? d.announcements
-                     : _INFO_FALLBACKS;
-            } catch(_) { return _INFO_FALLBACKS; }
-        }
-
-        // ── Unread count ───────────────────────────────────────────────────
-        function _unread(updates) {
-            const r = _getReadIds();
-            return updates.filter(u => !r.has(u.id)).length;
-        }
-
-        // ── Badge ──────────────────────────────────────────────────────────
-        function _updateBadge(updates) {
-            const badge = document.getElementById('navInfoBadge');
-            const btn   = document.getElementById('navInfoBtn');
-            if (!badge || !btn) return;
-            const n = _unread(updates);
-            if (n > 0) {
-                const wasHidden = !badge.classList.contains('has-unread');
-                badge.textContent = n > 99 ? '99+' : String(n);
-                badge.classList.add('has-unread');
-                if (wasHidden) {
-                    // Ring the bell briefly on new arrivals
-                    btn.classList.remove('ringing');
-                    void btn.offsetWidth;            // force reflow to restart animation
-                    btn.classList.add('ringing');
-                    setTimeout(() => btn.classList.remove('ringing'), 800);
-                }
-            } else {
-                badge.classList.remove('has-unread');
-            }
-        }
-
-        // ── Relative time ──────────────────────────────────────────────────
-        function _relTime(iso) {
-            const d = Date.now() - new Date(iso).getTime();
-            const m = Math.floor(d / 60000);
-            if (m < 1)   return 'Just now';
-            if (m < 60)  return `${m}m ago`;
-            const h = Math.floor(m / 60);
-            if (h < 24)  return `${h}h ago`;
-            const dy = Math.floor(h / 24);
-            if (dy < 7)  return `${dy}d ago`;
-            return new Date(iso).toLocaleDateString(undefined, { day:'numeric', month:'short' });
-        }
-
-        // ── Escape HTML in update messages ─────────────────────────────────
-        function _esc(s) {
-            return String(s)
-                .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-                .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-        }
-
-        // ── Render list ────────────────────────────────────────────────────
-        function _renderList(updates) {
-            const list      = document.getElementById('infoPanelList');
-            const markBtn   = document.getElementById('infoMarkAllBtn');
-            const foot      = document.getElementById('infoPanelFoot');
-            if (!list) return;
-
-            const read     = _getReadIds();
-            const hasUnread = updates.some(u => !read.has(u.id));
-            if (markBtn) markBtn.disabled = !hasUnread;
-
-            if (!updates.length) {
-                list.innerHTML = `<div class="info-panel-empty">
-                    <span class="info-panel-empty-icon">🔔</span>
-                    No updates yet — check back soon.</div>`;
-                return;
-            }
-
-            // Pinned first, then newest first
-            const pinned   = updates.filter(u =>  u.pinned).sort((a,b) => new Date(b.timestamp)-new Date(a.timestamp));
-            const unpinned = updates.filter(u => !u.pinned).sort((a,b) => new Date(b.timestamp)-new Date(a.timestamp));
-            const sorted   = [...pinned, ...unpinned];
-
-            const TYPE = {
-                info:    { icon:'ℹ', label:'Update' },
-                warning: { icon:'⚠', label:'Notice' },
-                success: { icon:'✓', label:'Resolved' },
-                outage:  { icon:'⚡', label:'Outage' },
-                tip:     { icon:'💡', label:'Tip' },
-            };
-
-            list.innerHTML = sorted.map(u => {
-                const isUnread = !read.has(u.id);
-                const meta     = TYPE[u.type] || TYPE.info;
-                const pin      = u.pinned ? '<span style="font-size:.62rem;color:#64748b;margin-left:5px;">📌</span>' : '';
-                return `<div class="info-item${isUnread?' unread':''}" data-id="${u.id}"
-                             onclick="markOneRead('${u.id}')">
-                    ${isUnread ? '<div class="info-item-dot" aria-hidden="true"></div>' : ''}
-                    <div class="info-item-badge type-${u.type}">
-                        <span aria-hidden="true">${meta.icon}</span>${meta.label}${pin}
-                    </div>
-                    <div class="info-item-msg">${_esc(u.message)}</div>
-                    <div class="info-item-time">${_relTime(u.timestamp)}</div>
-                </div>`;
-            }).join('');
-
-            if (foot) foot.textContent = 'Last refreshed ' + _relTime(new Date().toISOString());
-        }
-
-        // ── Mark one item read (called on click) ───────────────────────────
-        function markOneRead(id) {
-            const r = _getReadIds();
-            if (r.has(id)) return;
-            r.add(id); _saveReadIds(r);
-            const el  = document.querySelector(`.info-item[data-id="${id}"]`);
-            if (el) { el.classList.remove('unread');
-                      const dot = el.querySelector('.info-item-dot');
-                      if (dot) dot.remove(); }
-            _updateBadge(_infoUpdates);
-            const mb = document.getElementById('infoMarkAllBtn');
-            if (mb) mb.disabled = !_infoUpdates.some(u => !_getReadIds().has(u.id));
-        }
-
-        // ── Mark all read ──────────────────────────────────────────────────
-        function markAllRead() {
-            const r = _getReadIds();
-            _infoUpdates.forEach(u => r.add(u.id));
-            _saveReadIds(r);
-            document.querySelectorAll('.info-item').forEach(el => {
-                el.classList.remove('unread');
-                const dot = el.querySelector('.info-item-dot');
-                if (dot) dot.remove();
-            });
-            _updateBadge(_infoUpdates);
-            const mb = document.getElementById('infoMarkAllBtn');
-            if (mb) mb.disabled = true;
-        }
-
-        // ── Poll cycle ─────────────────────────────────────────────────────
-        async function _pollUpdates() {
-            const updates    = await _fetchUpdates();
-            _infoUpdates     = updates;
-            _updateBadge(updates);
-            if (_infoPanelOpen) _renderList(updates);
-        }
-
-        function _startInfoPolling() {
-            _pollUpdates();
-            clearInterval(_infoPollTimer);
-            _infoPollTimer = setInterval(_pollUpdates, INFO_POLL_MS);
-        }
-
-        // Pause when tab is hidden, resume immediately when visible
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden') {
-                clearInterval(_infoPollTimer);
-            } else {
-                _startInfoPolling();
-            }
-        });
-
-        // ── Panel open / close / toggle ────────────────────────────────────
-        function toggleInfoPanel(e) {
-            e.stopPropagation();
-            _infoPanelOpen ? closeInfoPanel() : openInfoPanel();
-        }
-
-        function openInfoPanel() {
-            _infoPanelOpen = true;
-            document.getElementById('infoOverlay').classList.add('open');
-            document.getElementById('infoPanel').classList.add('open');
-            _renderList(_infoUpdates);           // show current data immediately
-            _fetchUpdates().then(u => {          // then refresh in background
-                _infoUpdates = u;
-                _renderList(u);
-                _updateBadge(u);
-            });
-        }
-
-        function closeInfoPanel() {
-            _infoPanelOpen = false;
-            document.getElementById('infoOverlay').classList.remove('open');
-            document.getElementById('infoPanel').classList.remove('open');
-        }
-
-        // Escape key closes panel
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape' && _infoPanelOpen) closeInfoPanel();
-        });
-
 
         // ══════════════════════════════════════════════════════
         // AT CODING FOR FREEDOM — TRUST PILLAR CAROUSEL
@@ -3691,6 +3435,92 @@
 
             counterEl.textContent = '1 / ' + PILLARS.length;
             startTimer();
+        })();
+
+        // ═══════════════════════════════════════════════════════
+        // MOBILE DRAWER
+        // ═══════════════════════════════════════════════════════
+        function openDrawer() {
+            document.getElementById('navDrawer').classList.add('open');
+            document.getElementById('drawerOverlay').classList.add('open');
+            document.getElementById('navHamburger').classList.add('open');
+            document.getElementById('navHamburger').setAttribute('aria-expanded','true');
+            document.body.style.overflow = 'hidden'; // prevent scroll behind drawer
+        }
+
+        function closeDrawer() {
+            document.getElementById('navDrawer').classList.remove('open');
+            document.getElementById('drawerOverlay').classList.remove('open');
+            document.getElementById('navHamburger').classList.remove('open');
+            document.getElementById('navHamburger').setAttribute('aria-expanded','false');
+            document.body.style.overflow = '';
+        }
+
+        // Escape key closes drawer
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeDrawer();
+        });
+
+        // Sync drawer auth state — called by updateNavAuthState()
+        function updateDrawerState() {
+            const isLoggedIn    = !!localStorage.getItem(SESSION_KEY);
+            const email         = localStorage.getItem(EMAIL_KEY) || '';
+            const actionsOut    = document.getElementById('drawerActionsLoggedOut');
+            const userRow       = document.getElementById('drawerUserRow');
+            const drawerAvatar  = document.getElementById('drawerAvatar');
+            const drawerEmail   = document.getElementById('drawerEmail');
+
+            if (isLoggedIn) {
+                if (actionsOut) actionsOut.style.display = 'none';
+                if (userRow)    userRow.style.display    = 'flex';
+                if (drawerAvatar) drawerAvatar.textContent = email ? email.charAt(0).toUpperCase() : '?';
+                if (drawerEmail)  drawerEmail.textContent  = email || 'subscriber';
+            } else {
+                if (actionsOut) actionsOut.style.display = '';
+                if (userRow)    userRow.style.display    = 'none';
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════
+        // STICKY BOTTOM CTA
+        // ═══════════════════════════════════════════════════════
+        (function () {
+            const bar     = document.getElementById('stickyCta');
+            const portal  = document.getElementById('portal');
+            if (!bar || !portal) return;
+
+            function refreshSticky() {
+                const isLoggedIn = !!localStorage.getItem(SESSION_KEY);
+                const isMobile   = window.innerWidth <= 900;
+
+                if (!isMobile || isLoggedIn) {
+                    bar.classList.remove('visible');
+                    document.body.classList.remove('has-sticky-cta');
+                    return;
+                }
+
+                // Show when portal is NOT in viewport
+                const rect = portal.getBoundingClientRect();
+                const portalVisible = rect.top < window.innerHeight && rect.bottom > 0;
+
+                if (portalVisible) {
+                    bar.classList.remove('visible');
+                    document.body.classList.remove('has-sticky-cta');
+                } else {
+                    bar.classList.add('visible');
+                    document.body.classList.add('has-sticky-cta');
+                }
+            }
+
+            // Run on scroll, resize, and session change
+            window.addEventListener('scroll',  refreshSticky, { passive: true });
+            window.addEventListener('resize',  refreshSticky, { passive: true });
+
+            // Expose for auth state changes
+            window._refreshSticky = refreshSticky;
+
+            // Initial run after DOM settles
+            setTimeout(refreshSticky, 200);
         })();
 
     </script>
