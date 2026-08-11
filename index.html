@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Coding For Freedom — Python, Automation & Crypto Signals</title>
-
-    <!-- ══ FAVICON — simple relative paths for GitHub Pages ══ -->
     <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="shortcut icon" href="favicon.ico">
@@ -13,18 +11,14 @@
     <meta name="apple-mobile-web-app-title" content="CFF">
     <link rel="manifest" href="site.webmanifest">
     <meta name="theme-color" content="#0f172a">
-    <meta name="msapplication-TileColor" content="#0f172a">
-    <!-- ══ SEO ══ -->
     <meta name="description" content="Coding For Freedom — daily Python automation, crypto trading signals, and education. One-time access, no subscriptions.">
-    <meta name="author" content="Coding For Freedom">
-    <meta property="og:title"       content="Coding For Freedom">
+    <meta property="og:title" content="Coding For Freedom">
     <meta property="og:description" content="Python automation, crypto signals & education. Activate once, receive daily.">
-    <meta property="og:image"       content="apple-touch-icon.png">
-    <meta property="og:type"        content="website">
-    <meta name="twitter:card"        content="summary">
-    <meta name="twitter:title"       content="Coding For Freedom">
-    <meta name="twitter:description" content="Python automation, crypto signals & education.">
-    <meta name="twitter:image"       content="apple-touch-icon.png">
+    <meta property="og:image" content="apple-touch-icon.png">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Coding For Freedom">
+    <meta name="twitter:image" content="apple-touch-icon.png">
     <style>
         :root {
             --bg-color: #0f172a;
@@ -254,6 +248,73 @@
             transition: background 0.2s;
         }
         .nav-drawer-signout:hover { background: rgba(239,68,68,0.25); }
+
+        /* ── Bell row inside the drawer ── */
+        .nav-drawer-bell-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 13px 20px;
+            border-top: 1px solid rgba(51,65,85,0.5);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .nav-drawer-bell-row:hover { background: rgba(56,189,248,0.05); }
+        .nav-drawer-bell-left {
+            display: flex; align-items: center; gap: 12px;
+            color: var(--text-muted); font-size: 0.92rem; font-weight: 500;
+        }
+        .nav-drawer-bell-left svg { width: 18px; height: 18px; flex-shrink: 0; }
+        /* Inline unread badge inside the drawer row */
+        .nav-drawer-bell-badge {
+            background: #ef4444; color: #fff;
+            font-size: 0.62rem; font-weight: 900;
+            min-width: 18px; height: 18px; border-radius: 999px;
+            display: none; align-items: center; justify-content: center;
+            padding: 0 5px; line-height: 1;
+        }
+        .nav-drawer-bell-badge.has-unread { display: flex; }
+
+        /* ── Floating bell button — visible on mobile when drawer is closed ── */
+        /* Sits in the bottom-right corner above the sticky CTA bar */
+        .mobile-bell-fab {
+            display: none;           /* shown only on mobile via media query */
+            position: fixed;
+            bottom: 74px;           /* sits above the sticky CTA bar (64px) */
+            right: 14px;
+            width: 46px; height: 46px;
+            border-radius: 50%;
+            background: #1e293b;
+            border: 1px solid rgba(56,189,248,0.35);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.45);
+            cursor: pointer;
+            z-index: 470;
+            align-items: center; justify-content: center;
+            color: var(--text-muted);
+            transition: background 0.2s, border-color 0.2s, color 0.2s;
+        }
+        .mobile-bell-fab:hover { background: rgba(56,189,248,0.12); color: var(--accent); border-color: var(--accent); }
+        .mobile-bell-fab svg { width: 20px; height: 20px; display: block; }
+
+        /* FAB unread badge */
+        .mobile-bell-fab-badge {
+            position: absolute; top: -3px; right: -3px;
+            min-width: 17px; height: 17px;
+            background: #ef4444; color: #fff;
+            font-size: 0.6rem; font-weight: 900;
+            border-radius: 999px; border: 2px solid #0f172a;
+            display: none; align-items: center; justify-content: center;
+            padding: 0 3px; line-height: 1;
+            animation: ibadge-in 0.3s cubic-bezier(.4,0,.2,1);
+            pointer-events: none;
+        }
+        .mobile-bell-fab-badge.has-unread { display: flex; }
+
+        /* Only show FAB on mobile */
+        @media(max-width: 900px) {
+            .mobile-bell-fab { display: flex; }
+        }
+        /* When sticky CTA bar is NOT visible (logged in / portal in view),
+           drop the FAB to just above the system nav */
+        body:not(.has-sticky-cta) .mobile-bell-fab { bottom: 16px; }
 
         /* ── Sticky mobile CTA bar — floats above bottom edge ── */
         .sticky-cta-bar {
@@ -1460,7 +1521,7 @@
                     <!-- Divider before auth -->
                     <li class="nav-divider" aria-hidden="true"></li>
 
-                    <!-- ══ INFORMATION CENTRE BELL ══ -->
+                    <!-- ══ INFORMATION CENTRE BELL (desktop) ══ -->
                     <li>
                         <button class="nav-info-btn" id="navInfoBtn"
                                 onclick="toggleInfoPanel(event)"
@@ -1562,7 +1623,40 @@
             <button class="nav-drawer-signout" onclick="closeDrawer();confirmLogout()">Sign Out</button>
         </div>
 
+        <!-- ── Notifications bell row — always visible in drawer ── -->
+        <div class="nav-drawer-bell-row"
+             onclick="closeDrawer(); setTimeout(() => toggleInfoPanel({stopPropagation:()=>{}}), 200)"
+             role="button" aria-label="Open Information Centre">
+            <div class="nav-drawer-bell-left">
+                <svg viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.9"
+                     stroke-linecap="round" stroke-linejoin="round"
+                     aria-hidden="true">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                Notifications
+            </div>
+            <span class="nav-drawer-bell-badge" id="drawerBellBadge"
+                  aria-label="unread notifications"></span>
+        </div>
+
     </nav>
+
+    <!-- ── Floating bell button — mobile only, always visible ── -->
+    <button class="mobile-bell-fab" id="mobileBellFab"
+            onclick="toggleInfoPanel({stopPropagation:()=>{}})"
+            aria-label="Open Information Centre — notifications">
+        <svg viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.9"
+             stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <span class="mobile-bell-fab-badge" id="mobileBellFabBadge"
+              aria-label="unread updates"></span>
+    </button>
 
     <!-- ═══════════════════════════════════════════════════
          STICKY BOTTOM CTA — shown on mobile to logged-out
@@ -2362,16 +2456,12 @@
 
     </main>
 
-    <!-- ══════════════════════════════════════════════════
-         INFORMATION CENTRE — backdrop + slide-down panel
-         ══════════════════════════════════════════════════ -->
+    <!-- ══ INFORMATION CENTRE panel + backdrop ══ -->
     <div class="info-overlay" id="infoOverlay"
          onclick="closeInfoPanel()" aria-hidden="true"></div>
 
     <div class="info-panel" id="infoPanel"
-         role="dialog" aria-modal="true"
-         aria-label="Information Centre">
-
+         role="dialog" aria-modal="true" aria-label="Information Centre">
         <div class="info-panel-head">
             <div class="info-panel-title">
                 <span class="info-live-dot" aria-hidden="true"></span>
@@ -2380,22 +2470,18 @@
             <div class="info-head-actions">
                 <button class="info-mark-all" id="infoMarkAllBtn"
                         onclick="markAllRead()" disabled
-                        aria-label="Mark all updates as read">
-                    Mark all read
-                </button>
+                        aria-label="Mark all updates as read">Mark all read</button>
                 <button class="info-panel-close"
                         onclick="closeInfoPanel()"
                         aria-label="Close Information Centre">×</button>
             </div>
         </div>
-
         <div class="info-panel-list" id="infoPanelList">
             <div class="info-panel-empty">
                 <span class="info-panel-empty-icon">🔔</span>
                 Loading updates…
             </div>
         </div>
-
         <div class="info-panel-foot" id="infoPanelFoot">
             Updates published by the Coding For Freedom team
         </div>
@@ -3832,23 +3918,43 @@
             return updates.filter(u => !r.has(u.id)).length;
         }
 
+        // Updates ALL three badge surfaces: desktop nav bell,
+        // drawer bell row, and floating FAB — from one function.
         function _updateBadge(updates) {
+            const n        = _unread(updates);
+            const countTxt = n > 99 ? '99+' : String(n);
+
+            // ── Desktop nav bell ──────────────────────────────────
             const badge = document.getElementById('navInfoBadge');
             const btn   = document.getElementById('navInfoBtn');
-            if (!badge || !btn) return;
-            const n = _unread(updates);
-            if (n > 0) {
-                const wasHidden = !badge.classList.contains('has-unread');
-                badge.textContent = n > 99 ? '99+' : String(n);
-                badge.classList.add('has-unread');
-                if (wasHidden) {
-                    btn.classList.remove('ringing');
-                    void btn.offsetWidth;
-                    btn.classList.add('ringing');
-                    setTimeout(() => btn.classList.remove('ringing'), 800);
+            if (badge && btn) {
+                if (n > 0) {
+                    const wasHidden = !badge.classList.contains('has-unread');
+                    badge.textContent = countTxt;
+                    badge.classList.add('has-unread');
+                    if (wasHidden) {
+                        btn.classList.remove('ringing');
+                        void btn.offsetWidth;
+                        btn.classList.add('ringing');
+                        setTimeout(() => btn.classList.remove('ringing'), 800);
+                    }
+                } else {
+                    badge.classList.remove('has-unread');
                 }
-            } else {
-                badge.classList.remove('has-unread');
+            }
+
+            // ── Drawer bell row badge ─────────────────────────────
+            const dBadge = document.getElementById('drawerBellBadge');
+            if (dBadge) {
+                dBadge.textContent = countTxt;
+                dBadge.classList.toggle('has-unread', n > 0);
+            }
+
+            // ── Floating FAB badge ────────────────────────────────
+            const fabBadge = document.getElementById('mobileBellFabBadge');
+            if (fabBadge) {
+                fabBadge.textContent = countTxt;
+                fabBadge.classList.toggle('has-unread', n > 0);
             }
         }
 
@@ -3927,7 +4033,7 @@
             const r = _getReadIds();
             if (r.has(id)) return;
             r.add(id); _saveReadIds(r);
-            const el  = document.querySelector(`.info-item[data-id="${id}"]`);
+            const el = document.querySelector(`.info-item[data-id="${id}"]`);
             if (el) {
                 el.classList.remove('unread');
                 const dot = el.querySelector('.info-item-dot');
@@ -3974,7 +4080,7 @@
         });
 
         function toggleInfoPanel(e) {
-            e.stopPropagation();
+            if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
             _infoPanelOpen ? closeInfoPanel() : openInfoPanel();
         }
 
@@ -3996,7 +4102,7 @@
             document.getElementById('infoPanel').classList.remove('open');
         }
 
-        // Escape key — close info panel first, then drawer if open
+        // Escape key — close info panel first, then drawer
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') {
                 if (_infoPanelOpen) { closeInfoPanel(); return; }
