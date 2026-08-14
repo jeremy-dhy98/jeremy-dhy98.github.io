@@ -423,6 +423,34 @@
 
         .subscriber-view { display: none; flex-direction: column; gap: 8px; }
 
+        /* Live class stream (OBS -> live ingest -> HLS playback) */
+        .live-player-wrapper {
+            position: relative; width: 100%; aspect-ratio: 16/9;
+            background: #000; border-radius: 6px; overflow: hidden; margin-bottom: 12px;
+        }
+        .live-player-wrapper video { width: 100%; height: 100%; object-fit: contain; background: #000; }
+        .live-badge {
+            position: absolute; top: 8px; left: 8px; z-index: 2; display: none;
+            background: #dc2626; color: #fff; font-size: 0.7rem; font-weight: 800;
+            letter-spacing: 0.04em; padding: 3px 9px; border-radius: 999px;
+            align-items: center; gap: 5px;
+        }
+        .live-badge::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #fff; animation: live-pulse 1.4s infinite; }
+        @keyframes live-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
+        .live-offline-msg {
+            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted); font-size: 0.8rem; text-align: center; padding: 20px; background: rgba(15,23,42,0.4);
+        }
+        .live-gate-upgrade {
+            display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+            padding: 28px 16px; background: rgba(15,23,42,0.6); border-radius: 6px; border: 1px dashed var(--accent);
+        }
+        .live-gate-upgrade p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 12px; }
+        .live-gate-active { display: none; flex-direction: column; gap: 8px; }
+        @media(max-width:600px) {
+            .live-gate-upgrade { padding: 18px 12px; }
+        }
+
         /* Visitor-view — compact on mobile, reduced empty space */
         .visitor-view {
             display: flex; flex-direction: column;
@@ -1465,6 +1493,8 @@
         }
 
     </style>
+    <!-- hls.js: only needed for browsers without native HLS (Chrome/Firefox/Android). Safari/iOS play HLS natively and skip it. -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.15/hls.min.js" defer></script>
 </head>
 <body>
 
@@ -1784,6 +1814,34 @@
                             </div>
                             <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">Additional automated studio pipeline asset release featuring Bing wallpaper media.</p>
                             <p class="media-status" id="media-status-4"></p>
+                        </div>
+                    </div>
+
+                    <!-- 5. LIVE CLASS STREAM CARD — Upgrade-tier only -->
+                    <div class="media-item-box" id="live-stream-card" data-card-keys="live_stream">
+                        <h3 style="font-size: 1.05rem; color: var(--accent); margin-bottom: 10px;">🔴 Live Class Stream</h3>
+
+                        <!-- Not logged in -->
+                        <div class="visitor-view" id="live-gate-visitor">
+                            <p>🔒 Log in and upgrade your account to join live crypto & Python classes.</p>
+                            <button class="btn-unlock" onclick="document.getElementById('portal').scrollIntoView({behavior: 'smooth'})">Unlock Hub</button>
+                        </div>
+
+                        <!-- Logged in, but not on the Upgrade plan -->
+                        <div class="live-gate-upgrade" id="live-gate-upgrade">
+                            <p>🎓 Live classes are an Upgrade-plan feature. Upgrade your account to watch live and see the schedule.</p>
+                            <button class="btn-unlock" onclick="openUpgradeSection()">Upgrade Now</button>
+                        </div>
+
+                        <!-- Upgraded subscriber -->
+                        <div class="live-gate-active" id="live-gate-active">
+                            <div class="live-player-wrapper">
+                                <video id="liveStreamVideo" playsinline muted controls preload="none"></video>
+                                <span class="live-badge" id="liveBadge">LIVE</span>
+                                <div class="live-offline-msg" id="liveOfflineMsg">No class is live right now — check back at the next scheduled session.</div>
+                            </div>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;" id="liveStreamCaption">Crypto & Python classes stream here live from OBS. Tap the video and unmute once a class starts.</p>
+                            <p class="media-status" id="live-status"></p>
                         </div>
                     </div>
 
@@ -3018,6 +3076,8 @@
             const isLoggedIn    = !!localStorage.getItem(SESSION_KEY);
             const isUpgraded    = localStorage.getItem(UPGRADE_PAID_KEY) === 'true';
 
+            renderLiveGate(isLoggedIn, isUpgraded);
+
             const visitorGate   = document.getElementById('upgradeVisitorGate');
             const payPanel      = document.getElementById('upgradePayPanel');
             const activePanel   = document.getElementById('upgradeActivePanel');
@@ -3037,6 +3097,135 @@
             if (visitorGate)  visitorGate.style.display  = 'none';
             if (payPanel)     payPanel.style.display      = '';
             if (activePanel)  activePanel.style.display   = 'none';
+        }
+
+        // ==========================================
+        // LIVE CLASS STREAM (OBS -> RTMP ingest -> HLS playback)
+        // Upgrade-tier only. Real gating happens server-side: the backend
+        // checks the caller's session + upgrade status and only hands back
+        // a playback URL when both are true. The client never decides this
+        // on its own — localStorage flags here only control the UI state.
+        // ==========================================
+        const LIVE_STATUS_ENDPOINT = `${BACKEND_BASE_URL}/api/live/status`; // -> { live: bool, playbackUrl: string, title?: string }
+        const LIVE_POLL_INTERVAL_MS = 30000; // re-check every 30s while the card is visible
+        let hlsInstance    = null;
+        let livePollTimer  = null;
+
+        function renderLiveGate(isLoggedIn, isUpgraded) {
+            const gateVisitor = document.getElementById('live-gate-visitor');
+            const gateUpgrade = document.getElementById('live-gate-upgrade');
+            const gateActive  = document.getElementById('live-gate-active');
+            if (!gateVisitor || !gateUpgrade || !gateActive) return;
+
+            if (!isLoggedIn) {
+                gateVisitor.style.display = 'flex';
+                gateUpgrade.style.display = 'none';
+                gateActive.style.display  = 'none';
+                stopLiveStreamPolling();
+                return;
+            }
+            if (!isUpgraded) {
+                gateVisitor.style.display = 'none';
+                gateUpgrade.style.display = 'flex';
+                gateActive.style.display  = 'none';
+                stopLiveStreamPolling();
+                return;
+            }
+            gateVisitor.style.display = 'none';
+            gateUpgrade.style.display = 'none';
+            gateActive.style.display  = 'flex';
+            startLiveStreamPolling();
+        }
+
+        async function fetchLiveStatus() {
+            const token = localStorage.getItem(TOKEN_KEY);
+            try {
+                const res = await fetch(LIVE_STATUS_ENDPOINT, {
+                    headers: token ? { Authorization: `Bearer ${token}` } : {}
+                });
+                if (!res.ok) throw new Error('status ' + res.status);
+                return await res.json();
+            } catch (err) {
+                console.warn('Live status check failed:', err.message);
+                return { live: false };
+            }
+        }
+
+        function startLiveStreamPolling() {
+            refreshLiveStream();
+            stopLiveStreamPolling();
+            livePollTimer = setInterval(refreshLiveStream, LIVE_POLL_INTERVAL_MS);
+            document.addEventListener('visibilitychange', handleLiveVisibilityChange);
+        }
+
+        function stopLiveStreamPolling() {
+            if (livePollTimer) { clearInterval(livePollTimer); livePollTimer = null; }
+            document.removeEventListener('visibilitychange', handleLiveVisibilityChange);
+            stopLiveStreamPlayer();
+        }
+
+        function handleLiveVisibilityChange() {
+            // Pause polling/playback when the tab is backgrounded to save data on mobile.
+            if (document.hidden) {
+                if (livePollTimer) { clearInterval(livePollTimer); livePollTimer = null; }
+                stopLiveStreamPlayer();
+            } else if (localStorage.getItem(UPGRADE_PAID_KEY) === 'true') {
+                refreshLiveStream();
+                livePollTimer = setInterval(refreshLiveStream, LIVE_POLL_INTERVAL_MS);
+            }
+        }
+
+        async function refreshLiveStream() {
+            const badge   = document.getElementById('liveBadge');
+            const offline = document.getElementById('liveOfflineMsg');
+            const caption = document.getElementById('liveStreamCaption');
+            const status  = await fetchLiveStatus();
+
+            if (!status.live || !status.playbackUrl) {
+                if (badge)   badge.style.display   = 'none';
+                if (offline) offline.style.display = 'flex';
+                stopLiveStreamPlayer();
+                return;
+            }
+
+            if (badge)   badge.style.display   = 'flex';
+            if (offline) offline.style.display = 'none';
+            if (status.title && caption) caption.textContent = status.title;
+            playLiveStream(status.playbackUrl);
+        }
+
+        function playLiveStream(hlsUrl) {
+            const video = document.getElementById('liveStreamVideo');
+            if (!video || video.dataset.currentSrc === hlsUrl) return; // already on this source
+
+            stopLiveStreamPlayer(false);
+            video.dataset.currentSrc = hlsUrl;
+
+            if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                // Safari / iOS play HLS natively — no library needed, lighter on mobile data.
+                video.src = hlsUrl;
+            } else if (window.Hls && window.Hls.isSupported()) {
+                // Chrome / Firefox / Android need hls.js.
+                hlsInstance = new Hls({ liveDurationInfinity: true, lowLatencyMode: true });
+                hlsInstance.loadSource(hlsUrl);
+                hlsInstance.attachMedia(video);
+            } else {
+                const status = document.getElementById('live-status');
+                if (status) status.textContent = "Your browser can't play this stream — try Chrome or Safari.";
+                return;
+            }
+            video.play().catch(() => { /* autoplay blocked until the user taps play — expected on mobile */ });
+        }
+
+        function stopLiveStreamPlayer(clearSrcAttr = true) {
+            const video = document.getElementById('liveStreamVideo');
+            if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
+            if (video && clearSrcAttr) {
+                video.pause();
+                video.removeAttribute('src');
+                video.load();
+                delete video.dataset.currentSrc;
+            }
         }
 
         function setUpgradeStatus(msg, type) {
