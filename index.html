@@ -451,6 +451,21 @@
             .live-gate-upgrade { padding: 18px 12px; }
         }
 
+        /* Let the live card claim the leftover row space instead of sitting
+           in a single narrow track — grid-column: span 2 is safe at any
+           breakpoint: on a 1-column mobile layout it just fills that column. */
+        #live-stream-card {
+            grid-column: span 2;
+            min-width: 0; /* prevents span from forcing overflow inside narrow grids */
+        }
+        #live-stream-card .live-gate-upgrade,
+        #live-stream-card .visitor-view {
+            min-height: 280px;
+        }
+        @media(max-width:760px) {
+            #live-stream-card { grid-column: span 1; }
+        }
+
         /* Visitor-view — compact on mobile, reduced empty space */
         .visitor-view {
             display: flex; flex-direction: column;
