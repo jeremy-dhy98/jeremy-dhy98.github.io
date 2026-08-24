@@ -2899,7 +2899,7 @@
         // ─────────────────────────────────────────────────────────────────────
 
         let _cryptoState = null;  // { checkoutId, interval, count }
-        const POLL_MAX   = 24;    // 24 × 5s = 2 minutes
+        const POLL_MAX   = 36;    // 36 × 5s = 3 minutes (IntaSend STK push window)
 
         // ── Tear-down helper — always call this before starting a new flow ──
         function _stopCryptoPoll() {
@@ -2978,7 +2978,11 @@
                     // Reset modal to "waiting" state BEFORE opening it,
                     // so the user never sees a flash of the previous result.
                     setModalState('📱', 'Check Your Phone',
-                        'An M-Pesa STK push has been sent to your number.<br>Enter your PIN to complete the KES 1,000 payment.',
+                        'An M-Pesa STK push has been sent to your number.<br>' +
+                        'Enter your PIN to complete the KES 1,000 payment.<br>' +
+                        '<small style="color:#64748b;margin-top:8px;display:block;">' +
+                        'Waiting for confirmation — ' +
+                        '<span id="cryptoCountdown">3:00</span> remaining</small>',
                         true);
                     setCryptoStatus('', 'pending');
                     openPaymentModal();
@@ -3011,6 +3015,15 @@
                 if (!_cryptoState || _cryptoState.checkoutId !== myCheckoutId) return;
 
                 _cryptoState.count++;
+
+                // ── Update countdown display ──────────────────────────────────
+                const secsLeft = Math.max(0, (POLL_MAX - _cryptoState.count) * 5);
+                const cd = document.getElementById('cryptoCountdown');
+                if (cd) {
+                    const m = Math.floor(secsLeft / 60);
+                    const s = secsLeft % 60;
+                    cd.textContent = `${m}:${String(s).padStart(2,'0')}`;
+                }
 
                 // ── Timeout ───────────────────────────────────────────────────
                 if (_cryptoState.count >= POLL_MAX) {
@@ -3055,13 +3068,13 @@
                             'You can try again below.',
                             false);
                         _resetCryptoBtn();
-                        // Auto-close after 3 s so user can retry immediately
+                        // Auto-close after 3 s — route through closePaymentModal()
+                        // so the poll is guaranteed stopped and the button re-enabled
+                        // even if the user does not click × themselves.
                         setTimeout(() => {
-                            // Only close if this modal is still showing the failure
-                            // (user might have already clicked × themselves)
                             const overlay = document.getElementById('paymentModalOverlay');
                             if (overlay && overlay.classList.contains('open')) {
-                                overlay.classList.remove('open');
+                                closePaymentModal();
                             }
                         }, 3000);
 
@@ -3266,7 +3279,7 @@
         // UPGRADE PAYMENT STATE MACHINE  (same pattern as crypto above)
         // ─────────────────────────────────────────────────────────────────────
         let _upgradeState = null;  // { checkoutId, interval, count }
-        const UPG_POLL_MAX = 24;
+        const UPG_POLL_MAX = 36;   // 36 × 5s = 3 minutes
 
         function _stopUpgradePoll() {
             if (_upgradeState && _upgradeState.interval) {
@@ -3337,7 +3350,10 @@
                     // Reset modal content BEFORE opening
                     setUpgradeModalState('📱', 'Check Your Phone',
                         'An M-Pesa STK push has been sent.<br>' +
-                        'Enter your PIN to complete the <strong style="color:#10b981;">KES 3,000</strong> payment.',
+                        'Enter your PIN to complete the <strong style="color:#10b981;">KES 3,000</strong> payment.<br>' +
+                        '<small style="color:#64748b;margin-top:8px;display:block;">' +
+                        'Waiting for confirmation — ' +
+                        '<span id="upgradeCountdown">3:00</span> remaining</small>',
                         true);
                     setUpgradeStatus('', 'pending');
                     openUpgradeModal();
@@ -3362,6 +3378,15 @@
             _upgradeState.interval = setInterval(async () => {
                 if (!_upgradeState || _upgradeState.checkoutId !== myCheckoutId) return;
                 _upgradeState.count++;
+
+                // ── Update countdown display ──────────────────────────────────
+                const secsLeft = Math.max(0, (UPG_POLL_MAX - _upgradeState.count) * 5);
+                const cd = document.getElementById('upgradeCountdown');
+                if (cd) {
+                    const m = Math.floor(secsLeft / 60);
+                    const s = secsLeft % 60;
+                    cd.textContent = `${m}:${String(s).padStart(2,'0')}`;
+                }
 
                 if (_upgradeState.count >= UPG_POLL_MAX) {
                     _stopUpgradePoll();
@@ -3402,10 +3427,11 @@
                             'You can try again below.',
                             false);
                         _resetUpgradeBtn();
+                        // Route through closeUpgradeModal() so poll is always stopped
                         setTimeout(() => {
                             const overlay = document.getElementById('upgradeModalOverlay');
                             if (overlay && overlay.classList.contains('open')) {
-                                overlay.classList.remove('open');
+                                closeUpgradeModal();
                             }
                         }, 3000);
                     }
