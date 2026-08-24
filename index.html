@@ -2046,7 +2046,7 @@
                                     <li><span>✔</span> Trade signals active — sent when market moves</li>
                                     <li><span>✔</span> Binance account ready to open below</li>
                                 </ul>
-                                <a href="https://www.binance.com/register?ref=JELO8VGM"
+                                <a href="https://www.binance.com/register?ref=1065917774"
                                    target="_blank" rel="noopener"
                                    class="btn-upgrade-pay" id="upgradeBinanceLink"
                                    style="text-decoration:none;margin-top:4px;">
@@ -2069,6 +2069,7 @@
         <!-- UPGRADE PAYMENT POLLING MODAL -->
         <div class="upgrade-modal-overlay" id="upgradeModalOverlay">
             <div class="upgrade-modal">
+                <button class="modal-close" onclick="closeUpgradeModal()" aria-label="Cancel payment">×</button>
                 <div style="font-size:2.8rem;margin-bottom:12px;" id="upgModalIcon">📱</div>
                 <div style="font-weight:800;font-size:1.05rem;color:#fff;margin-bottom:8px;"
                      id="upgModalTitle">Check Your Phone</div>
@@ -2465,7 +2466,7 @@
                                 <p>
                                     Open your Binance account using our exclusive referral link below to start trading. Daily signals will begin arriving in your inbox within the hour.
                                 </p>
-                                <a href="https://www.binance.com/register?ref=JELO8VGM"
+                                <a href="https://www.binance.com/register?ref=1065917774"
                                    target="_blank" rel="noopener" class="btn-binance" id="binanceLink">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
                                     Open Binance Account
@@ -2482,7 +2483,7 @@
                                     Daily signals are being delivered to your inbox
                                 </div>
                             </div>
-                            <a href="https://www.binance.com/register?ref=JELO8VGM"
+                            <a href="https://www.binance.com/register?ref=1065917774"
                                target="_blank" rel="noopener" class="btn-binance" style="display:flex;justify-content:center;margin-bottom:14px;" id="binanceLinkActive">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
                                 Open Binance Account
@@ -2821,7 +2822,7 @@
         // CRYPTO SIGNALS — CLIENT LOGIC
         // ==========================================
         const CRYPTO_PAID_KEY  = 'cff_crypto_paid';
-        const BINANCE_REF_LINK = 'https://www.binance.com/register?ref=JELO8VGM'; // ← replace with your link
+        const BINANCE_REF_LINK = 'https://www.binance.com/register?ref=1065917774'; // ← replace with your link
 
         function openCryptoSection() {
             document.getElementById('crypto-signals').scrollIntoView({ behavior: 'smooth' });
@@ -3003,9 +3004,10 @@
             // Always start from a clean slate
             _stopCryptoPoll();
             _cryptoState = {
-                checkoutId: checkoutRequestId,
-                count:      0,
-                interval:   null,
+                checkoutId:  checkoutRequestId,
+                count:       0,
+                failedCount: 0,   // consecutive "failed" ticks — require 2 before aborting
+                interval:    null,
             };
             // Capture the checkout ID in this closure — if _cryptoState is
             // replaced (new payment attempt), stale ticks become no-ops.
@@ -3062,22 +3064,35 @@
                         }, 2800);
 
                     } else if (data.payment_status === 'failed') {
-                        _stopCryptoPoll();
-                        setModalState('❌', 'Payment Failed',
-                            'The M-Pesa payment was declined or cancelled.<br>' +
-                            'You can try again below.',
-                            false);
-                        _resetCryptoBtn();
-                        // Auto-close after 3 s — route through closePaymentModal()
-                        // so the poll is guaranteed stopped and the button re-enabled
-                        // even if the user does not click × themselves.
-                        setTimeout(() => {
-                            const overlay = document.getElementById('paymentModalOverlay');
-                            if (overlay && overlay.classList.contains('open')) {
-                                closePaymentModal();
-                            }
-                        }, 3000);
+                        // Require 2 consecutive "failed" responses before giving up.
+                        // IntaSend can send intermediate callbacks (PROCESSING etc.) that
+                        // briefly leave the ledger in a non-confirmed state. A single
+                        // failed tick could be a transient race; two in a row is definitive.
+                        _cryptoState.failedCount = (_cryptoState.failedCount || 0) + 1;
+                        if (_cryptoState.failedCount < 2) {
+                            // First "failed" — keep polling silently for one more tick
+                            console.warn('Crypto poll: first "failed" tick — waiting for confirmation');
+                        } else {
+                            _stopCryptoPoll();
+                            setModalState('❌', 'Payment Failed',
+                                'The M-Pesa payment was declined or cancelled.<br>' +
+                                'You can try again below.',
+                                false);
+                            _resetCryptoBtn();
+                            // Auto-close after 4 s — route through closePaymentModal()
+                            // so the poll is guaranteed stopped and the button re-enabled
+                            // even if the user does not click × themselves.
+                            setTimeout(() => {
+                                const overlay = document.getElementById('paymentModalOverlay');
+                                if (overlay && overlay.classList.contains('open')) {
+                                    closePaymentModal();
+                                }
+                            }, 4000);
+                        }
 
+                    } else {
+                        // 'pending' or any other value — reset failedCount and keep polling
+                        if (_cryptoState) _cryptoState.failedCount = 0;
                     }
                     // 'pending' → keep polling silently — no UI change
                 } catch (err) {
@@ -3372,7 +3387,7 @@
 
         function _startUpgradePoll(checkoutId) {
             _stopUpgradePoll();
-            _upgradeState = { checkoutId, count: 0, interval: null };
+            _upgradeState = { checkoutId, count: 0, failedCount: 0, interval: null };
             const myCheckoutId = checkoutId;
 
             _upgradeState.interval = setInterval(async () => {
@@ -3421,21 +3436,29 @@
                         }, 2800);
 
                     } else if (data.payment_status === 'failed') {
-                        _stopUpgradePoll();
-                        setUpgradeModalState('❌', 'Payment Failed',
-                            'The M-Pesa payment was declined or cancelled.<br>' +
-                            'You can try again below.',
-                            false);
-                        _resetUpgradeBtn();
-                        // Route through closeUpgradeModal() so poll is always stopped
-                        setTimeout(() => {
-                            const overlay = document.getElementById('upgradeModalOverlay');
-                            if (overlay && overlay.classList.contains('open')) {
-                                closeUpgradeModal();
-                            }
-                        }, 3000);
+                        // Require 2 consecutive "failed" ticks before showing failure UI.
+                        _upgradeState.failedCount = (_upgradeState.failedCount || 0) + 1;
+                        if (_upgradeState.failedCount < 2) {
+                            console.warn('Upgrade poll: first "failed" tick — waiting for confirmation');
+                        } else {
+                            _stopUpgradePoll();
+                            setUpgradeModalState('❌', 'Payment Failed',
+                                'The M-Pesa payment was declined or cancelled.<br>' +
+                                'You can try again below.',
+                                false);
+                            _resetUpgradeBtn();
+                            // Route through closeUpgradeModal() so poll is always stopped
+                            setTimeout(() => {
+                                const overlay = document.getElementById('upgradeModalOverlay');
+                                if (overlay && overlay.classList.contains('open')) {
+                                    closeUpgradeModal();
+                                }
+                            }, 4000);
+                        }
+                    } else {
+                        // 'pending' or other — reset failedCount and keep polling silently
+                        if (_upgradeState) _upgradeState.failedCount = 0;
                     }
-                    // 'pending' → keep polling silently
                 } catch (err) {
                     console.warn('Upgrade poll error (will retry):', err.message);
                 }
