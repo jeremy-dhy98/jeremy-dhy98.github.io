@@ -2630,6 +2630,52 @@
 
             const activeSession = localStorage.getItem(SESSION_KEY);
             if (activeSession) {
+                const storedToken = localStorage.getItem(TOKEN_KEY);
+                if (storedToken) {
+                    // Verify the session is still valid on the server.
+                    // This catches users who were manually removed from the database —
+                    // they would otherwise keep a working session until the 5-minute
+                    // subscriber cache expired on the backend.
+                    fetch(`${BACKEND_BASE_URL}/api/me`, {
+                        headers: { 'Authorization': `Bearer ${storedToken}` }
+                    }).then(async res => {
+                        if (!res.ok) {
+                            // Account deleted or session revoked — force clean logout
+                            localStorage.removeItem(SESSION_KEY);
+                            localStorage.removeItem(TOKEN_KEY);
+                            localStorage.removeItem(EMAIL_KEY);
+                            localStorage.removeItem(CRYPTO_PAID_KEY);
+                            localStorage.removeItem(UPGRADE_PAID_KEY);
+                            lockMediaHub();
+                            updateNavAuthState();
+                            updatePortalState();
+                            renderCryptoPanel();
+                            renderUpgradePanel();
+                            switchTab('login');
+                            return;
+                        }
+                        const meData = await res.json();
+                        // Sync paid flags from live server data — overwrites any
+                        // stale localStorage values (e.g. from a previous session).
+                        if (meData.crypto_paid === true) {
+                            localStorage.setItem(CRYPTO_PAID_KEY, 'true');
+                        } else {
+                            localStorage.removeItem(CRYPTO_PAID_KEY);
+                        }
+                        if (meData.upgrade_paid === true) {
+                            localStorage.setItem(UPGRADE_PAID_KEY, 'true');
+                        } else {
+                            localStorage.removeItem(UPGRADE_PAID_KEY);
+                        }
+                        // Re-render subscription panels with fresh flags
+                        renderCryptoPanel();
+                        renderUpgradePanel();
+                    }).catch(() => {
+                        // Network error (e.g. backend cold-starting) — keep existing
+                        // session state conservatively rather than forcing a logout.
+                        console.warn('Session verification request failed — keeping current session.');
+                    });
+                }
                 unlockMediaHub();
                 loadDynamicMediaUrls();
             }
@@ -3616,14 +3662,15 @@
             const statusEl = document.getElementById('statusMessage');
             if (statusEl) { statusEl.style.display = 'none'; statusEl.textContent = ''; }
 
-            // Clear all session data from localStorage
+            // Clear ALL session and subscription data from localStorage.
+            // Paid flags are NOT kept between sessions — the backend re-confirms
+            // them fresh on every login, so there is no need to persist them.
+            // Keeping stale flags would allow access after manual account deletion.
             localStorage.removeItem(SESSION_KEY);
             localStorage.removeItem(TOKEN_KEY);
             localStorage.removeItem(EMAIL_KEY);
-            // NOTE: CRYPTO_PAID_KEY is intentionally kept so returning
-            // subscribers don't re-see the payment panel after re-login.
-            // The backend is the source of truth — it re-confirms paid status
-            // on login via the crypto_paid field in the auth response.
+            localStorage.removeItem(CRYPTO_PAID_KEY);
+            localStorage.removeItem(UPGRADE_PAID_KEY);
 
             // Lock all gated content
             lockMediaHub();
@@ -3633,6 +3680,10 @@
             // Reset UI state
             updateNavAuthState();
             updatePortalState();
+
+            // Show Login tab — user just logged out so they are a returning
+            // subscriber; Signup tab would be confusing and wrong here.
+            switchTab('login');
 
             // Scroll to portal so they can log back in immediately
             document.getElementById('portal').scrollIntoView({ behavior: 'smooth' });
@@ -3806,15 +3857,25 @@
                     // Store email so nav chip and portal can display it
                     if (data.email) localStorage.setItem(EMAIL_KEY, data.email);
 
-                    // Restore crypto_paid and upgrade_paid from backend auth response — ensures
-                    // returning subscribers always see the correct panel state
-                    // even if they cleared localStorage between sessions.
+                    // Sync paid flags from the authoritative backend response.
+                    // Explicitly remove flags NOT confirmed — prevents stale paid
+                    // state if localStorage was never cleared between sessions.
                     if (data.crypto_paid === true) {
                         localStorage.setItem(CRYPTO_PAID_KEY, 'true');
+                    } else {
+                        localStorage.removeItem(CRYPTO_PAID_KEY);
                     }
                     if (data.upgrade_paid === true) {
                         localStorage.setItem(UPGRADE_PAID_KEY, 'true');
+                    } else {
+                        localStorage.removeItem(UPGRADE_PAID_KEY);
                     }
+
+                    // Update every UI region that depends on auth/subscription state
+                    updateNavAuthState();
+                    updatePortalState();
+                    renderCryptoPanel();
+                    renderUpgradePanel();
 
                     unlockMediaHub();
                     await loadDynamicMediaUrls(data.media || data.media_urls || null);
