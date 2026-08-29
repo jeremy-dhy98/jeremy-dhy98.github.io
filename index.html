@@ -489,8 +489,21 @@
         #signupForm, #loginForm { display: flex; flex-direction: column; align-items: center; }
         .form-group { width: 100%; margin-bottom: 16px; }
         .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; }
-        .form-group input { width: 100%; padding: 10px 14px; background: var(--bg-color); border: 1px solid var(--border); border-radius: 6px; color: var(--text-main); font-size: 0.95rem; }
+        .form-group input { width: 100%; padding: 10px 14px; background: var(--bg-color); border: 1px solid var(--border); border-radius: 6px; color: var(--text-main); font-size: 0.95rem; transition: border-color 0.2s; }
         .form-group input:focus { outline: none; border-color: var(--accent); }
+        .form-group input.input-valid   { border-color: #10b981 !important; }
+        .form-group input.input-invalid { border-color: #ef4444 !important; }
+        /* Live phone-validation hint — sits directly below the input */
+        .phone-hint {
+            display: block;
+            font-size: 0.78rem;
+            margin-top: 5px;
+            min-height: 1.1em;
+            transition: color 0.2s;
+        }
+        .phone-hint.hint-idle    { color: var(--text-muted); }
+        .phone-hint.hint-ok      { color: #10b981; }
+        .phone-hint.hint-error   { color: #f87171; }
 
         .btn-submit { width: fit-content; padding: 10px 24px; background: var(--accent); color: #0f172a; border: none; border-radius: 6px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: background 0.2s; margin-top: 10px; }
         .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -2176,7 +2189,15 @@
                 </div>
                 <div class="form-group">
                     <label for="signupPhone">Phone Number</label>
-                    <input type="tel" id="signupPhone" placeholder="+254..." required>
+                    <input type="tel" id="signupPhone"
+                           placeholder="07XX XXX XXX or +254 7XX XXX XXX"
+                           autocomplete="tel"
+                           maxlength="15"
+                           oninput="livePhoneCheck(this)"
+                           required>
+                    <span class="phone-hint hint-idle" id="signupPhoneHint">
+                        Kenyan numbers only — 07XX or 01XX (Safaricom / Airtel / Telkom)
+                    </span>
                 </div>
                 <div class="form-group">
                     <label for="signupPassword">Password</label>
@@ -3823,6 +3844,123 @@
             }
         }
 
+        // ==========================================
+        // KENYAN PHONE VALIDATION
+        // Mirrors the backend _validate_phone() / _normalize_phone() logic so
+        // invalid numbers are caught client-side before any network request.
+        //
+        // Accepted input formats:
+        //   07XX XXX XXX   (10 digits, leading 0)
+        //   01XX XXX XXX   (10 digits, leading 0 — Airtel/Telkom)
+        //   7XX XXX XXX    (9 digits, no leading 0)
+        //   254 7XX XXX XXX (12 digits, international)
+        //   +254 7XX XXX XXX (12 digits with +)
+        //
+        // Spaces, dashes, and parentheses are stripped before checking.
+        // The second digit after the country prefix must be 7 or 1 (Kenyan
+        // mobile networks), matching the backend's 2547.../2541... rule.
+        // ==========================================
+
+        /**
+         * @param {string} raw  — whatever the user typed
+         * @returns {{ valid: true, normalized: string }
+         *         |{ valid: false, error: string }}
+         */
+        function validateKenyanPhone(raw) {
+            if (!raw || !raw.trim()) {
+                return { valid: false, error: 'Phone number is required.' };
+            }
+
+            // Strip common formatting characters (spaces, dashes, parens, leading +)
+            let digits = raw.replace(/[\s\-\(\)\+]/g, '');
+
+            // Reject anything that still contains non-digit characters
+            if (!/^\d+$/.test(digits)) {
+                return {
+                    valid: false,
+                    error: 'Digits only — remove any letters or special characters.',
+                };
+            }
+
+            // Normalize to 12-digit 254XXXXXXXXX format
+            if (digits.startsWith('0') && digits.length === 10) {
+                // 07XXXXXXXX  →  254 7XXXXXXXX
+                digits = '254' + digits.slice(1);
+            } else if (digits.length === 9 && (digits.startsWith('7') || digits.startsWith('1'))) {
+                // 7XXXXXXXX  →  2547XXXXXXXX
+                digits = '254' + digits;
+            } else if (digits.startsWith('254') && digits.length === 12) {
+                // Already in international format — keep as-is
+            } else if (digits.startsWith('0') && digits.length < 10) {
+                const remaining = 10 - digits.length;
+                return {
+                    valid: false,
+                    error: `Too short — need ${remaining} more digit${remaining !== 1 ? 's' : ''} (07XX XXX XXX).`,
+                };
+            } else if (digits.startsWith('0') && digits.length > 10) {
+                return {
+                    valid: false,
+                    error: 'Too long — Kenyan numbers are 10 digits starting with 07 or 01.',
+                };
+            } else {
+                return {
+                    valid: false,
+                    error: 'Use format 07XX XXX XXX, 01XX XXX XXX, or +254 7XX XXX XXX.',
+                };
+            }
+
+            // After normalisation must be exactly 12 digits
+            if (digits.length !== 12) {
+                return { valid: false, error: 'Must be exactly 10 digits after the leading 0 (or 12 with +254).' };
+            }
+
+            // Network prefix check — must be 2547XX (07XX) or 2541XX (01XX)
+            if (!digits.startsWith('2547') && !digits.startsWith('2541')) {
+                return {
+                    valid: false,
+                    error: 'Only Kenyan numbers starting with 07XX or 01XX are accepted.',
+                };
+            }
+
+            return { valid: true, normalized: digits };
+        }
+
+        /**
+         * Called on every keystroke in the phone input.
+         * Updates the border colour and hint text in real time.
+         */
+        function livePhoneCheck(input) {
+            const hint = document.getElementById('signupPhoneHint');
+            const raw  = (input.value || '').trim();
+
+            // No feedback until the user has typed something meaningful
+            if (!raw) {
+                input.classList.remove('input-valid', 'input-invalid');
+                if (hint) {
+                    hint.textContent  = 'Kenyan numbers only — 07XX or 01XX (Safaricom / Airtel / Telkom)';
+                    hint.className    = 'phone-hint hint-idle';
+                }
+                return;
+            }
+
+            const result = validateKenyanPhone(raw);
+            if (result.valid) {
+                input.classList.add('input-valid');
+                input.classList.remove('input-invalid');
+                if (hint) {
+                    hint.textContent = '✓ Valid Kenyan number';
+                    hint.className   = 'phone-hint hint-ok';
+                }
+            } else {
+                input.classList.add('input-invalid');
+                input.classList.remove('input-valid');
+                if (hint) {
+                    hint.textContent = result.error;
+                    hint.className   = 'phone-hint hint-error';
+                }
+            }
+        }
+
         async function handleAuth(event, type) {
             event.preventDefault();
             const statusMessage = document.getElementById('statusMessage');
@@ -3830,7 +3968,7 @@
 
             const email = document.getElementById(type === 'signup' ? 'signupEmail' : 'loginEmail').value.trim();
             const password = document.getElementById(type === 'signup' ? 'signupPassword' : 'loginPassword').value;
-            const phone = type === 'signup' ? document.getElementById('signupPhone').value.trim() : '';
+            const rawPhone = type === 'signup' ? document.getElementById('signupPhone').value.trim() : '';
 
             const showStatus = (message, isError) => {
                 if (!statusMessage) return;
@@ -3838,6 +3976,24 @@
                 statusMessage.className = `status-msg ${isError ? 'error' : 'success'}`;
                 statusMessage.textContent = message;
             };
+
+            // ── Client-side phone validation (signup only) ────────────────────
+            // Catches bad formats before spending any network round-trip.
+            // The backend enforces the same rules, so this is a UX shortcut.
+            let phone = rawPhone;
+            if (type === 'signup') {
+                const phoneCheck = validateKenyanPhone(rawPhone);
+                if (!phoneCheck.valid) {
+                    showStatus(`Invalid phone number — ${phoneCheck.error}`, true);
+                    // Also update the inline hint so the user sees both
+                    const phoneInput = document.getElementById('signupPhone');
+                    const hint       = document.getElementById('signupPhoneHint');
+                    if (phoneInput) { phoneInput.classList.add('input-invalid'); phoneInput.classList.remove('input-valid'); }
+                    if (hint)       { hint.textContent = phoneCheck.error; hint.className = 'phone-hint hint-error'; }
+                    return;   // abort — no network call, button stays enabled
+                }
+                phone = phoneCheck.normalized;   // send clean 254XXXXXXXXX to backend
+            }
 
             if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Connecting…'; }
             showStatus('Connecting to server — this can take up to a minute if the service was idle…', false);
