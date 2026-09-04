@@ -1658,54 +1658,24 @@
         .btn-open-dashboard:hover {
             background: rgba(56,189,248,0.18); border-color: var(--accent);
         }
-        /* Offline panel — shown to paid users when scanner is unreachable */
-        .dashboard-offline {
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            text-align: center;
-            min-height: 320px; padding: 40px 24px;
-            background: rgba(15,23,42,0.6);
-            border-radius: 12px;
-            border: 1px dashed rgba(245,158,11,0.3);
-            animation: fadeIn 0.4s ease;
-        }
-        @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
-        .dashboard-offline-icon { font-size: 2.8rem; margin-bottom: 16px; opacity: .75; }
-        .dashboard-offline h3 {
-            font-size: 1.05rem; font-weight: 800; color: #f59e0b;
-            margin-bottom: 8px;
-        }
-        .dashboard-offline p {
-            font-size: 0.86rem; color: var(--text-muted);
-            max-width: 400px; line-height: 1.7; margin-bottom: 6px;
-        }
-        .dashboard-offline-steps {
-            margin: 16px 0 22px;
-            background: rgba(0,0,0,0.3); border-radius: 8px;
-            padding: 14px 20px; text-align: left;
-            font-size: 0.8rem; color: #94a3b8;
-            border: 1px solid rgba(255,255,255,0.06);
-            max-width: 420px; width: 100%; line-height: 1.8;
-        }
-        .dashboard-offline-steps code {
-            background: rgba(56,189,248,0.1); color: #38bdf8;
-            padding: 1px 7px; border-radius: 4px; font-size: 0.78rem;
-        }
-        .btn-retry-dashboard {
-            display: inline-flex; align-items: center; gap: 7px;
-            background: rgba(245,158,11,0.12);
-            border: 1px solid rgba(245,158,11,0.4);
-            color: #f59e0b; padding: 8px 20px;
-            border-radius: 8px; font-size: 0.83rem; font-weight: 700;
-            cursor: pointer; transition: background 0.2s;
-        }
-        .btn-retry-dashboard:hover { background: rgba(245,158,11,0.22); }
-
     </style>
     <!-- hls.js: only needed for browsers without native HLS (Chrome/Firefox/Android). Safari/iOS play HLS natively and skip it. -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.15/hls.min.js" defer></script>
 </head>
 <body>
+
+    <!-- Backend warm-up notice — shown after 3 s if server hasn't responded yet -->
+    <div id="backendWarmBanner" style="
+        display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+        background:rgba(15,23,42,0.95); border:1px solid rgba(56,189,248,0.3);
+        color:#94a3b8; font-size:0.78rem; padding:10px 20px; border-radius:999px;
+        z-index:9999; align-items:center; gap:10px; backdrop-filter:blur(8px);
+        box-shadow:0 4px 24px rgba(0,0,0,0.4); white-space:nowrap;">
+        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;
+                     background:#f59e0b;animation:pulse-dot 1.4s infinite;flex-shrink:0;"></span>
+        Server warming up — login will be ready shortly…
+        <style>@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.25}}</style>
+    </div>
 
     <header>
         <div class="container">
@@ -2760,7 +2730,7 @@
                     </div>
                 </div>
 
-                <!-- Iframe — only injected when scanner confirmed online -->
+                <!-- Iframe — shown to crypto-paid users, gate shown to others -->
                 <div class="dashboard-frame-wrap" id="dashboardFrameWrap" style="display:none;">
                     <iframe
                         id="dashboardFrame"
@@ -2772,34 +2742,7 @@
                     </iframe>
                 </div>
 
-                <!-- Offline panel — paid users, scanner unreachable -->
-                <div class="dashboard-offline" id="dashboardOffline" style="display:none;">
-                    <div class="dashboard-offline-icon">📡</div>
-                    <h3>Scanner Offline</h3>
-                    <p>
-                        The sentiment scanner isn't reachable right now. It will appear
-                        here automatically once it comes online — usually during active
-                        market hours.
-                    </p>
-                    <div class="dashboard-offline-steps" id="dashboardAdminHint" style="display:none;">
-                        <strong style="color:#cbd5e1;">To bring it online:</strong><br>
-                        1. Start the scanner → <code>python app.py</code><br>
-                        2. Expose it publicly → <code>ngrok http 8050</code><br>
-                        3. Set <code>DASHBOARD_URL</code> on Render to the ngrok HTTPS URL.
-                    </div>
-                    <button class="btn-retry-dashboard" onclick="dashboardRetry()">
-                        🔄 Retry Connection
-                    </button>
-                    <p style="margin-top:14px;font-size:0.75rem;">
-                        <a href="#" id="dashboardSetupToggle"
-                           style="color:#475569;text-decoration:underline;"
-                           onclick="event.preventDefault(); dashboardToggleSetup();">
-                            Show setup guide
-                        </a>
-                    </p>
-                </div>
-
-                <!-- Gate — visitors / non-paid members -->
+                <!-- Gate — shown to visitors / non-paid members -->
                 <div class="dashboard-gate" id="dashboardGate">
                     <div class="dashboard-gate-icon">📊</div>
                     <h3>Live Dashboard — Paid Members Only</h3>
@@ -2945,11 +2888,50 @@
             throw lastErr;
         }
 
+        // ── Backend readiness tracking ────────────────────────────────────────
+        // Render's free tier spins down after inactivity and takes 30–60 s to
+        // wake.  We ping /api/health on every page load and retry every 5 s
+        // until we get a 200.  _backendAlive lets the auth handler know whether
+        // the server is already warm before the user even clicks Login.
+        let _backendAlive      = false;
+        let _backendPingTimer  = null;
+        let _authAutoRetried   = false;   // limit auto-retry to one attempt
+
+        function _pingHealth() {
+            const ctrl = new AbortController();
+            const t    = setTimeout(() => ctrl.abort(), 9000);
+            fetch(`${BACKEND_BASE_URL}/api/health`, { signal: ctrl.signal })
+                .then(r => {
+                    clearTimeout(t);
+                    if (r.ok) {
+                        _backendAlive = true;
+                        clearInterval(_backendPingTimer);
+                        _backendPingTimer = null;
+                        console.info('[backend] Server ready ✓');
+                        // Dismiss the warming-up banner if shown
+                        const banner = document.getElementById('backendWarmBanner');
+                        if (banner) banner.style.display = 'none';
+                    }
+                })
+                .catch(() => { clearTimeout(t); /* still sleeping — next ping scheduled */ });
+        }
+
+        // Show a soft "warming up" notice if the backend isn't alive within 3 s
+        setTimeout(() => {
+            if (!_backendAlive) {
+                const banner = document.getElementById('backendWarmBanner');
+                if (banner) banner.style.display = 'flex';
+            }
+        }, 3000);
+
+        // Ping immediately, then every 5 s until the server responds
+        _pingHealth();
+        _backendPingTimer = setInterval(() => {
+            if (_backendAlive) { clearInterval(_backendPingTimer); return; }
+            _pingHealth();
+        }, 5000);
+
         document.addEventListener("DOMContentLoaded", function () {
-            // Wake the Render backend early
-            fetch(`${BACKEND_BASE_URL}/api/health`).catch(() => {
-                console.warn('Backend health ping failed — backend may be down.');
-            });
 
             // Local branding assets render immediately
             loadStaticBranding();
@@ -3232,116 +3214,60 @@
             renderDashboardPanel(false);
         }
 
-        /* ── Live Dashboard state ────────────────────────────────────────────
-        // The dashboard has THREE display states for paid users:
-        //   frame   → scanner reachable, iframe loaded
-        //   offline → paid but scanner unreachable (default until confirmed online)
-        //   gate    → unpaid / not logged in
-        //
-        // The iframe src is NEVER set until _fetchDashboardStats() confirms
-        // available=true, preventing the raw JSON / HTML error from ever showing.
-
+        /* ── Live Dashboard helpers ───────────────────────────────────────── */
+        // The dashboard iframe is served through the Flask backend proxy so
+        // there is no mixed-content block (both the page and the proxy share
+        // the same HTTPS origin).  The raw LAN address is kept as fallback for
+        // the "Open full screen" button — it opens a new tab so no CORS/mixed-
+        // content issue applies there.
         const DASHBOARD_PROXY_URL = `${BACKEND_BASE_URL}/dashboard/`;
         const DASHBOARD_STATS_URL = `${BACKEND_BASE_URL}/api/dashboard/stats`;
         const DASHBOARD_DIRECT_URL = 'http://172.31.0.128:8050/';
+        let   _dashboardStatsPollTimer = null;
 
-        let _dashboardUserPaid   = false;   // set by renderCryptoPanel / renderDashboardPanel
-        let _dashboardIsOnline   = false;   // set by _fetchDashboardStats
-        let _dashboardStatsPollTimer = null;
-        let _dashboardRetrying   = false;
-
-        /* Central state machine — call whenever paid or online status changes */
-        function _updateDashboardState() {
-            const gate    = document.getElementById('dashboardGate');
-            const offline = document.getElementById('dashboardOffline');
-            const frame   = document.getElementById('dashboardFrameWrap');
-            if (!gate || !offline || !frame) return;
-
-            if (!_dashboardUserPaid) {
-                // Not a paid subscriber — show the upsell gate
-                gate.style.display    = '';
-                offline.style.display = 'none';
-                frame.style.display   = 'none';
-                return;
-            }
-
-            if (_dashboardIsOnline) {
-                // Paid + online → load iframe (once), show it
-                gate.style.display    = 'none';
-                offline.style.display = 'none';
-                frame.style.display   = '';
+        function renderDashboardPanel(paid) {
+            const gate  = document.getElementById('dashboardGate');
+            const frame = document.getElementById('dashboardFrameWrap');
+            if (!gate || !frame) return;
+            if (paid) {
+                gate.style.display  = 'none';
+                frame.style.display = '';
+                // Set src once — avoid reload on every re-render
                 const iframe = document.getElementById('dashboardFrame');
                 if (iframe && !iframe.getAttribute('data-loaded')) {
                     iframe.src = DASHBOARD_PROXY_URL;
                     iframe.setAttribute('data-loaded', '1');
                 }
-                // Point open-btn and direct link at the proxy URL
-                const openBtn = document.getElementById('dashboardOpenBtn');
-                if (openBtn) openBtn.href = DASHBOARD_PROXY_URL;
             } else {
-                // Paid + offline → show offline panel (default until confirmed)
-                gate.style.display    = 'none';
-                frame.style.display   = 'none';
-                offline.style.display = '';
-                // Keep open-btn pointing to the LAN address as a fallback hint
-                const openBtn = document.getElementById('dashboardOpenBtn');
-                if (openBtn) openBtn.href = DASHBOARD_DIRECT_URL;
+                gate.style.display  = '';
+                frame.style.display = 'none';
             }
         }
 
-        /* Called by renderCryptoPanel when auth/payment status is known */
-        function renderDashboardPanel(paid) {
-            _dashboardUserPaid = paid;
-            _updateDashboardState();
-        }
-
-        /* Retry button handler */
-        function dashboardRetry() {
-            if (_dashboardRetrying) return;
-            _dashboardRetrying = true;
-            const btn = document.querySelector('.btn-retry-dashboard');
-            if (btn) { btn.textContent = '⏳ Checking…'; btn.disabled = true; }
-            _fetchDashboardStats().finally(() => {
-                _dashboardRetrying = false;
-                if (btn) { btn.textContent = '🔄 Retry Connection'; btn.disabled = false; }
-            });
-        }
-
-        /* Toggle the admin/setup guide inside the offline panel */
-        function dashboardToggleSetup() {
-            const hint   = document.getElementById('dashboardAdminHint');
-            const toggle = document.getElementById('dashboardSetupToggle');
-            if (!hint || !toggle) return;
-            const isHidden = hint.style.display === 'none';
-            hint.style.display   = isHidden ? '' : 'none';
-            toggle.textContent   = isHidden ? 'Hide setup guide' : 'Show setup guide';
-        }
-
-        /* Fetch live KPIs through the backend proxy → update chips + state */
+        /* Fetch live KPI stats through the Flask backend proxy and populate chips */
         async function _fetchDashboardStats() {
             try {
                 const res = await fetch(DASHBOARD_STATS_URL, {
-                    signal: AbortSignal.timeout(7000),
+                    signal: AbortSignal.timeout(6000),
                 });
-                // A non-200 means the backend itself is down (not just the scanner)
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const d = await res.json();
 
                 if (d.available === false) {
-                    _setDashboardOnline(false);
+                    _markDashboardLive(false);
                     return;
                 }
 
                 // Populate stat chips
-                const setChip = (id, val) => {
+                const set = (id, val) => {
                     const el = document.getElementById(id);
                     if (el) el.textContent = val;
                 };
-                setChip('dsBuyCount',     d.buy_signals   ?? '—');
-                setChip('dsSellCount',    d.sell_signals  ?? '—');
-                setChip('dsAvgSentiment', d.avg_sentiment ?? '—');
-                setChip('dsMarketBias',   d.market_bias   ?? '—');
-                setChip('dsCoinCount',    d.coins_tracked ?? 16);
+                set('dsBuyCount',     d.buy_signals  ?? '—');
+                set('dsSellCount',    d.sell_signals ?? '—');
+                set('dsAvgSentiment', d.avg_sentiment ?? '—');
+                set('dsMarketBias',   d.market_bias  ?? '—');
+                set('dsCoinCount',    d.coins_tracked ?? 16);
 
                 // Colour the market bias chip
                 const biasEl = document.getElementById('dsMarketBias');
@@ -3351,51 +3277,58 @@
                         d.market_bias === 'Bearish' ? '#ef4444' : '#f59e0b';
                 }
 
-                // Update badge text with last scan time
+                // Update last-scan badge text
                 const badge = document.querySelector('.dashboard-badge');
                 if (badge && d.last_scan) {
-                    const tn = [...badge.childNodes].find(n => n.nodeType === 3);
-                    if (tn) tn.textContent = d.scan_running
-                        ? ' Scanning… '
-                        : ` Live · Last scan ${d.last_scan}`;
+                    const textNode = [...badge.childNodes].find(n => n.nodeType === 3);
+                    if (textNode) {
+                        textNode.textContent = d.scan_running
+                            ? ' Scanning… '
+                            : ` Live · Last scan ${d.last_scan}`;
+                    }
                 }
 
-                _setDashboardOnline(true);
-
+                _markDashboardLive(true);
             } catch (err) {
                 console.warn('[dashboard stats]', err.message);
-                _setDashboardOnline(false);
+                _markDashboardLive(false);
             }
         }
 
-        /* Update online flag, badge, and panel state together */
-        function _setDashboardOnline(online) {
-            _dashboardIsOnline = online;
-            _updateDashboardState();
-
+        function _markDashboardLive(online) {
             const dot   = document.querySelector('.dashboard-live-dot');
             const badge = document.querySelector('.dashboard-badge');
-
             if (online) {
                 if (dot) dot.style.background = '#10b981';
                 if (badge) {
-                    badge.style.cssText += ';background:rgba(16,185,129,0.15);border-color:rgba(16,185,129,0.35);color:#10b981';
+                    badge.style.background  = 'rgba(16,185,129,0.15)';
+                    badge.style.borderColor = 'rgba(16,185,129,0.35)';
+                    badge.style.color       = '#10b981';
                 }
             } else {
                 if (dot) dot.style.background = '#f59e0b';
                 if (badge) {
-                    badge.style.cssText += ';background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.3);color:#f59e0b';
-                    const tn = [...badge.childNodes].find(n => n.nodeType === 3);
-                    if (tn) tn.textContent = ' Scanner offline · Retrying…';
+                    badge.style.background  = 'rgba(245,158,11,0.1)';
+                    badge.style.borderColor = 'rgba(245,158,11,0.3)';
+                    badge.style.color       = '#f59e0b';
+                    const textNode = [...badge.childNodes].find(n => n.nodeType === 3);
+                    if (textNode && !textNode.textContent.includes('Unavailable')) {
+                        textNode.textContent = ' Unavailable · Scanner may be offline';
+                    }
                 }
             }
         }
 
-        /* Initialise: fetch stats immediately, then poll every 5 min */
+        /* Initialise dashboard: seed chips, fetch once, then poll every 5 min */
         (function initDashboard() {
+            // Point the "open full screen" button at the HTTPS proxy URL
+            const openBtn = document.getElementById('dashboardOpenBtn');
+            if (openBtn) openBtn.href = DASHBOARD_PROXY_URL;
+
             _fetchDashboardStats();
             clearInterval(_dashboardStatsPollTimer);
             _dashboardStatsPollTimer = setInterval(_fetchDashboardStats, 5 * 60 * 1000);
+            // Pause polling when tab is hidden, resume when visible
             document.addEventListener('visibilitychange', () => {
                 if (document.visibilityState === 'hidden') {
                     clearInterval(_dashboardStatsPollTimer);
@@ -4501,18 +4434,27 @@
             }
 
             if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Connecting…'; }
-            showStatus('Connecting to server — this can take up to a minute if the service was idle…', false);
+            showStatus(
+                _backendAlive
+                    ? 'Verifying credentials…'
+                    : 'Connecting to server — it may take up to 60 s if the service was idle…',
+                false
+            );
+
+            let _willAutoRetry = false;   // controls whether finally resets the button
 
             try {
                 const response = await fetchWithRetry(`${BACKEND_BASE_URL}/api/${type}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password, phone })
-                }, { timeoutMs: 30000, retries: 1 });
+                }, { timeoutMs: 60000, retries: 0 });  // single 60 s attempt — covers Render cold-start
 
                 const data = await response.json();
 
                 if (response.ok && data.status === 'success') {
+                    _authAutoRetried = false;   // reset for next login
+                    _backendAlive    = true;
                     localStorage.setItem(SESSION_KEY, 'active_subscriber');
                     if (data.token) localStorage.setItem(TOKEN_KEY, data.token);
                     // Store email so nav chip and portal can display it
@@ -4552,15 +4494,53 @@
                         document.getElementById('media-hub').scrollIntoView({ behavior: 'smooth' });
                     }, 800);
                 } else {
+                    // Server responded but rejected the credentials — don't auto-retry
+                    _authAutoRetried = false;
                     showStatus(data.message || 'Authentication failed. Please check your details and try again.', true);
                 }
             } catch (err) {
                 console.error('Auth request failed:', err);
-                showStatus('Could not reach the server. It may still be waking up — please try again in a few seconds.', true);
+
+                if (!_authAutoRetried) {
+                    // First failure — almost certainly Render waking up.
+                    // Auto-retry once after a short countdown so the user
+                    // doesn't have to click the button again.
+                    _authAutoRetried = true;
+                    _willAutoRetry   = true;
+
+                    let secsLeft = 15;
+                    showStatus(`Server is starting up — retrying automatically in ${secsLeft} s…`, false);
+                    if (submitBtn) submitBtn.textContent = `Retrying in ${secsLeft}s…`;
+
+                    const _cdTimer = setInterval(() => {
+                        secsLeft--;
+                        if (secsLeft > 0) {
+                            showStatus(`Server is starting up — retrying automatically in ${secsLeft} s…`, false);
+                            if (submitBtn) submitBtn.textContent = `Retrying in ${secsLeft}s…`;
+                        } else {
+                            clearInterval(_cdTimer);
+                            // Re-submit — synthesise the event object handleAuth expects
+                            handleAuth({ preventDefault() {} }, type);
+                        }
+                    }, 1000);
+                } else {
+                    // Second failure — server genuinely unreachable
+                    _authAutoRetried = false;
+                    showStatus(
+                        'Could not reach the server. Please check your internet connection and try again.',
+                        true
+                    );
+                }
             } finally {
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = type === 'signup' ? 'Subscribe & Unlock Downloads' : 'Login to Access Media';
+                // Only reset the button if we're NOT in a countdown auto-retry
+                if (!_willAutoRetry) {
+                    _authAutoRetried = false;
+                    if (submitBtn) {
+                        submitBtn.disabled  = false;
+                        submitBtn.textContent = type === 'signup'
+                            ? 'Subscribe & Unlock Downloads'
+                            : 'Login to Access Media';
+                    }
                 }
             }
         }
