@@ -1520,6 +1520,144 @@
             font-size: 0.7rem; color: #334155; text-align: center; flex-shrink: 0;
         }
 
+
+        /* ══════════════════════════════════════════════════
+           LIVE DASHBOARD SECTION
+           ══════════════════════════════════════════════════ */
+        .dashboard-section {
+            margin: 48px 0;
+            border-radius: 20px;
+            border: 1px solid rgba(56,189,248,0.2);
+            overflow: hidden;
+            background: linear-gradient(145deg, #0a1628 0%, #0f172a 60%, #071220 100%);
+            position: relative;
+        }
+        .dashboard-section::before {
+            content: '';
+            position: absolute; inset: 0; pointer-events: none;
+            background:
+                radial-gradient(ellipse at 0% 0%, rgba(16,185,129,0.07) 0%, transparent 55%),
+                radial-gradient(ellipse at 100% 100%, rgba(56,189,248,0.07) 0%, transparent 55%);
+        }
+        .dashboard-section::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent 0%, #10b981 30%, var(--accent) 70%, transparent 100%);
+            opacity: 0.75;
+        }
+        .dashboard-inner {
+            padding: 40px 40px 36px;
+            position: relative; z-index: 1;
+        }
+        @media(max-width:600px) { .dashboard-inner { padding: 28px 18px 24px; } }
+
+        .dashboard-header {
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 14px; margin-bottom: 8px;
+        }
+        .dashboard-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(16,185,129,0.15);
+            border: 1px solid rgba(16,185,129,0.35);
+            color: #10b981; font-size: 0.72rem; font-weight: 700;
+            letter-spacing: 0.1em; text-transform: uppercase;
+            padding: 5px 14px; border-radius: 999px;
+        }
+        .dashboard-live-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: #10b981;
+            animation: pulse-new 1.8s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+        .dashboard-title {
+            font-size: 1.6rem; font-weight: 800; color: var(--text-main);
+            margin: 10px 0 6px; line-height: 1.25;
+        }
+        .dashboard-title span { color: #38bdf8; }
+        .dashboard-sub {
+            font-size: 0.9rem; color: var(--text-muted); max-width: 640px;
+            line-height: 1.65; margin-bottom: 28px;
+        }
+
+        /* Stats bar above the iframe */
+        .dashboard-stats {
+            display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 22px;
+        }
+        .dashboard-stat {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px; padding: 10px 18px;
+            display: flex; flex-direction: column; align-items: center;
+            min-width: 100px; text-align: center;
+        }
+        .dashboard-stat-value {
+            font-size: 1.25rem; font-weight: 900; color: #10b981;
+            line-height: 1.1;
+        }
+        .dashboard-stat-value.amber { color: #f59e0b; }
+        .dashboard-stat-value.blue  { color: #38bdf8; }
+        .dashboard-stat-label {
+            font-size: 0.7rem; color: #64748b; margin-top: 3px;
+            text-transform: uppercase; letter-spacing: 0.08em;
+        }
+
+        /* The iframe wrapper */
+        .dashboard-frame-wrap {
+            width: 100%; border-radius: 12px; overflow: hidden;
+            border: 1px solid rgba(56,189,248,0.18);
+            background: #0d1829;
+            position: relative;
+        }
+        .dashboard-frame-wrap iframe {
+            width: 100%; height: 680px;
+            border: none; display: block;
+        }
+        @media(max-width:700px) {
+            .dashboard-frame-wrap iframe { height: 520px; }
+        }
+
+        /* Gate shown to visitors / unpaid users */
+        .dashboard-gate {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            text-align: center;
+            min-height: 360px; padding: 40px 24px;
+            background: rgba(15,23,42,0.7);
+            border-radius: 12px; border: 1px dashed rgba(56,189,248,0.25);
+        }
+        .dashboard-gate-icon { font-size: 3rem; margin-bottom: 14px; }
+        .dashboard-gate h3 {
+            font-size: 1.1rem; font-weight: 800; color: var(--text-main);
+            margin-bottom: 8px;
+        }
+        .dashboard-gate p {
+            font-size: 0.88rem; color: var(--text-muted);
+            max-width: 380px; line-height: 1.65; margin-bottom: 20px;
+        }
+
+        /* Refresh info bar below the iframe */
+        .dashboard-footer-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 10px;
+            margin-top: 14px; padding: 10px 4px;
+            font-size: 0.75rem; color: #475569;
+        }
+        .dashboard-footer-bar a {
+            color: var(--accent); text-decoration: none; font-weight: 600;
+        }
+        .dashboard-footer-bar a:hover { text-decoration: underline; }
+
+        /* Open-in-new-tab button */
+        .btn-open-dashboard {
+            display: inline-flex; align-items: center; gap: 7px;
+            background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.3);
+            color: var(--accent); padding: 7px 16px;
+            border-radius: 8px; font-size: 0.82rem; font-weight: 700;
+            cursor: pointer; text-decoration: none;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .btn-open-dashboard:hover {
+            background: rgba(56,189,248,0.18); border-color: var(--accent);
+        }
     </style>
     <!-- hls.js: only needed for browsers without native HLS (Chrome/Firefox/Android). Safari/iOS play HLS natively and skip it. -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.15/hls.min.js" defer></script>
@@ -1555,6 +1693,7 @@
                                 <hr class="nav-more-divider">
                                 <a href="#upgrade-hub">Upgrade Hub</a>
                                 <a href="#crypto-signals">Crypto Signals</a>
+                                <a href="#live-dashboard">Live Dashboard</a>
                                 <hr class="nav-more-divider">
                                 <a href="privacy.html">Privacy</a>
                                 <a href="terms.html">Terms</a>
@@ -1655,6 +1794,7 @@
             <li><a href="#media-hub" onclick="closeDrawer()"><span class="drawer-icon">🎬</span>Daily Hub</a></li>
             <li><a href="#upgrade-hub" onclick="closeDrawer()"><span class="drawer-icon">🎓</span>Upgrade Hub</a></li>
             <li><a href="#crypto-signals" onclick="closeDrawer()"><span class="drawer-icon">📈</span>Crypto Signals</a></li>
+            <li><a href="#live-dashboard" onclick="closeDrawer()"><span class="drawer-icon">📊</span>Live Dashboard</a></li>
             <li><a href="#apond"   onclick="closeDrawer()"><span class="drawer-icon">⚡</span>APOND App</a></li>
             <li><a href="#portal"  onclick="closeDrawer()"><span class="drawer-icon">🔓</span>Portal / Login</a></li>
             <li><a href="#socials" onclick="closeDrawer()"><span class="drawer-icon">🌐</span>Socials</a></li>
@@ -2519,6 +2659,105 @@
             </div>
         </section>
 
+        <!-- ═══════════════════════════════════════════════════════════
+             LIVE SENTIMENT DASHBOARD
+             ═══════════════════════════════════════════════════════════ -->
+        <section id="live-dashboard" class="dashboard-section" aria-label="Live Crypto Sentiment Dashboard">
+            <div class="dashboard-inner">
+
+                <div class="dashboard-header">
+                    <div class="dashboard-badge">
+                        <span class="dashboard-live-dot"></span>
+                        Live · Auto-refreshes every 5 min
+                    </div>
+                    <a class="btn-open-dashboard"
+                       id="dashboardOpenBtn"
+                       href="http://172.31.0.128:8050/"
+                       target="_blank" rel="noopener">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2.5">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                            <polyline points="15 3 21 3 21 9"/>
+                            <line x1="10" y1="14" x2="21" y2="3"/>
+                        </svg>
+                        Open full screen
+                    </a>
+                </div>
+
+                <h2 class="dashboard-title">
+                    Live <span>Sentiment Dashboard</span>
+                </h2>
+                <p class="dashboard-sub">
+                    Real-time market sentiment scanning across all tracked altcoins —
+                    RSI, EMA20/50 trend analysis, buy &amp; sell signal counts and per-coin
+                    confidence scores updated automatically every few minutes.
+                </p>
+
+                <!-- Quick-stats bar (static snapshot — matches what the scanner produces) -->
+                <div class="dashboard-stats">
+                    <div class="dashboard-stat">
+                        <div class="dashboard-stat-value" id="dsBuyCount">—</div>
+                        <div class="dashboard-stat-label">BUY Signals</div>
+                    </div>
+                    <div class="dashboard-stat">
+                        <div class="dashboard-stat-value amber" id="dsSellCount">—</div>
+                        <div class="dashboard-stat-label">SELL Signals</div>
+                    </div>
+                    <div class="dashboard-stat">
+                        <div class="dashboard-stat-value blue" id="dsAvgSentiment">—</div>
+                        <div class="dashboard-stat-label">Avg Sentiment</div>
+                    </div>
+                    <div class="dashboard-stat">
+                        <div class="dashboard-stat-value" id="dsMarketBias" style="font-size:1rem;">—</div>
+                        <div class="dashboard-stat-label">Market Bias</div>
+                    </div>
+                    <div class="dashboard-stat">
+                        <div class="dashboard-stat-value blue" id="dsCoinCount">16</div>
+                        <div class="dashboard-stat-label">Coins Tracked</div>
+                    </div>
+                </div>
+
+                <!-- Iframe — shown to crypto-paid users, gate shown to others -->
+                <div class="dashboard-frame-wrap" id="dashboardFrameWrap" style="display:none;">
+                    <iframe
+                        id="dashboardFrame"
+                        src=""
+                        title="Live Crypto Sentiment Dashboard"
+                        loading="lazy"
+                        allow="fullscreen"
+                        sandbox="allow-scripts allow-same-origin allow-forms allow-popups">
+                    </iframe>
+                </div>
+
+                <!-- Gate — shown to visitors / non-paid members -->
+                <div class="dashboard-gate" id="dashboardGate">
+                    <div class="dashboard-gate-icon">📊</div>
+                    <h3>Live Dashboard — Paid Members Only</h3>
+                    <p>
+                        Activate Crypto Signals above to unlock the real-time sentiment dashboard.
+                        It shows live RSI, EMA trend data, per-coin scores and auto-scan results
+                        across 16+ altcoins — updated every 5 minutes.
+                    </p>
+                    <button class="btn-pay" style="border-radius:8px;"
+                        onclick="document.getElementById('crypto-signals').scrollIntoView({behavior:'smooth'})">
+                        🔓 Activate Signals to Unlock
+                    </button>
+                </div>
+
+                <div class="dashboard-footer-bar">
+                    <span>
+                        Dashboard proxied via backend —
+                        <a id="dashboardDirectLink" href="http://172.31.0.128:8050/"
+                           target="_blank" rel="noopener">
+                            open direct ↗
+                        </a>
+                    </span>
+                    <span>Scans: Balanced · Timeframe: 15m · Confidence scored 1–5</span>
+                </div>
+
+            </div>
+        </section>
+
         <!-- PAYMENT POLLING MODAL (STK push waiting screen) -->
         <div class="crypto-modal-overlay" id="paymentModalOverlay">
             <div class="crypto-modal">
@@ -2907,18 +3146,146 @@
                 visitorGate.style.display  = '';
                 payPanel.style.display     = 'none';
                 activePanel.style.display  = 'none';
+                renderDashboardPanel(false);
                 return;
             }
             if (isCryptoPaid) {
                 visitorGate.style.display  = 'none';
                 payPanel.style.display     = 'none';
                 activePanel.style.display  = '';
+                renderDashboardPanel(true);
                 return;
             }
             visitorGate.style.display  = 'none';
             payPanel.style.display     = '';
             activePanel.style.display  = 'none';
+            renderDashboardPanel(false);
         }
+
+        /* ── Live Dashboard helpers ───────────────────────────────────────── */
+        // The dashboard iframe is served through the Flask backend proxy so
+        // there is no mixed-content block (both the page and the proxy share
+        // the same HTTPS origin).  The raw LAN address is kept as fallback for
+        // the "Open full screen" button — it opens a new tab so no CORS/mixed-
+        // content issue applies there.
+        const DASHBOARD_PROXY_URL = `${BACKEND_BASE_URL}/dashboard/`;
+        const DASHBOARD_STATS_URL = `${BACKEND_BASE_URL}/api/dashboard/stats`;
+        const DASHBOARD_DIRECT_URL = 'http://172.31.0.128:8050/';
+        let   _dashboardStatsPollTimer = null;
+
+        function renderDashboardPanel(paid) {
+            const gate  = document.getElementById('dashboardGate');
+            const frame = document.getElementById('dashboardFrameWrap');
+            if (!gate || !frame) return;
+            if (paid) {
+                gate.style.display  = 'none';
+                frame.style.display = '';
+                // Set src once — avoid reload on every re-render
+                const iframe = document.getElementById('dashboardFrame');
+                if (iframe && !iframe.getAttribute('data-loaded')) {
+                    iframe.src = DASHBOARD_PROXY_URL;
+                    iframe.setAttribute('data-loaded', '1');
+                }
+            } else {
+                gate.style.display  = '';
+                frame.style.display = 'none';
+            }
+        }
+
+        /* Fetch live KPI stats through the Flask backend proxy and populate chips */
+        async function _fetchDashboardStats() {
+            try {
+                const res = await fetch(DASHBOARD_STATS_URL, {
+                    signal: AbortSignal.timeout(6000),
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const d = await res.json();
+
+                if (d.available === false) {
+                    _markDashboardLive(false);
+                    return;
+                }
+
+                // Populate stat chips
+                const set = (id, val) => {
+                    const el = document.getElementById(id);
+                    if (el) el.textContent = val;
+                };
+                set('dsBuyCount',     d.buy_signals  ?? '—');
+                set('dsSellCount',    d.sell_signals ?? '—');
+                set('dsAvgSentiment', d.avg_sentiment ?? '—');
+                set('dsMarketBias',   d.market_bias  ?? '—');
+                set('dsCoinCount',    d.coins_tracked ?? 16);
+
+                // Colour the market bias chip
+                const biasEl = document.getElementById('dsMarketBias');
+                if (biasEl) {
+                    biasEl.style.color =
+                        d.market_bias === 'Bullish' ? '#10b981' :
+                        d.market_bias === 'Bearish' ? '#ef4444' : '#f59e0b';
+                }
+
+                // Update last-scan badge text
+                const badge = document.querySelector('.dashboard-badge');
+                if (badge && d.last_scan) {
+                    const textNode = [...badge.childNodes].find(n => n.nodeType === 3);
+                    if (textNode) {
+                        textNode.textContent = d.scan_running
+                            ? ' Scanning… '
+                            : ` Live · Last scan ${d.last_scan}`;
+                    }
+                }
+
+                _markDashboardLive(true);
+            } catch (err) {
+                console.warn('[dashboard stats]', err.message);
+                _markDashboardLive(false);
+            }
+        }
+
+        function _markDashboardLive(online) {
+            const dot   = document.querySelector('.dashboard-live-dot');
+            const badge = document.querySelector('.dashboard-badge');
+            if (online) {
+                if (dot) dot.style.background = '#10b981';
+                if (badge) {
+                    badge.style.background  = 'rgba(16,185,129,0.15)';
+                    badge.style.borderColor = 'rgba(16,185,129,0.35)';
+                    badge.style.color       = '#10b981';
+                }
+            } else {
+                if (dot) dot.style.background = '#f59e0b';
+                if (badge) {
+                    badge.style.background  = 'rgba(245,158,11,0.1)';
+                    badge.style.borderColor = 'rgba(245,158,11,0.3)';
+                    badge.style.color       = '#f59e0b';
+                    const textNode = [...badge.childNodes].find(n => n.nodeType === 3);
+                    if (textNode && !textNode.textContent.includes('Unavailable')) {
+                        textNode.textContent = ' Unavailable · Scanner may be offline';
+                    }
+                }
+            }
+        }
+
+        /* Initialise dashboard: seed chips, fetch once, then poll every 5 min */
+        (function initDashboard() {
+            // Point the "open full screen" button at the HTTPS proxy URL
+            const openBtn = document.getElementById('dashboardOpenBtn');
+            if (openBtn) openBtn.href = DASHBOARD_PROXY_URL;
+
+            _fetchDashboardStats();
+            clearInterval(_dashboardStatsPollTimer);
+            _dashboardStatsPollTimer = setInterval(_fetchDashboardStats, 5 * 60 * 1000);
+            // Pause polling when tab is hidden, resume when visible
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') {
+                    clearInterval(_dashboardStatsPollTimer);
+                } else {
+                    _fetchDashboardStats();
+                    _dashboardStatsPollTimer = setInterval(_fetchDashboardStats, 5 * 60 * 1000);
+                }
+            });
+        })();
 
         function setCryptoStatus(msg, type) {
             // type: 'pending' | 'success' | 'error'
