@@ -3469,9 +3469,13 @@
         // The iframe src is NEVER set until _fetchDashboardStats() confirms
         // available=true, so raw JSON / error responses can never show in the embed.
 
-        const DASHBOARD_PROXY_URL = `${BACKEND_BASE_URL}/dashboard/`;
-        const DASHBOARD_STATS_URL = `${BACKEND_BASE_URL}/api/dashboard/stats`;
-        const DASHBOARD_DIRECT_URL = 'http://172.31.0.128:8050/';
+        // ── Dashboard URL constants ───────────────────────────────────────────
+        // The Dash app runs on its OWN Render service (cff-dashboard).
+        // Never proxy it through the dispatcher — that causes the garbled-bytes bug.
+        const DASHBOARD_BASE_URL   = 'https://cff-dashboard.onrender.com';
+        const DASHBOARD_PROXY_URL  = DASHBOARD_BASE_URL + '/';          // iframe src
+        const DASHBOARD_STATS_URL  = DASHBOARD_BASE_URL + '/api/stats'; // KPI chips
+        const DASHBOARD_DIRECT_URL = DASHBOARD_BASE_URL + '/';          // open-btn fallback
 
         let _dashboardUserPaid      = false;
         let _dashboardIsOnline      = false;
@@ -3508,7 +3512,7 @@
                 frame.style.display   = 'none';
                 offline.style.display = '';
                 const openBtn = document.getElementById('dashboardOpenBtn');
-                if (openBtn) openBtn.href = DASHBOARD_DIRECT_URL;
+                if (openBtn) openBtn.href = DASHBOARD_BASE_URL + '/';
             }
         }
 
@@ -3540,20 +3544,35 @@
             toggle.textContent  = hidden ? 'Hide setup guide' : 'Show setup guide';
         }
 
-        /* Fetch live KPIs via backend proxy → update chips + panel state */
+        /* Fetch live KPIs directly from the Dash server → update chips + panel state.
+           Render free tier can take 20-30 s to wake from sleep, so we use a generous
+           timeout and show the iframe optimistically while stats load in the background. */
         async function _fetchDashboardStats() {
+            // Show the iframe immediately for paid users without waiting for stats.
+            // Stats chips update once the Render service responds.
+            if (_dashboardUserPaid && !_dashboardIsOnline) {
+                _setDashboardOnline(true);   // optimistic — let iframe render
+            }
+
             try {
                 const res = await fetch(DASHBOARD_STATS_URL, {
-                    signal: AbortSignal.timeout(7000),
+                    signal: AbortSignal.timeout(30000),   // 30 s — Render cold-start
+                    cache: 'no-store',
                 });
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const d = await res.json();
 
+                // Guard: make sure the response is JSON, not HTML or binary
+                const ct = res.headers.get('content-type') || '';
+                if (!ct.includes('application/json')) {
+                    throw new Error(`Unexpected content-type: ${ct}`);
+                }
+
+                const d = await res.json();
                 if (d.available === false) { _setDashboardOnline(false); return; }
 
                 const setChip = (id, val) => {
                     const el = document.getElementById(id);
-                    if (el) el.textContent = val;
+                    if (el && val !== undefined && val !== null) el.textContent = val;
                 };
                 setChip('dsBuyCount',     d.buy_signals   ?? '—');
                 setChip('dsSellCount',    d.sell_signals  ?? '—');
@@ -3567,17 +3586,23 @@
                     d.market_bias === 'Bearish' ? '#ef4444' : '#f59e0b';
 
                 const badge = document.querySelector('.dashboard-badge');
-                if (badge && d.last_scan) {
+                if (badge) {
                     const tn = [...badge.childNodes].find(n => n.nodeType === 3);
                     if (tn) tn.textContent = d.scan_running
                         ? ' Scanning… '
-                        : ` Live · Last scan ${d.last_scan}`;
+                        : d.last_scan
+                            ? ` Live · Last scan ${d.last_scan}`
+                            : ' Live · Auto-refreshes every 5 min';
                 }
 
                 _setDashboardOnline(true);
             } catch (err) {
                 console.warn('[dashboard stats]', err.message);
-                _setDashboardOnline(false);
+                // Don't flip to offline on a single timeout — Render takes time to wake.
+                // Only mark offline if we haven't confirmed online at least once.
+                if (!_dashboardIsOnline) {
+                    _setDashboardOnline(false);
+                }
             }
         }
 
