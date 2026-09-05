@@ -2927,9 +2927,58 @@
         // CONFIG
         // ==========================================
         const BACKEND_BASE_URL = 'https://cff-dispatcher-api.onrender.com';
+        // ── Per-tab auth storage ──────────────────────────────────────────────
+        //
+        // Problem: localStorage is SHARED across every tab of the same origin.
+        // Logging into account B in Tab 2 overwrites account A's keys written
+        // by Tab 1, so refreshing Tab 1 shows account B.
+        //
+        // Fix: use sessionStorage (per-tab isolated) for all auth reads, and
+        // write to BOTH on login so a fresh tab inherits the last session on
+        // page load (instead of requiring a re-login every time a new tab is
+        // opened).
+        //
+        // Result:
+        //   • Two tabs → two accounts → refresh each → each stays on its own account ✓
+        //   • New tab → inherits last login from localStorage seed ✓
+        //   • Browser restart → last session restored from localStorage ✓
+        //   • Logout → clears both storages ✓
+
+        (function _seedTabSession() {
+            const _AUTH_KEYS = [
+                'cff_user_session', 'cff_user_token', 'cff_user_email',
+                'cff_crypto_paid',  'cff_upgrade_paid',
+            ];
+            // Only seed if this tab has no session of its own yet
+            if (!sessionStorage.getItem('cff_user_session') &&
+                 localStorage.getItem('cff_user_session')) {
+                _AUTH_KEYS.forEach(k => {
+                    const v = localStorage.getItem(k);
+                    if (v !== null) sessionStorage.setItem(k, v);
+                });
+            }
+        })();
+
         const SESSION_KEY   = 'cff_user_session';
         const TOKEN_KEY     = 'cff_user_token';
         const EMAIL_KEY     = 'cff_user_email';   // stored on login/signup
+
+        // authStorage — use this for EVERY auth key read/write instead of
+        // localStorage directly.
+        //   • getItem  → sessionStorage only  (tab-isolated)
+        //   • setItem  → sessionStorage + localStorage  (isolated + persistent)
+        //   • removeItem → both  (clean logout)
+        const authStorage = {
+            getItem(key)       { return sessionStorage.getItem(key); },
+            setItem(key, val)  {
+                sessionStorage.setItem(key, val);
+                try { localStorage.setItem(key, val); } catch (_) {}
+            },
+            removeItem(key) {
+                sessionStorage.removeItem(key);
+                try { localStorage.removeItem(key); } catch (_) {}
+            },
+        };
         let cachedVideoManifest = null;
         // In-flight promise guards — prevents the same endpoint being called
         // multiple times concurrently (e.g. session restore + auth response
@@ -3012,9 +3061,9 @@
             updateNavAuthState();
             updatePortalState();
 
-            const activeSession = localStorage.getItem(SESSION_KEY);
+            const activeSession = authStorage.getItem(SESSION_KEY);
             if (activeSession) {
-                const storedToken = localStorage.getItem(TOKEN_KEY);
+                const storedToken = authStorage.getItem(TOKEN_KEY);
                 if (storedToken) {
                     // Verify the session is still valid on the server.
                     // This catches users who were manually removed from the database —
@@ -3025,11 +3074,11 @@
                     }).then(async res => {
                         if (!res.ok) {
                             // Account deleted or session revoked — force clean logout
-                            localStorage.removeItem(SESSION_KEY);
-                            localStorage.removeItem(TOKEN_KEY);
-                            localStorage.removeItem(EMAIL_KEY);
-                            localStorage.removeItem(CRYPTO_PAID_KEY);
-                            localStorage.removeItem(UPGRADE_PAID_KEY);
+                            authStorage.removeItem(SESSION_KEY);
+                            authStorage.removeItem(TOKEN_KEY);
+                            authStorage.removeItem(EMAIL_KEY);
+                            authStorage.removeItem(CRYPTO_PAID_KEY);
+                            authStorage.removeItem(UPGRADE_PAID_KEY);
                             lockMediaHub();
                             updateNavAuthState();
                             updatePortalState();
@@ -3042,14 +3091,14 @@
                         // Sync paid flags from live server data — overwrites any
                         // stale localStorage values (e.g. from a previous session).
                         if (meData.crypto_paid === true) {
-                            localStorage.setItem(CRYPTO_PAID_KEY, 'true');
+                            authStorage.setItem(CRYPTO_PAID_KEY, 'true');
                         } else {
-                            localStorage.removeItem(CRYPTO_PAID_KEY);
+                            authStorage.removeItem(CRYPTO_PAID_KEY);
                         }
                         if (meData.upgrade_paid === true) {
-                            localStorage.setItem(UPGRADE_PAID_KEY, 'true');
+                            authStorage.setItem(UPGRADE_PAID_KEY, 'true');
                         } else {
-                            localStorage.removeItem(UPGRADE_PAID_KEY);
+                            authStorage.removeItem(UPGRADE_PAID_KEY);
                         }
                         // Re-render subscription panels with fresh flags
                         renderCryptoPanel();
@@ -3259,8 +3308,8 @@
         }
 
         function renderCryptoPanel() {
-            const isLoggedIn  = !!localStorage.getItem(SESSION_KEY);
-            const isCryptoPaid = localStorage.getItem(CRYPTO_PAID_KEY) === 'true';
+            const isLoggedIn  = !!authStorage.getItem(SESSION_KEY);
+            const isCryptoPaid = authStorage.getItem(CRYPTO_PAID_KEY) === 'true';
 
             const visitorGate   = document.getElementById('cryptoVisitorGate');
             const payPanel      = document.getElementById('cryptoPayPanel');
@@ -3526,7 +3575,7 @@
 
         async function initiatePayment() {
             const rawPhone = (document.getElementById('mpesaPhone').value || '').trim().replace(/[\s\-]/g, '');
-            const token    = localStorage.getItem(TOKEN_KEY);
+            const token    = authStorage.getItem(TOKEN_KEY);
 
             // ── Auth guard ────────────────────────────────────────────────────
             if (!token) {
@@ -3635,7 +3684,7 @@
                 }
 
                 try {
-                    const token = localStorage.getItem(TOKEN_KEY);
+                    const token = authStorage.getItem(TOKEN_KEY);
                     const res   = await fetch(
                         `${BACKEND_BASE_URL}/api/crypto/status?ref=${encodeURIComponent(myCheckoutId)}`,
                         { headers: { 'Authorization': `Bearer ${token}` } }
@@ -3647,7 +3696,7 @@
 
                     if (data.payment_status === 'confirmed') {
                         _stopCryptoPoll();
-                        localStorage.setItem(CRYPTO_PAID_KEY, 'true');
+                        authStorage.setItem(CRYPTO_PAID_KEY, 'true');
                         setModalState('🎉', 'Payment Confirmed!',
                             'Your Crypto Signals service is now active.<br>' +
                             'Daily signals will arrive in your inbox throughout the day.',
@@ -3712,8 +3761,8 @@
         }
 
         function renderUpgradePanel() {
-            const isLoggedIn    = !!localStorage.getItem(SESSION_KEY);
-            const isUpgraded    = localStorage.getItem(UPGRADE_PAID_KEY) === 'true';
+            const isLoggedIn    = !!authStorage.getItem(SESSION_KEY);
+            const isUpgraded    = authStorage.getItem(UPGRADE_PAID_KEY) === 'true';
 
             renderLiveGate(isLoggedIn, isUpgraded);
 
@@ -3777,7 +3826,7 @@
         }
 
         async function fetchLiveStatus() {
-            const token = localStorage.getItem(TOKEN_KEY);
+            const token = authStorage.getItem(TOKEN_KEY);
             try {
                 const res = await fetch(LIVE_STATUS_ENDPOINT, {
                     headers: token ? { Authorization: `Bearer ${token}` } : {}
@@ -3808,7 +3857,7 @@
             if (document.hidden) {
                 if (livePollTimer) { clearInterval(livePollTimer); livePollTimer = null; }
                 stopLiveStreamPlayer();
-            } else if (localStorage.getItem(UPGRADE_PAID_KEY) === 'true') {
+            } else if (authStorage.getItem(UPGRADE_PAID_KEY) === 'true') {
                 refreshLiveStream();
                 livePollTimer = setInterval(refreshLiveStream, LIVE_POLL_INTERVAL_MS);
             }
@@ -3917,7 +3966,7 @@
 
         async function initiateUpgradePayment() {
             const rawPhone = (document.getElementById('upgradePhone').value || '').trim().replace(/[\s\-]/g, '');
-            const token    = localStorage.getItem(TOKEN_KEY);
+            const token    = authStorage.getItem(TOKEN_KEY);
 
             if (!token) {
                 setUpgradeStatus('Please log in before making a payment.', 'error');
@@ -4010,7 +4059,7 @@
                 }
 
                 try {
-                    const token = localStorage.getItem(TOKEN_KEY);
+                    const token = authStorage.getItem(TOKEN_KEY);
                     const res   = await fetch(
                         `${BACKEND_BASE_URL}/api/upgrade/status?ref=${encodeURIComponent(myCheckoutId)}`,
                         { headers: { 'Authorization': `Bearer ${token}` } }
@@ -4021,7 +4070,7 @@
 
                     if (data.payment_status === 'confirmed') {
                         _stopUpgradePoll();
-                        localStorage.setItem(UPGRADE_PAID_KEY, 'true');
+                        authStorage.setItem(UPGRADE_PAID_KEY, 'true');
                         setUpgradeModalState('🏆', 'Upgrade Confirmed!',
                             'Your Enhanced Daily Engagement Hub is now active.<br>' +
                             'Live classes and trade signals will begin arriving in your inbox.',
@@ -4086,7 +4135,7 @@
         // ==========================================
 
         function getStoredEmail() {
-            return localStorage.getItem(EMAIL_KEY) || '';
+            return authStorage.getItem(EMAIL_KEY) || '';
         }
 
         function avatarLetter(email) {
@@ -4094,7 +4143,7 @@
         }
 
         function updateNavAuthState() {
-            const isLoggedIn = !!localStorage.getItem(SESSION_KEY);
+            const isLoggedIn = !!authStorage.getItem(SESSION_KEY);
             const email      = getStoredEmail();
 
             const signupBtn  = document.getElementById('navSignupBtn');
@@ -4125,9 +4174,9 @@
         }
 
         function updatePortalState() {
-            const isLoggedIn    = !!localStorage.getItem(SESSION_KEY);
+            const isLoggedIn    = !!authStorage.getItem(SESSION_KEY);
             const email         = getStoredEmail();
-            const isCryptoPaid  = localStorage.getItem(CRYPTO_PAID_KEY) === 'true';
+            const isCryptoPaid  = authStorage.getItem(CRYPTO_PAID_KEY) === 'true';
 
             const signupForm    = document.getElementById('signupForm');
             const loginForm     = document.getElementById('loginForm');
@@ -4187,7 +4236,7 @@
             closeLogoutModal();
 
             // Notify backend (best-effort — don't block UI on failure)
-            const token = localStorage.getItem(TOKEN_KEY);
+            const token = authStorage.getItem(TOKEN_KEY);
             if (token) {
                 fetch(`${BACKEND_BASE_URL}/api/logout`, {
                     method:  'POST',
@@ -4216,11 +4265,11 @@
             // Paid flags are NOT kept between sessions — the backend re-confirms
             // them fresh on every login, so there is no need to persist them.
             // Keeping stale flags would allow access after manual account deletion.
-            localStorage.removeItem(SESSION_KEY);
-            localStorage.removeItem(TOKEN_KEY);
-            localStorage.removeItem(EMAIL_KEY);
-            localStorage.removeItem(CRYPTO_PAID_KEY);
-            localStorage.removeItem(UPGRADE_PAID_KEY);
+            authStorage.removeItem(SESSION_KEY);
+            authStorage.removeItem(TOKEN_KEY);
+            authStorage.removeItem(EMAIL_KEY);
+            authStorage.removeItem(CRYPTO_PAID_KEY);
+            authStorage.removeItem(UPGRADE_PAID_KEY);
 
             // Lock all gated content
             lockMediaHub();
@@ -4565,23 +4614,23 @@
                 if (response.ok && data.status === 'success') {
                     _authAutoRetried = false;   // reset for next login
                     _backendAlive    = true;
-                    localStorage.setItem(SESSION_KEY, 'active_subscriber');
-                    if (data.token) localStorage.setItem(TOKEN_KEY, data.token);
+                    authStorage.setItem(SESSION_KEY, 'active_subscriber');
+                    if (data.token) authStorage.setItem(TOKEN_KEY, data.token);
                     // Store email so nav chip and portal can display it
-                    if (data.email) localStorage.setItem(EMAIL_KEY, data.email);
+                    if (data.email) authStorage.setItem(EMAIL_KEY, data.email);
 
                     // Sync paid flags from the authoritative backend response.
                     // Explicitly remove flags NOT confirmed — prevents stale paid
                     // state if localStorage was never cleared between sessions.
                     if (data.crypto_paid === true) {
-                        localStorage.setItem(CRYPTO_PAID_KEY, 'true');
+                        authStorage.setItem(CRYPTO_PAID_KEY, 'true');
                     } else {
-                        localStorage.removeItem(CRYPTO_PAID_KEY);
+                        authStorage.removeItem(CRYPTO_PAID_KEY);
                     }
                     if (data.upgrade_paid === true) {
-                        localStorage.setItem(UPGRADE_PAID_KEY, 'true');
+                        authStorage.setItem(UPGRADE_PAID_KEY, 'true');
                     } else {
-                        localStorage.removeItem(UPGRADE_PAID_KEY);
+                        authStorage.removeItem(UPGRADE_PAID_KEY);
                     }
 
                     // Update every UI region that depends on auth/subscription state
@@ -4870,8 +4919,8 @@
 
         // Sync drawer auth state — called by updateNavAuthState()
         function updateDrawerState() {
-            const isLoggedIn    = !!localStorage.getItem(SESSION_KEY);
-            const email         = localStorage.getItem(EMAIL_KEY) || '';
+            const isLoggedIn    = !!authStorage.getItem(SESSION_KEY);
+            const email         = authStorage.getItem(EMAIL_KEY) || '';
             const actionsOut    = document.getElementById('drawerActionsLoggedOut');
             const userRow       = document.getElementById('drawerUserRow');
             const drawerAvatar  = document.getElementById('drawerAvatar');
@@ -4897,7 +4946,7 @@
             if (!bar || !portal) return;
 
             function refreshSticky() {
-                const isLoggedIn = !!localStorage.getItem(SESSION_KEY);
+                const isLoggedIn = !!authStorage.getItem(SESSION_KEY);
                 const isMobile   = window.innerWidth <= 900;
 
                 if (!isMobile || isLoggedIn) {
@@ -4965,7 +5014,7 @@
         async function _fetchUpdates() {
             try {
                 const hdrs = { 'Content-Type': 'application/json' };
-                const tok  = localStorage.getItem(TOKEN_KEY);
+                const tok  = authStorage.getItem(TOKEN_KEY);
                 if (tok) hdrs['Authorization'] = `Bearer ${tok}`;
                 const ctrl = typeof AbortSignal.timeout === 'function'
                     ? AbortSignal.timeout(8000) : undefined;
