@@ -1030,6 +1030,57 @@
         .cpp-price span { font-size: 1rem; color: #94a3b8; font-weight: 500; }
         .cpp-desc { font-size: 0.82rem; color: #64748b; margin-bottom: 20px; }
 
+        /* ── Crypto package selector cards ── */
+        .cpp-packages {
+            display: grid; grid-template-columns: repeat(3,1fr);
+            gap: 10px; margin-bottom: 20px;
+        }
+        .cpp-pkg {
+            background: rgba(255,255,255,0.03);
+            border: 2px solid rgba(255,255,255,0.08);
+            border-radius: 10px; padding: 12px 8px;
+            cursor: pointer; text-align: center;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .cpp-pkg:hover { border-color: rgba(245,158,11,0.5); }
+        .cpp-pkg.selected {
+            border-color: #f59e0b;
+            background: rgba(245,158,11,0.1);
+        }
+        .cpp-pkg-period {
+            font-size: 0.68rem; font-weight: 700; color: #64748b;
+            text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;
+        }
+        .cpp-pkg-price {
+            font-size: 1.25rem; font-weight: 900; color: #f59e0b; line-height: 1;
+        }
+        .cpp-pkg-label {
+            font-size: 0.7rem; color: #475569; margin-top: 4px;
+        }
+        .cpp-pkg.selected .cpp-pkg-period { color: #f59e0b; }
+        .cpp-pkg.selected .cpp-pkg-label  { color: #94a3b8; }
+
+        /* Expiry badge shown in active panels */
+        .sub-expiry-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3);
+            color: #34d399; border-radius: 999px; font-size: 0.75rem; font-weight: 700;
+            padding: 4px 12px; margin: 8px 0 14px;
+        }
+        .sub-expiry-badge.expiring-soon {
+            background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.3);
+            color: #fbbf24;
+        }
+        .btn-renew {
+            width: 100%; padding: 11px;
+            background: transparent;
+            border: 1px solid #f59e0b; border-radius: 8px;
+            color: #f59e0b; font-weight: 700; font-size: 0.88rem;
+            cursor: pointer; transition: background 0.2s;
+            margin-top: 10px;
+        }
+        .btn-renew:hover { background: rgba(245,158,11,0.1); }
+
         .cpp-step {
             font-size: 0.78rem; font-weight: 700; color: #f59e0b;
             text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px;
@@ -2189,8 +2240,8 @@
                                 </div>
                                 <p>
                                     Sign up for free to access the media library, then upgrade here
-                                    for <strong style="color:#10b981;">KES 3,000</strong> to unlock
-                                    live classes, trade signals, and Binance referral access.
+                                    for <strong style="color:#10b981;">KSh 6,000</strong> to unlock
+                                    live classes, trade signals, and Binance referral access — valid for <strong style="color:#10b981;">3 months</strong>.
                                 </p>
                                 <button class="btn-upgrade-pay" style="margin-top:16px;"
                                     onclick="document.getElementById('portal').scrollIntoView({behavior:'smooth'})">
@@ -2199,17 +2250,16 @@
                             </div>
                         </div>
 
-                        <!-- STATE B: logged in, not yet upgraded -->
+                        <!-- STATE B: logged in, not yet upgraded / subscription expired -->
                         <div class="upgrade-payment-panel" id="upgradePayPanel" style="display:none;">
                             <div class="upp-label">Upgrade Plan</div>
                             <div class="upp-title">Enhanced Daily Engagement Hub</div>
                             <div class="upp-price-row">
-                                <span class="upp-price">KES 3,000</span>
-                                <span class="upp-price-note">/ one-time</span>
+                                <span class="upp-price">KSh 6,000</span>
+                                <span class="upp-price-note">/ 3 months</span>
                             </div>
                             <div class="upp-desc">
-                                Full access activated permanently after a single payment.
-                                No subscription, no recurring charges.
+                                Full access for 3 months. Renew any time to keep your subscription active.
                             </div>
 
                             <ul class="upp-benefits">
@@ -2217,7 +2267,7 @@
                                 <li>Crypto trading basics — foundations to first trade</li>
                                 <li>Professional signals emailed the moment the market moves</li>
                                 <li>Exclusive Binance referral link to open your trading account</li>
-                                <li>Everything in the free tier, permanently unlocked</li>
+                                <li>Everything in the free tier, active for 3 months</li>
                             </ul>
 
                             <hr class="upp-divider">
@@ -2233,7 +2283,7 @@
                                     <circle cx="12" cy="12" r="10"/>
                                     <path d="M12 6v6l4 2"/>
                                 </svg>
-                                Pay KES 3,000 via M-Pesa
+                                Pay KSh 6,000 via M-Pesa
                             </button>
 
                             <div class="upp-security">
@@ -2243,13 +2293,16 @@
                             <div class="upp-status" id="upgradePayStatus"></div>
                         </div>
 
-                        <!-- STATE C: upgraded (active) -->
+                        <!-- STATE C: upgraded (active subscription) -->
                         <div class="upgrade-payment-panel" id="upgradeActivePanel" style="display:none;">
                             <div class="upgrade-active-panel">
                                 <div style="font-size:2.8rem;margin-bottom:10px;">🏆</div>
                                 <div class="upgrade-active-badge">✦ Enhanced Hub — Active</div>
-                                <div style="color:#f8fafc;font-weight:800;font-size:1rem;margin-bottom:6px;">
+                                <div style="color:#f8fafc;font-weight:800;font-size:1rem;margin-bottom:4px;">
                                     You have full premium access
+                                </div>
+                                <div class="sub-expiry-badge" id="upgradeExpiryBadge">
+                                    🗓 Valid until <span id="upgradeExpiryDate">—</span>
                                 </div>
                                 <ul class="upgrade-active-perks">
                                     <li><span>✔</span> Live Python classes — check your email daily</li>
@@ -2266,6 +2319,9 @@
                                     </svg>
                                     Open Binance Account
                                 </a>
+                                <button class="btn-renew" onclick="showUpgradeRenewPanel()" style="width:100%;margin-top:10px;">
+                                    🔄 Renew Subscription (3 months)
+                                </button>
                                 <p style="font-size:.72rem;color:#475569;margin-top:10px;line-height:1.5;">
                                     Not receiving class emails? Check your spam folder or contact support.
                                 </p>
@@ -2287,7 +2343,7 @@
                 <div style="color:#94a3b8;font-size:.88rem;line-height:1.65;margin-bottom:18px;"
                      id="upgModalBody">
                     An M-Pesa STK push has been sent.<br>
-                    Enter your PIN to complete the <strong style="color:#10b981;">KES 3,000</strong> payment.
+                    Enter your PIN to complete the <strong style="color:#10b981;">KSh 6,000</strong> payment.
                 </div>
                 <div style="background:#0a1628;border-radius:8px;padding:14px;margin-bottom:14px;"
                      id="upgModalPollBox">
@@ -2615,7 +2671,7 @@
                             <li>Entry price, take-profit and stop-loss levels on every signal</li>
                             <li>Randomised delivery throughout the day — signals arrive when the market moves</li>
                             <li>Exclusive Binance referral link to start trading immediately after signup</li>
-                            <li>One-time activation fee — signals continue daily at no extra charge</li>
+                            <li>Flexible plans — weekly, fortnightly or monthly, all renewable</li>
                         </ul>
                         <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;">
                             <div style="background:rgba(245,158,11,0.1);border:1px solid #f59e0b44;border-radius:8px;padding:12px 16px;min-width:110px;text-align:center;">
@@ -2643,7 +2699,8 @@
                                 Create a free account to activate this service
                             </p>
                             <p>
-                                Sign up with your email to get started. Once registered you can activate the Crypto Signals service via M-Pesa for just <strong style="color:#f59e0b;">KES 1,000</strong>.
+                                Sign up free to access the media library. Then activate Crypto Signals via M-Pesa:
+                                <strong style="color:#f59e0b;">KSh 150/week · KSh 300/2 weeks · KSh 500/month</strong>. All plans are renewable.
                             </p>
                             <button class="btn-pay" style="margin-top:16px;border-radius:8px;"
                                 onclick="document.getElementById('portal').scrollIntoView({behavior:'smooth'})">
@@ -2651,28 +2708,46 @@
                             </button>
                         </div>
 
-                        <!-- PAYMENT PANEL (shown when logged in, not yet paid) -->
+                        <!-- PAYMENT PANEL (logged in, not yet subscribed / expired) -->
                         <div class="crypto-payment-panel" id="cryptoPayPanel" style="display:none;">
                             <div class="cpp-title">Activate Crypto Signals</div>
-                            <div class="cpp-price">KES 1,000 <span>/ one-time</span></div>
-                            <div class="cpp-desc">Signals continue daily after activation — no recurring charges.</div>
+                            <div class="cpp-desc">Choose a renewable plan. Signals are delivered daily while your subscription is active.</div>
+
+                            <!-- Package selector -->
+                            <div class="cpp-packages">
+                                <div class="cpp-pkg" data-plan="weekly" data-amount="150" onclick="selectCryptoPkg(this)">
+                                    <div class="cpp-pkg-period">Weekly</div>
+                                    <div class="cpp-pkg-price">KSh 150</div>
+                                    <div class="cpp-pkg-label">7 days</div>
+                                </div>
+                                <div class="cpp-pkg selected" data-plan="biweekly" data-amount="300" onclick="selectCryptoPkg(this)">
+                                    <div class="cpp-pkg-period">2 Weeks</div>
+                                    <div class="cpp-pkg-price">KSh 300</div>
+                                    <div class="cpp-pkg-label">14 days</div>
+                                </div>
+                                <div class="cpp-pkg" data-plan="monthly" data-amount="500" onclick="selectCryptoPkg(this)">
+                                    <div class="cpp-pkg-period">Monthly</div>
+                                    <div class="cpp-pkg-price">KSh 500</div>
+                                    <div class="cpp-pkg-label">30 days</div>
+                                </div>
+                            </div>
 
                             <div class="cpp-step">Step 1 — Enter your M-Pesa number</div>
                             <input type="tel" id="mpesaPhone" class="cpp-input"
-                                placeholder="e.g. 0712345678"
-                                maxlength="12">
+                                placeholder="e.g. 0712345678" maxlength="12">
 
                             <button class="btn-pay" id="btnPay" onclick="initiatePayment()">
                                 <span class="mpesa-logo">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
                                     M-Pesa
                                 </span>
-                                Pay KES 1,000 Now
+                                <span id="btnPayLabel">Pay KSh 300 Now</span>
                             </button>
 
                             <p class="cpp-note">
                                 An STK push will be sent to your phone.<br>
-                                Enter your M-Pesa PIN to complete payment.
+                                Enter your M-Pesa PIN to complete payment.<br>
+                                <strong style="color:#f59e0b;">All plans are renewable</strong> — resubscribe any time before or after expiry.
                             </p>
 
                             <div class="cpp-status" id="cryptoPayStatus"></div>
@@ -2693,21 +2768,28 @@
                             </div>
                         </div>
 
-                        <!-- ALREADY PAID (shown when crypto_paid = true) -->
+                        <!-- ALREADY SUBSCRIBED (crypto_paid = true, not expired) -->
                         <div class="crypto-payment-panel" id="cryptoActivePanel" style="display:none;">
-                            <div style="text-align:center;margin-bottom:20px;">
+                            <div style="text-align:center;margin-bottom:16px;">
                                 <div style="font-size:2.5rem;margin-bottom:8px;">✅</div>
                                 <div style="font-weight:800;color:#10b981;font-size:1.1rem;">Signals Active</div>
                                 <div style="color:#64748b;font-size:0.83rem;margin-top:4px;">
                                     Daily signals are being delivered to your inbox
                                 </div>
+                                <div class="sub-expiry-badge" id="cryptoExpiryBadge">
+                                    🗓 Valid until <span id="cryptoExpiryDate">—</span>
+                                </div>
                             </div>
                             <a href="https://www.binance.com/register?ref=1065917774"
-                               target="_blank" rel="noopener" class="btn-binance" style="display:flex;justify-content:center;margin-bottom:14px;" id="binanceLinkActive">
+                               target="_blank" rel="noopener" class="btn-binance"
+                               style="display:flex;justify-content:center;margin-bottom:12px;" id="binanceLinkActive">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
                                 Open Binance Account
                             </a>
-                            <p style="text-align:center;font-size:0.78rem;color:#475569;line-height:1.5;">
+                            <button class="btn-renew" onclick="showCryptoRenewPanel()">
+                                🔄 Renew Subscription
+                            </button>
+                            <p style="text-align:center;font-size:0.75rem;color:#475569;line-height:1.5;margin-top:10px;">
                                 Not receiving signals? Check your spam folder or contact support.
                             </p>
                         </div>
@@ -2854,7 +2936,7 @@
                     </div>
                     <div style="color:#94a3b8;font-size:0.9rem;line-height:1.6;margin-bottom:20px;" id="modalBody">
                         An M-Pesa STK push has been sent to your number.<br>
-                        Enter your PIN to complete the KES 1,000 payment.
+                        Enter your PIN to complete the KES payment.
                     </div>
                     <div style="background:#0f172a;border-radius:8px;padding:14px;margin-bottom:16px;" id="modalPollBox">
                         <div style="color:#f59e0b;font-size:0.82rem;font-weight:600;margin-bottom:6px;">
@@ -2947,7 +3029,8 @@
         (function _seedTabSession() {
             const _AUTH_KEYS = [
                 'cff_user_session', 'cff_user_token', 'cff_user_email',
-                'cff_crypto_paid',  'cff_upgrade_paid',
+                'cff_crypto_paid',  'cff_crypto_expires',
+                'cff_upgrade_paid', 'cff_upgrade_expires',
             ];
             // Only seed if this tab has no session of its own yet
             if (!sessionStorage.getItem('cff_user_session') &&
@@ -3088,17 +3171,20 @@
                             return;
                         }
                         const meData = await res.json();
-                        // Sync paid flags from live server data — overwrites any
-                        // stale localStorage values (e.g. from a previous session).
+                        // Sync paid flags and expiry dates from live server data
                         if (meData.crypto_paid === true) {
-                            authStorage.setItem(CRYPTO_PAID_KEY, 'true');
+                            authStorage.setItem(CRYPTO_PAID_KEY,    'true');
+                            authStorage.setItem(CRYPTO_EXPIRES_KEY, meData.crypto_expires || '');
                         } else {
                             authStorage.removeItem(CRYPTO_PAID_KEY);
+                            authStorage.removeItem(CRYPTO_EXPIRES_KEY);
                         }
                         if (meData.upgrade_paid === true) {
-                            authStorage.setItem(UPGRADE_PAID_KEY, 'true');
+                            authStorage.setItem(UPGRADE_PAID_KEY,    'true');
+                            authStorage.setItem(UPGRADE_EXPIRES_KEY, meData.upgrade_expires || '');
                         } else {
                             authStorage.removeItem(UPGRADE_PAID_KEY);
+                            authStorage.removeItem(UPGRADE_EXPIRES_KEY);
                         }
                         // Re-render subscription panels with fresh flags
                         renderCryptoPanel();
@@ -3300,7 +3386,46 @@
         // ==========================================
         // CRYPTO SIGNALS — CLIENT LOGIC
         // ==========================================
-        const CRYPTO_PAID_KEY  = 'cff_crypto_paid';
+        const CRYPTO_PAID_KEY    = 'cff_crypto_paid';
+        const CRYPTO_EXPIRES_KEY = 'cff_crypto_expires';
+
+        function renderCryptoPanel() {
+            const isLoggedIn   = !!authStorage.getItem(SESSION_KEY);
+            const isCryptoPaid = authStorage.getItem(CRYPTO_PAID_KEY) === 'true';
+
+            const visitorGate   = document.getElementById('cryptoVisitorGate');
+            const payPanel      = document.getElementById('cryptoPayPanel');
+            const activePanel   = document.getElementById('cryptoActivePanel');
+
+            if (!isLoggedIn) {
+                visitorGate.style.display  = '';
+                payPanel.style.display     = 'none';
+                activePanel.style.display  = 'none';
+                renderDashboardPanel(false);
+                return;
+            }
+            if (isCryptoPaid) {
+                visitorGate.style.display  = 'none';
+                payPanel.style.display     = 'none';
+                activePanel.style.display  = '';
+                renderDashboardPanel(true);
+                // Populate expiry badge
+                const expires = authStorage.getItem(CRYPTO_EXPIRES_KEY) || '';
+                const expiryDate = document.getElementById('cryptoExpiryDate');
+                if (expiryDate) expiryDate.textContent = expires || '—';
+                const badge = document.getElementById('cryptoExpiryBadge');
+                if (badge && expires) {
+                    // Warn if expiring within 3 days
+                    const daysLeft = Math.ceil((new Date(expires) - Date.now()) / 86400000);
+                    badge.classList.toggle('expiring-soon', daysLeft <= 3);
+                }
+                return;
+            }
+            visitorGate.style.display  = 'none';
+            payPanel.style.display     = '';
+            activePanel.style.display  = 'none';
+            renderDashboardPanel(false);
+        }
         const BINANCE_REF_LINK = 'https://www.binance.com/register?ref=1065917774'; // ← replace with your link
 
         function openCryptoSection() {
@@ -3560,7 +3685,7 @@
             const btn = document.getElementById('btnPay');
             if (btn) {
                 btn.disabled  = false;
-                btn.innerHTML = '<span class="mpesa-logo">M-Pesa</span> Pay KES 1,000 Now';
+                btn.innerHTML = '<span class="mpesa-logo">M-Pesa</span> Pay KSh ${_getSelectedCryptoPlan().amount} Now';
             }
         }
 
@@ -3573,9 +3698,35 @@
             setCryptoStatus('', 'pending');
         }
 
+        /* ── Crypto package selector ─────────────────────────────────────── */
+        function selectCryptoPkg(el) {
+            document.querySelectorAll('.cpp-pkg').forEach(p => p.classList.remove('selected'));
+            el.classList.add('selected');
+            const amount = el.dataset.amount;
+            const label  = document.getElementById('btnPayLabel');
+            if (label) label.textContent = `Pay KSh ${amount} Now`;
+        }
+
+        function _getSelectedCryptoPlan() {
+            const sel = document.querySelector('.cpp-pkg.selected');
+            return sel ? { plan: sel.dataset.plan, amount: sel.dataset.amount } : { plan: 'biweekly', amount: '300' };
+        }
+
+        function showCryptoRenewPanel() {
+            // Hide the active panel and show the pay panel so user can pick a new plan
+            document.getElementById('cryptoActivePanel').style.display = 'none';
+            document.getElementById('cryptoPayPanel').style.display    = '';
+        }
+
+        function showUpgradeRenewPanel() {
+            document.getElementById('upgradeActivePanel').style.display = 'none';
+            document.getElementById('upgradePayPanel').style.display    = '';
+        }
+
         async function initiatePayment() {
             const rawPhone = (document.getElementById('mpesaPhone').value || '').trim().replace(/[\s\-]/g, '');
             const token    = authStorage.getItem(TOKEN_KEY);
+            const { plan, amount } = _getSelectedCryptoPlan();
 
             // ── Auth guard ────────────────────────────────────────────────────
             if (!token) {
@@ -3594,10 +3745,6 @@
                 return;
             }
 
-            // ── Tear down any previous in-progress flow FIRST ─────────────────
-            // This is the critical fix: if a prior flow timed out or failed and
-            // the user clicks Pay again, we must fully discard the old state
-            // before opening the modal so no stale poll tick can fire.
             _stopCryptoPoll();
 
             const btn = document.getElementById('btnPay');
@@ -3609,8 +3756,8 @@
                 const res = await fetchWithRetry(`${BACKEND_BASE_URL}/api/crypto/initiate-payment`, {
                     method:  'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body:    JSON.stringify({ phone: rawPhone })
-                }, { timeoutMs: 30000, retries: 0 });  // retries:0 — never double-charge
+                    body:    JSON.stringify({ phone: rawPhone, plan })
+                }, { timeoutMs: 30000, retries: 0 });
 
                 const data = await res.json();
 
@@ -3621,14 +3768,12 @@
                 }
 
                 if (res.ok && data.status === 'pending') {
-                    // Reset modal to "waiting" state BEFORE opening it,
-                    // so the user never sees a flash of the previous result.
                     setModalState('📱', 'Check Your Phone',
-                        'An M-Pesa STK push has been sent to your number.<br>' +
-                        'Enter your PIN to complete the KES 1,000 payment.<br>' +
-                        '<small style="color:#64748b;margin-top:8px;display:block;">' +
-                        'Waiting for confirmation — ' +
-                        '<span id="cryptoCountdown">3:00</span> remaining</small>',
+                        `An M-Pesa STK push has been sent to your number.<br>` +
+                        `Enter your PIN to complete the <strong>KSh ${amount}</strong> payment.<br>` +
+                        `<small style="color:#64748b;margin-top:8px;display:block;">` +
+                        `Waiting for confirmation — ` +
+                        `<span id="cryptoCountdown">3:00</span> remaining</small>`,
                         true);
                     setCryptoStatus('', 'pending');
                     openPaymentModal();
@@ -3696,9 +3841,13 @@
 
                     if (data.payment_status === 'confirmed') {
                         _stopCryptoPoll();
-                        authStorage.setItem(CRYPTO_PAID_KEY, 'true');
+                        authStorage.setItem(CRYPTO_PAID_KEY,    'true');
+                        authStorage.setItem(CRYPTO_EXPIRES_KEY, data.crypto_expires || '');
+                        const { plan, amount } = _getSelectedCryptoPlan();
+                        const planLabel = plan === 'weekly' ? '1 week' : plan === 'biweekly' ? '2 weeks' : '1 month';
                         setModalState('🎉', 'Payment Confirmed!',
-                            'Your Crypto Signals service is now active.<br>' +
+                            `Your Crypto Signals subscription (${planLabel}) is now active.<br>` +
+                            (data.crypto_expires ? `<small style="color:#10b981;">Valid until ${data.crypto_expires}</small><br>` : '') +
                             'Daily signals will arrive in your inbox throughout the day.',
                             false);
                         setTimeout(() => {
@@ -3754,7 +3903,8 @@
         // ==========================================
         // UPGRADED HUB — PAYMENT CLIENT LOGIC
         // ==========================================
-        const UPGRADE_PAID_KEY = 'cff_upgrade_paid';
+        const UPGRADE_PAID_KEY    = 'cff_upgrade_paid';
+        const UPGRADE_EXPIRES_KEY = 'cff_upgrade_expires';
 
         function openUpgradeSection() {
             document.getElementById('upgrade-hub').scrollIntoView({ behavior: 'smooth' });
@@ -3780,6 +3930,15 @@
                 if (visitorGate)  visitorGate.style.display  = 'none';
                 if (payPanel)     payPanel.style.display      = 'none';
                 if (activePanel)  activePanel.style.display   = '';
+                // Populate expiry badge
+                const expires = authStorage.getItem(UPGRADE_EXPIRES_KEY) || '';
+                const expiryDate = document.getElementById('upgradeExpiryDate');
+                if (expiryDate) expiryDate.textContent = expires || '—';
+                const badge = document.getElementById('upgradeExpiryBadge');
+                if (badge && expires) {
+                    const daysLeft = Math.ceil((new Date(expires) - Date.now()) / 86400000);
+                    badge.classList.toggle('expiring-soon', daysLeft <= 7);
+                }
                 return;
             }
             if (visitorGate)  visitorGate.style.display  = 'none';
@@ -3952,7 +4111,7 @@
             const btn = document.getElementById('btnUpgradePay');
             if (btn) {
                 btn.disabled    = false;
-                btn.textContent = 'Pay KES 3,000 via M-Pesa';
+                btn.textContent = 'Pay KSh 6,000 via M-Pesa';
             }
         }
 
@@ -4010,7 +4169,7 @@
                     // Reset modal content BEFORE opening
                     setUpgradeModalState('📱', 'Check Your Phone',
                         'An M-Pesa STK push has been sent.<br>' +
-                        'Enter your PIN to complete the <strong style="color:#10b981;">KES 3,000</strong> payment.<br>' +
+                        'Enter your PIN to complete the <strong style="color:#10b981;">KSh 6,000</strong> payment (3 months).<br>' +
                         '<small style="color:#64748b;margin-top:8px;display:block;">' +
                         'Waiting for confirmation — ' +
                         '<span id="upgradeCountdown">3:00</span> remaining</small>',
@@ -4070,9 +4229,11 @@
 
                     if (data.payment_status === 'confirmed') {
                         _stopUpgradePoll();
-                        authStorage.setItem(UPGRADE_PAID_KEY, 'true');
+                        authStorage.setItem(UPGRADE_PAID_KEY,    'true');
+                        authStorage.setItem(UPGRADE_EXPIRES_KEY, data.upgrade_expires || '');
                         setUpgradeModalState('🏆', 'Upgrade Confirmed!',
-                            'Your Enhanced Daily Engagement Hub is now active.<br>' +
+                            'Your Enhanced Daily Engagement Hub is now active for 3 months.<br>' +
+                            (data.upgrade_expires ? `<small style="color:#10b981;">Valid until ${data.upgrade_expires}</small><br>` : '') +
                             'Live classes and trade signals will begin arriving in your inbox.',
                             false);
                         setTimeout(() => {
@@ -4261,15 +4422,16 @@
             const statusEl = document.getElementById('statusMessage');
             if (statusEl) { statusEl.style.display = 'none'; statusEl.textContent = ''; }
 
-            // Clear ALL session and subscription data from localStorage.
-            // Paid flags are NOT kept between sessions — the backend re-confirms
-            // them fresh on every login, so there is no need to persist them.
-            // Keeping stale flags would allow access after manual account deletion.
+            // Clear ALL session and subscription data.
+            // Paid flags and expiry dates are NOT kept between sessions — the
+            // backend re-confirms them fresh on every login.
             authStorage.removeItem(SESSION_KEY);
             authStorage.removeItem(TOKEN_KEY);
             authStorage.removeItem(EMAIL_KEY);
             authStorage.removeItem(CRYPTO_PAID_KEY);
+            authStorage.removeItem(CRYPTO_EXPIRES_KEY);
             authStorage.removeItem(UPGRADE_PAID_KEY);
+            authStorage.removeItem(UPGRADE_EXPIRES_KEY);
 
             // Lock all gated content
             lockMediaHub();
@@ -4619,18 +4781,22 @@
                     // Store email so nav chip and portal can display it
                     if (data.email) authStorage.setItem(EMAIL_KEY, data.email);
 
-                    // Sync paid flags from the authoritative backend response.
+                    // Sync paid flags + expiry dates from the authoritative backend response.
                     // Explicitly remove flags NOT confirmed — prevents stale paid
-                    // state if localStorage was never cleared between sessions.
+                    // state if authStorage was never cleared between sessions.
                     if (data.crypto_paid === true) {
-                        authStorage.setItem(CRYPTO_PAID_KEY, 'true');
+                        authStorage.setItem(CRYPTO_PAID_KEY,    'true');
+                        authStorage.setItem(CRYPTO_EXPIRES_KEY, data.crypto_expires || '');
                     } else {
                         authStorage.removeItem(CRYPTO_PAID_KEY);
+                        authStorage.removeItem(CRYPTO_EXPIRES_KEY);
                     }
                     if (data.upgrade_paid === true) {
-                        authStorage.setItem(UPGRADE_PAID_KEY, 'true');
+                        authStorage.setItem(UPGRADE_PAID_KEY,    'true');
+                        authStorage.setItem(UPGRADE_EXPIRES_KEY, data.upgrade_expires || '');
                     } else {
                         authStorage.removeItem(UPGRADE_PAID_KEY);
+                        authStorage.removeItem(UPGRADE_EXPIRES_KEY);
                     }
 
                     // Update every UI region that depends on auth/subscription state
