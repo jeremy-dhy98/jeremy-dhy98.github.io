@@ -437,6 +437,15 @@
         }
         .live-badge::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #fff; animation: live-pulse 1.4s infinite; }
         @keyframes live-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
+        /* Tutorial playlist fallback badge — shown in place of LIVE when cycling tutorials */
+        .live-playlist-badge {
+            position: absolute; top: 10px; left: 10px; display: none;
+            align-items: center; gap: 5px;
+            background: rgba(56,189,248,0.88); color: #0f172a;
+            font-size: 0.64rem; font-weight: 800; letter-spacing: 0.05em;
+            padding: 3px 9px; border-radius: 4px; pointer-events: none;
+            backdrop-filter: blur(4px); z-index: 2;
+        }
         .live-offline-msg {
             position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
             color: var(--text-muted); font-size: 0.8rem; text-align: center; padding: 20px; background: rgba(15,23,42,0.4);
@@ -2115,9 +2124,11 @@
                             <div class="live-player-wrapper">
                                 <video id="liveStreamVideo" playsinline muted controls preload="none"></video>
                                 <span class="live-badge" id="liveBadge">LIVE</span>
+                                <!-- Shown instead of LIVE badge when cycling the tutorial playlist -->
+                                <span class="live-playlist-badge" id="playlistBadge">📚 Tutorial 1/1</span>
                                 <div class="live-offline-msg" id="liveOfflineMsg">No class is live right now — check back at the next scheduled session.</div>
                             </div>
-                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;" id="liveStreamCaption">Crypto & Python classes stream here live from OBS. Tap the video and unmute once a class starts.</p>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;" id="liveStreamCaption">Crypto &amp; Python classes stream here live from OBS. Tap the video and unmute once a class starts.</p>
                             <p class="media-status" id="live-status"></p>
                         </div>
                     </div>
@@ -3972,16 +3983,25 @@
         }
 
         // ==========================================
+        // ==========================================
         // LIVE CLASS STREAM (OBS -> RTMP ingest -> HLS playback)
         // Upgrade-tier only. Real gating happens server-side: the backend
         // checks the caller's session + upgrade status and only hands back
         // a playback URL when both are true. The client never decides this
         // on its own — localStorage flags here only control the UI state.
+        //
+        // FALLBACK: when the server returns live:false with a fallbackPlaylist,
+        // the player cycles through Cloudinary tutorial videos in sequence,
+        // looping back to the first video when the last one ends.
         // ==========================================
-        const LIVE_STATUS_ENDPOINT = `${BACKEND_BASE_URL}/api/live/status`; // -> { live: bool, playbackUrl: string, title?: string }
-        const LIVE_POLL_INTERVAL_MS = 30000; // re-check every 30s while the card is visible
-        let hlsInstance    = null;
-        let livePollTimer  = null;
+        const LIVE_STATUS_ENDPOINT  = `${BACKEND_BASE_URL}/api/live/status`;
+        const LIVE_POLL_INTERVAL_MS = 30000; // re-check every 30 s while card is visible
+        let hlsInstance      = null;
+        let livePollTimer    = null;
+        // Tutorial playlist state
+        let _tutPlaylist     = [];  // [{key, url}, ...]
+        let _tutIndex        = 0;
+        let _tutorialMode    = false;
 
         function renderLiveGate(isLoggedIn, isUpgraded) {
             const gateVisitor = document.getElementById('live-gate-visitor');
@@ -4037,7 +4057,7 @@
         }
 
         function handleLiveVisibilityChange() {
-            // Pause polling/playback when the tab is backgrounded to save data on mobile.
+            // Pause polling/playback when the tab is backgrounded to save bandwidth on mobile.
             if (document.hidden) {
                 if (livePollTimer) { clearInterval(livePollTimer); livePollTimer = null; }
                 stopLiveStreamPlayer();
@@ -4048,56 +4068,131 @@
         }
 
         async function refreshLiveStream() {
-            const badge   = document.getElementById('liveBadge');
-            const offline = document.getElementById('liveOfflineMsg');
-            const caption = document.getElementById('liveStreamCaption');
-            const status  = await fetchLiveStatus();
+            const badge    = document.getElementById('liveBadge');
+            const plBadge  = document.getElementById('playlistBadge');
+            const offline  = document.getElementById('liveOfflineMsg');
+            const caption  = document.getElementById('liveStreamCaption');
+            const status   = await fetchLiveStatus();
 
-            if (!status.live || !status.playbackUrl) {
-                if (badge)   badge.style.display   = 'none';
-                if (offline) offline.style.display = 'flex';
-                stopLiveStreamPlayer();
+            // ── Live stream is active and user has access ──────────────────────
+            if (status.live && status.playbackUrl) {
+                _tutorialMode = false;
+                if (badge)   badge.style.display    = 'flex';
+                if (plBadge) plBadge.style.display  = 'none';
+                if (offline) offline.style.display  = 'none';
+                if (status.title && caption) caption.textContent = status.title;
+                playLiveStream(status.playbackUrl);
                 return;
             }
 
-            if (badge)   badge.style.display   = 'flex';
-            if (offline) offline.style.display = 'none';
-            if (status.title && caption) caption.textContent = status.title;
-            playLiveStream(status.playbackUrl);
+            // ── No live stream — check for tutorial fallback playlist ───────────
+            const playlist = status.fallbackPlaylist || [];
+            if (playlist.length > 0) {
+                if (badge)   badge.style.display   = 'none';
+                if (offline) offline.style.display = 'none';
+                if (caption) caption.textContent   =
+                    'Tutorial playlist — playing while no class is live. Unmute to hear audio.';
+                startTutorialPlaylist(playlist);
+                return;
+            }
+
+            // ── Truly offline — no live stream and no tutorials uploaded yet ────
+            if (badge)   badge.style.display   = 'none';
+            if (plBadge) plBadge.style.display = 'none';
+            if (offline) offline.style.display = 'flex';
+            stopLiveStreamPlayer();
         }
+
+        // ── Tutorial playlist helpers ──────────────────────────────────────────
+
+        function startTutorialPlaylist(playlist) {
+            // If already playing the same list, don't restart from the beginning.
+            const sameList = _tutorialMode &&
+                             _tutPlaylist.length === playlist.length &&
+                             _tutPlaylist.every((v, i) => v.url === playlist[i].url);
+            if (sameList) return;
+
+            _tutPlaylist  = playlist;
+            _tutIndex     = 0;
+            _tutorialMode = true;
+            _playTutorialAt(0);
+        }
+
+        function _playTutorialAt(index) {
+            const video   = document.getElementById('liveStreamVideo');
+            const plBadge = document.getElementById('playlistBadge');
+            if (!video || !_tutPlaylist.length) return;
+
+            const item = _tutPlaylist[index];
+            if (!item) return;
+
+            // Cloudinary tutorial videos are plain MP4 — no HLS library needed.
+            if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
+
+            // Only swap src when the URL actually changes (avoids a restart mid-play
+            // when refreshLiveStream is called again during a 30 s poll cycle).
+            if (video.dataset.currentSrc !== item.url) {
+                video.src = item.url;
+                video.dataset.currentSrc = item.url;
+                video.muted = false; // tutorials default to unmuted; user controls stay active
+                video.play().catch(() => { /* autoplay policy — user tap will start it */ });
+            }
+
+            // Update the counter badge
+            if (plBadge) {
+                plBadge.textContent    = `📚 Tutorial ${index + 1} / ${_tutPlaylist.length}`;
+                plBadge.style.display  = 'flex';
+            }
+
+            // Advance to the next video (loop back to 0 after the last one)
+            video.onended = () => {
+                _tutIndex = (index + 1) % _tutPlaylist.length;
+                _playTutorialAt(_tutIndex);
+            };
+        }
+
+        // ── Core player helpers ────────────────────────────────────────────────
 
         function playLiveStream(hlsUrl) {
             const video = document.getElementById('liveStreamVideo');
-            if (!video || video.dataset.currentSrc === hlsUrl) return; // already on this source
+            if (!video || video.dataset.currentSrc === hlsUrl) return;
 
             stopLiveStreamPlayer(false);
             video.dataset.currentSrc = hlsUrl;
+            video.onended = null; // live streams don't advance a playlist
 
             if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                // Safari / iOS play HLS natively — no library needed, lighter on mobile data.
+                // Safari / iOS — HLS plays natively.
                 video.src = hlsUrl;
             } else if (window.Hls && window.Hls.isSupported()) {
-                // Chrome / Firefox / Android need hls.js.
+                // Chrome / Firefox / Android — need hls.js.
                 hlsInstance = new Hls({ liveDurationInfinity: true, lowLatencyMode: true });
                 hlsInstance.loadSource(hlsUrl);
                 hlsInstance.attachMedia(video);
             } else {
-                const status = document.getElementById('live-status');
-                if (status) status.textContent = "Your browser can't play this stream — try Chrome or Safari.";
+                const statusEl = document.getElementById('live-status');
+                if (statusEl) statusEl.textContent =
+                    "Your browser can't play this stream — try Chrome or Safari.";
                 return;
             }
-            video.play().catch(() => { /* autoplay blocked until the user taps play — expected on mobile */ });
+            video.play().catch(() => { /* autoplay blocked on mobile until user taps */ });
         }
 
         function stopLiveStreamPlayer(clearSrcAttr = true) {
-            const video = document.getElementById('liveStreamVideo');
+            const video   = document.getElementById('liveStreamVideo');
+            const plBadge = document.getElementById('playlistBadge');
             if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
-            if (video && clearSrcAttr) {
-                video.pause();
-                video.removeAttribute('src');
-                video.load();
-                delete video.dataset.currentSrc;
+            _tutorialMode = false;
+            if (video) {
+                video.onended = null;
+                if (clearSrcAttr) {
+                    video.pause();
+                    video.removeAttribute('src');
+                    video.load();
+                    delete video.dataset.currentSrc;
+                }
             }
+            if (plBadge) plBadge.style.display = 'none';
         }
 
         function setUpgradeStatus(msg, type) {
