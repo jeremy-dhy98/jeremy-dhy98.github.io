@@ -2126,7 +2126,7 @@
                                 <span class="live-badge" id="liveBadge">LIVE</span>
                                 <!-- Shown instead of LIVE badge when cycling the tutorial playlist -->
                                 <span class="live-playlist-badge" id="playlistBadge">📚 Tutorial 1/1</span>
-                                <div class="live-offline-msg" id="liveOfflineMsg">No class is live right now — check back at the next scheduled session.</div>
+                                <div class="live-offline-msg" id="liveOfflineMsg" style="display:none">No class is live right now — check back at the next scheduled session.</div>
                             </div>
                             <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;" id="liveStreamCaption">Crypto &amp; Python classes stream here live from OBS. Tap the video and unmute once a class starts.</p>
                             <p class="media-status" id="live-status"></p>
@@ -4106,12 +4106,24 @@
         // ── Tutorial playlist helpers ──────────────────────────────────────────
 
         function startTutorialPlaylist(playlist) {
-            // If already playing the same list, don't restart from the beginning.
+            // Compare by KEY, not URL — Cloudinary can return subtly different
+            // URL forms across API calls (CDN host, query params) which would
+            // falsely fail a URL comparison and restart a video mid-play.
             const sameList = _tutorialMode &&
                              _tutPlaylist.length === playlist.length &&
-                             _tutPlaylist.every((v, i) => v.url === playlist[i].url);
-            if (sameList) return;
+                             _tutPlaylist.every((v, i) => v.key === playlist[i].key);
 
+            if (sameList) {
+                // Same playlist is already loaded.  Only act if the video has
+                // stalled or ended — never interrupt a video that is playing.
+                const video = document.getElementById('liveStreamVideo');
+                if (video && (video.paused || video.ended) && !video.seeking) {
+                    _playTutorialAt(_tutIndex);
+                }
+                return;
+            }
+
+            // New or changed playlist — start from the beginning.
             _tutPlaylist  = playlist;
             _tutIndex     = 0;
             _tutorialMode = true;
@@ -4126,25 +4138,37 @@
             const item = _tutPlaylist[index];
             if (!item) return;
 
-            // Cloudinary tutorial videos are plain MP4 — no HLS library needed.
             if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
 
-            // Only swap src when the URL actually changes (avoids a restart mid-play
-            // when refreshLiveStream is called again during a 30 s poll cycle).
-            if (video.dataset.currentSrc !== item.url) {
-                video.src = item.url;
+            const isSameVideo = video.dataset.currentKey === item.key;
+
+            if (!isSameVideo) {
+                // Different tutorial — load the new source from scratch.
+                video.src                = item.url;
                 video.dataset.currentSrc = item.url;
-                video.muted = false; // tutorials default to unmuted; user controls stay active
-                video.play().catch(() => { /* autoplay policy — user tap will start it */ });
-            }
+                video.dataset.currentKey = item.key;
+                video.muted = false;
+                video.play().catch(() => { /* autoplay blocked — user tap starts it */ });
 
-            // Update the counter badge
+            } else if (video.ended || video.paused) {
+                // Same tutorial, but it ended or was paused (e.g. loop-back to
+                // index 0 when playlist has one entry, or recovery after tab focus).
+                // Seek to start and play — no src reload so there is no blank flash.
+                video.currentTime = 0;
+                video.play().catch(() => {});
+
+            }
+            // If isSameVideo AND the video is actively playing — leave it alone.
+            // This is the 30-second poll hitting a video mid-play: do nothing.
+
+            // Update the counter badge regardless.
             if (plBadge) {
-                plBadge.textContent    = `📚 Tutorial ${index + 1} / ${_tutPlaylist.length}`;
-                plBadge.style.display  = 'flex';
+                plBadge.textContent   = `📚 Tutorial ${index + 1} / ${_tutPlaylist.length}`;
+                plBadge.style.display = 'flex';
             }
 
-            // Advance to the next video (loop back to 0 after the last one)
+            // Wire the end-of-video handler.  Always re-assign so the closure
+            // captures the correct current index even after a recovery call.
             video.onended = () => {
                 _tutIndex = (index + 1) % _tutPlaylist.length;
                 _playTutorialAt(_tutIndex);
@@ -4190,6 +4214,7 @@
                     video.removeAttribute('src');
                     video.load();
                     delete video.dataset.currentSrc;
+                    delete video.dataset.currentKey;  // clear key so next load isn't skipped
                 }
             }
             if (plBadge) plBadge.style.display = 'none';
