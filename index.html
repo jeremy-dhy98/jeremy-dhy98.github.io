@@ -4038,8 +4038,11 @@
                 if (!res.ok) throw new Error('status ' + res.status);
                 return await res.json();
             } catch (err) {
-                console.warn('Live status check failed:', err.message);
-                return { live: false };
+                console.warn('[stream] Status poll failed:', err.message);
+                // fetchError: true tells refreshLiveStream this was a network/server
+                // problem, NOT a confirmed "no tutorials" state.  The player must
+                // not be stopped on the basis of a failed fetch.
+                return { live: false, fetchError: true };
             }
         }
 
@@ -4073,6 +4076,21 @@
             const offline  = document.getElementById('liveOfflineMsg');
             const caption  = document.getElementById('liveStreamCaption');
             const status   = await fetchLiveStatus();
+
+            // ── Transient network / server error ───────────────────────────────
+            // A failed poll does NOT mean the stream is offline — it means we
+            // couldn't reach the server this cycle.  If a tutorial is already
+            // playing, leave it completely untouched and wait for the next poll.
+            // Only show the offline message when nothing was playing to begin with.
+            if (status.fetchError) {
+                if (_tutorialMode) {
+                    console.warn('[stream] Poll failed mid-play — keeping tutorial running, retry in 30s.');
+                    return;
+                }
+                // Nothing was playing — show offline message as a neutral fallback.
+                if (offline) offline.style.display = 'flex';
+                return;
+            }
 
             // ── Live stream is active and user has access ──────────────────────
             if (status.live && status.playbackUrl) {
