@@ -3718,11 +3718,14 @@
 
         // ── Re-enable the pay button and clear any status banner ────────────
         function _resetCryptoBtn() {
-            const btn = document.getElementById('btnPay');
-            if (btn) {
-                btn.disabled  = false;
-                btn.innerHTML = '<span class="mpesa-logo">M-Pesa</span> Pay KSh ${_getSelectedCryptoPlan().amount} Now';
-            }
+            const btn   = document.getElementById('btnPay');
+            const label = document.getElementById('btnPayLabel');
+            if (btn)   btn.disabled      = false;
+            // Update only the label span — preserves the SVG M-Pesa icon in the
+            // button.  Previously btn.innerHTML was overwritten with a single-quoted
+            // string, which (a) printed the template literal raw instead of
+            // evaluating it, and (b) wiped the SVG icon from the button.
+            if (label) label.textContent = `Pay KSh ${_getSelectedCryptoPlan().amount} Now`;
         }
 
         // ── Override closePaymentModal so the button always re-enables ──────
