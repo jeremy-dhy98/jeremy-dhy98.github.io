@@ -3705,7 +3705,7 @@
         //     retried — frontend had no way to tell that was stale.
         // ─────────────────────────────────────────────────────────────────────
 
-        let _cryptoState = null;  // { checkoutId, interval, intasendInterval, count }
+        let _cryptoState = null;  // { checkoutId, interval, intasendInterval, countdownTimer, count }
         const POLL_MAX   = 36;    // 36 × 5 s = 3 minutes (IntaSend STK push window)
         const TIMEOUT_MS = POLL_MAX * 5 * 1000;
 
@@ -3714,6 +3714,7 @@
             if (_cryptoState) {
                 if (_cryptoState.interval)         clearInterval(_cryptoState.interval);
                 if (_cryptoState.intasendInterval) clearInterval(_cryptoState.intasendInterval);
+                if (_cryptoState.countdownTimer)   clearInterval(_cryptoState.countdownTimer);
                 if (_cryptoState.streamAbort)      _cryptoState.streamAbort.abort();
             }
             _cryptoState = null;
@@ -3807,7 +3808,7 @@
 
             _cryptoState = { checkoutId: myCheckoutId, count: 0,
                              interval: null, intasendInterval: null,
-                             streamAbort: null, resolved: false };
+                             countdownTimer: null, streamAbort: null, resolved: false };
 
             // ── Shared result handler ─────────────────────────────────────────
             // Called by all three channels (SSE, ledger poll, IntaSend direct
@@ -3856,6 +3857,42 @@
                     }, 2500);
                 }
             }
+
+            // Keep the display independent from network polling.  A terminal
+            // result clears this timer through _stopCryptoPoll(), so a
+            // cancelled push cannot keep counting down behind the result.
+            const updateCryptoCountdown = () => {
+                if (!_cryptoState || _cryptoState.checkoutId !== myCheckoutId) return;
+                const secsLeft = Math.max(0, Math.ceil((TIMEOUT_MS - (Date.now() - startTime)) / 1000));
+                const cd = document.getElementById('cryptoCountdown');
+                if (cd) {
+                    const m = Math.floor(secsLeft / 60);
+                    cd.textContent = `${m}:${String(secsLeft % 60).padStart(2, '0')}`;
+                }
+            };
+            updateCryptoCountdown();
+            _cryptoState.countdownTimer = setInterval(updateCryptoCountdown, 1000);
+
+            // Do not wait for the first interval tick.  This detects a
+            // cancellation that happened while the STK modal was open almost
+            // immediately, even if the webhook is delayed or lost.
+            const probeCryptoStatus = async () => {
+                if (!_cryptoState || _cryptoState.checkoutId !== myCheckoutId ||
+                    _cryptoState.resolved) return;
+                try {
+                    const res = await fetch(
+                        `${BACKEND_BASE_URL}/api/crypto/poll-intasend?ref=${encodeURIComponent(myCheckoutId)}`,
+                        { headers: { 'Authorization': `****** } }
+                    );
+                    const data = await res.json();
+                    if (_cryptoState && _cryptoState.checkoutId === myCheckoutId) {
+                        handleResult(data, 'intasend-immediate');
+                    }
+                } catch (err) {
+                    console.warn('[crypto] Immediate status probe failed:', err.message);
+                }
+            };
+            probeCryptoStatus();
 
             // ── Channel 1: SSE stream — real-time push from server ────────────
             _cryptoState.streamAbort = _openPaymentStream(
@@ -3924,7 +3961,7 @@
                 } catch (err) {
                     console.warn('[crypto] IntaSend direct poll error:', err.message);
                 }
-            }, 8000);
+            }, 2000);
         }
 
         async function initiatePayment() {
@@ -4319,7 +4356,7 @@
         // ─────────────────────────────────────────────────────────────────────
         // UPGRADE PAYMENT STATE MACHINE  (same pattern as crypto above)
         // ─────────────────────────────────────────────────────────────────────
-        let _upgradeState = null;  // { checkoutId, interval, intasendInterval, count }
+        let _upgradeState = null;  // { checkoutId, interval, intasendInterval, countdownTimer, count }
         const UPG_POLL_MAX   = 36;
         const UPG_TIMEOUT_MS = UPG_POLL_MAX * 5 * 1000;
 
@@ -4328,6 +4365,7 @@
             if (_upgradeState) {
                 if (_upgradeState.interval)         clearInterval(_upgradeState.interval);
                 if (_upgradeState.intasendInterval) clearInterval(_upgradeState.intasendInterval);
+                if (_upgradeState.countdownTimer)   clearInterval(_upgradeState.countdownTimer);
                 if (_upgradeState.streamAbort)      _upgradeState.streamAbort.abort();
             }
             _upgradeState = null;
@@ -4356,7 +4394,7 @@
 
             _upgradeState = { checkoutId: myCheckoutId, count: 0,
                               interval: null, intasendInterval: null,
-                              streamAbort: null, resolved: false };
+                              countdownTimer: null, streamAbort: null, resolved: false };
 
             // ── Shared result handler ─────────────────────────────────────────
             // Called by all three channels (SSE, ledger poll, IntaSend direct
@@ -4395,6 +4433,38 @@
                     }, 2500);
                 }
             }
+
+            const updateUpgradeCountdown = () => {
+                if (!_upgradeState || _upgradeState.checkoutId !== myCheckoutId) return;
+                const secsLeft = Math.max(0, Math.ceil((UPG_TIMEOUT_MS - (Date.now() - startTime)) / 1000));
+                const cd = document.getElementById('upgradeCountdown');
+                if (cd) {
+                    const m = Math.floor(secsLeft / 60);
+                    cd.textContent = `${m}:${String(secsLeft % 60).padStart(2, '0')}`;
+                }
+            };
+            updateUpgradeCountdown();
+            _upgradeState.countdownTimer = setInterval(updateUpgradeCountdown, 1000);
+
+            // Probe IntaSend immediately instead of waiting for the first
+            // eight-second fallback tick.
+            const probeUpgradeStatus = async () => {
+                if (!_upgradeState || _upgradeState.checkoutId !== myCheckoutId ||
+                    _upgradeState.resolved) return;
+                try {
+                    const res = await fetch(
+                        `${BACKEND_BASE_URL}/api/upgrade/poll-intasend?ref=${encodeURIComponent(myCheckoutId)}`,
+                        { headers: { 'Authorization': `****** } }
+                    );
+                    const data = await res.json();
+                    if (_upgradeState && _upgradeState.checkoutId === myCheckoutId) {
+                        handleResult(data, 'intasend-immediate');
+                    }
+                } catch (err) {
+                    console.warn('[upgrade] Immediate status probe failed:', err.message);
+                }
+            };
+            probeUpgradeStatus();
 
             // ── Channel 1: SSE stream — real-time push from server ────────────
             _upgradeState.streamAbort = _openPaymentStream(
@@ -4461,7 +4531,7 @@
                 } catch (err) {
                     console.warn('[upgrade] IntaSend direct poll error:', err.message);
                 }
-            }, 8000);
+            }, 2000);
         }
 
         async function initiateUpgradePayment() {
