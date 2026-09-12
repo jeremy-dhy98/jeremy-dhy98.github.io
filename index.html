@@ -3400,6 +3400,12 @@
         const CRYPTO_PAID_KEY    = 'cff_crypto_paid';
         const CRYPTO_EXPIRES_KEY = 'cff_crypto_expires';
 
+        const BINANCE_REF_LINK = 'https://www.binance.com/register?ref=1065917774';
+
+        function openCryptoSection() {
+            document.getElementById('crypto-signals').scrollIntoView({ behavior: 'smooth' });
+        }
+
         function renderCryptoPanel() {
             const isLoggedIn   = !!authStorage.getItem(SESSION_KEY);
             const isCryptoPaid = authStorage.getItem(CRYPTO_PAID_KEY) === 'true';
@@ -3409,16 +3415,16 @@
             const activePanel   = document.getElementById('cryptoActivePanel');
 
             if (!isLoggedIn) {
-                visitorGate.style.display  = '';
-                payPanel.style.display     = 'none';
-                activePanel.style.display  = 'none';
+                if (visitorGate)  visitorGate.style.display  = '';
+                if (payPanel)     payPanel.style.display      = 'none';
+                if (activePanel)  activePanel.style.display   = 'none';
                 renderDashboardPanel(false);
                 return;
             }
             if (isCryptoPaid) {
-                visitorGate.style.display  = 'none';
-                payPanel.style.display     = 'none';
-                activePanel.style.display  = '';
+                if (visitorGate)  visitorGate.style.display  = 'none';
+                if (payPanel)     payPanel.style.display      = 'none';
+                if (activePanel)  activePanel.style.display   = '';
                 renderDashboardPanel(true);
                 // Populate expiry badge
                 const expires = authStorage.getItem(CRYPTO_EXPIRES_KEY) || '';
@@ -3426,48 +3432,14 @@
                 if (expiryDate) expiryDate.textContent = expires || '—';
                 const badge = document.getElementById('cryptoExpiryBadge');
                 if (badge && expires) {
-                    // Warn if expiring within 3 days
                     const daysLeft = Math.ceil((new Date(expires) - Date.now()) / 86400000);
                     badge.classList.toggle('expiring-soon', daysLeft <= 3);
                 }
                 return;
             }
-            visitorGate.style.display  = 'none';
-            payPanel.style.display     = '';
-            activePanel.style.display  = 'none';
-            renderDashboardPanel(false);
-        }
-        const BINANCE_REF_LINK = 'https://www.binance.com/register?ref=1065917774'; // ← replace with your link
-
-        function openCryptoSection() {
-            document.getElementById('crypto-signals').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function renderCryptoPanel() {
-            const isLoggedIn  = !!authStorage.getItem(SESSION_KEY);
-            const isCryptoPaid = authStorage.getItem(CRYPTO_PAID_KEY) === 'true';
-
-            const visitorGate   = document.getElementById('cryptoVisitorGate');
-            const payPanel      = document.getElementById('cryptoPayPanel');
-            const activePanel   = document.getElementById('cryptoActivePanel');
-
-            if (!isLoggedIn) {
-                visitorGate.style.display  = '';
-                payPanel.style.display     = 'none';
-                activePanel.style.display  = 'none';
-                renderDashboardPanel(false);
-                return;
-            }
-            if (isCryptoPaid) {
-                visitorGate.style.display  = 'none';
-                payPanel.style.display     = 'none';
-                activePanel.style.display  = '';
-                renderDashboardPanel(true);
-                return;
-            }
-            visitorGate.style.display  = 'none';
-            payPanel.style.display     = '';
-            activePanel.style.display  = 'none';
+            if (visitorGate)  visitorGate.style.display  = 'none';
+            if (payPanel)     payPanel.style.display      = '';
+            if (activePanel)  activePanel.style.display   = 'none';
             renderDashboardPanel(false);
         }
 
@@ -3886,7 +3858,7 @@
                 try {
                     const res = await fetch(
                         `${BACKEND_BASE_URL}/api/crypto/poll-intasend?ref=${encodeURIComponent(myCheckoutId)}`,
-                        { headers: { 'Authorization': `****** }, signal: controller.signal }
+                        { headers: { 'Authorization': `Bearer ${token}` }, signal: controller.signal }
                     );
                     const data = await res.json();
                     if (_cryptoState && _cryptoState.checkoutId === myCheckoutId) {
@@ -3967,7 +3939,7 @@
                 } catch (err) {
                     console.warn('[crypto] IntaSend direct poll error:', err.message);
                 }
-            }, 2000);
+            }, 8000);  // 8 s — slower cadence to stay within IntaSend rate limits
         }
 
         async function initiatePayment() {
@@ -4464,7 +4436,7 @@
                 try {
                     const res = await fetch(
                         `${BACKEND_BASE_URL}/api/upgrade/poll-intasend?ref=${encodeURIComponent(myCheckoutId)}`,
-                        { headers: { 'Authorization': `****** }, signal: controller.signal }
+                        { headers: { 'Authorization': `Bearer ${token}` }, signal: controller.signal }
                     );
                     const data = await res.json();
                     if (_upgradeState && _upgradeState.checkoutId === myCheckoutId) {
@@ -4543,7 +4515,7 @@
                 } catch (err) {
                     console.warn('[upgrade] IntaSend direct poll error:', err.message);
                 }
-            }, 2000);
+            }, 8000);  // 8 s — slower cadence to stay within IntaSend rate limits
         }
 
         async function initiateUpgradePayment() {
