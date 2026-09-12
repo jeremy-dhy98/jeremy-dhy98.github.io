@@ -3707,16 +3707,18 @@
 
         let _cryptoState = null;  // { checkoutId, interval, count }
         const POLL_MAX   = 36;    // 36 × 5s = 3 minutes (IntaSend STK push window)
+        const TIMEOUT_MS = POLL_MAX * 5 * 1000;
 
-        // ── Tear-down helper — always call this before starting a new flow ──
+        // ── Tear-down helper — aborts SSE stream and clears interval ─────────
         function _stopCryptoPoll() {
-            if (_cryptoState && _cryptoState.interval) {
-                clearInterval(_cryptoState.interval);
+            if (_cryptoState) {
+                if (_cryptoState.interval)    clearInterval(_cryptoState.interval);
+                if (_cryptoState.streamAbort) _cryptoState.streamAbort.abort();
             }
             _cryptoState = null;
         }
 
-        // ── Re-enable the pay button and clear any status banner ────────────
+        // ── Re-enable the pay button and clear any status banner ─────────────
         function _resetCryptoBtn() {
             const btn   = document.getElementById('btnPay');
             const label = document.getElementById('btnPayLabel');
@@ -3728,7 +3730,7 @@
             if (label) label.textContent = `Pay KSh ${_getSelectedCryptoPlan().amount} Now`;
         }
 
-        // ── Override closePaymentModal so the button always re-enables ──────
+        // ── Override closePaymentModal so the button always re-enables ────────
         // (user clicking the × mid-flow must not leave the button stuck)
         function closePaymentModal() {
             document.getElementById('paymentModalOverlay').classList.remove('open');
@@ -3737,7 +3739,7 @@
             setCryptoStatus('', 'pending');
         }
 
-        /* ── Crypto package selector ─────────────────────────────────────── */
+        /* ── Crypto package selector ──────────────────────────────────────── */
         function selectCryptoPkg(el) {
             document.querySelectorAll('.cpp-pkg').forEach(p => p.classList.remove('selected'));
             el.classList.add('selected');
@@ -3752,7 +3754,6 @@
         }
 
         function showCryptoRenewPanel() {
-            // Hide the active panel and show the pay panel so user can pick a new plan
             document.getElementById('cryptoActivePanel').style.display = 'none';
             document.getElementById('cryptoPayPanel').style.display    = '';
         }
@@ -3762,18 +3763,170 @@
             document.getElementById('upgradePayPanel').style.display    = '';
         }
 
+        // ── Shared fetch-based SSE helper ─────────────────────────────────────
+        // Uses fetch + ReadableStream so the Authorization header can be sent
+        // (native EventSource does not support custom headers).
+        // Returns an AbortController the caller uses to close the stream.
+        function _openPaymentStream(url, token, onEvent, onError) {
+            const controller = new AbortController();
+            (async () => {
+                try {
+                    const res = await fetch(url, {
+                        headers: { 'Authorization': `Bearer ${token}` },
+                        signal:  controller.signal,
+                    });
+                    if (!res.ok || !res.body) throw new Error(`SSE open failed: ${res.status}`);
+                    const reader  = res.body.getReader();
+                    const decoder = new TextDecoder();
+                    let   buffer  = '';
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        buffer += decoder.decode(value, { stream: true });
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop();
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                try { onEvent(JSON.parse(line.slice(6))); } catch { /* skip malformed */ }
+                            }
+                        }
+                    }
+                } catch (err) {
+                    if (err.name !== 'AbortError') onError(err);
+                }
+            })();
+            return controller;
+        }
+
+        function _startCryptoPoll(checkoutRequestId) {
+            _stopCryptoPoll();
+            const startTime    = Date.now();
+            const myCheckoutId = checkoutRequestId;
+            const token        = authStorage.getItem(TOKEN_KEY);
+
+            _cryptoState = { checkoutId: myCheckoutId, count: 0, failedCount: 0,
+                             interval: null, streamAbort: null, resolved: false };
+
+            // ── Shared result handler (called by SSE and polling) ─────────────
+            function handleResult(data, fromSSE) {
+                if (!_cryptoState || _cryptoState.checkoutId !== myCheckoutId) return;
+                if (_cryptoState.resolved) return;
+
+                if (data.payment_status === 'confirmed') {
+                    _cryptoState.resolved = true;
+                    _stopCryptoPoll();
+                    authStorage.setItem(CRYPTO_PAID_KEY,    'true');
+                    authStorage.setItem(CRYPTO_EXPIRES_KEY, data.crypto_expires || '');
+                    const { plan } = _getSelectedCryptoPlan();
+                    const planLabel = plan === 'weekly' ? '1 week' : plan === 'biweekly' ? '2 weeks' : '1 month';
+                    setModalState('🎉', 'Payment Confirmed!',
+                        `Your Crypto Signals subscription (${planLabel}) is now active.<br>` +
+                        (data.crypto_expires ? `<small style="color:#10b981;">Valid until ${data.crypto_expires}</small><br>` : '') +
+                        'Daily signals will arrive in your inbox throughout the day.',
+                        false);
+                    setTimeout(() => {
+                        closePaymentModal();
+                        renderCryptoPanel();
+                        const reveal = document.getElementById('binanceReveal');
+                        if (reveal) reveal.classList.add('visible');
+                    }, 2800);
+
+                } else if (data.payment_status === 'failed') {
+                    if (fromSSE) {
+                        // SSE events are definitive terminal states — act immediately.
+                        _cryptoState.resolved = true;
+                        _stopCryptoPoll();
+                        setModalState('❌', 'Payment Declined',
+                            'The M-Pesa payment was declined or cancelled.<br>You can try again below.',
+                            false);
+                        _resetCryptoBtn();
+                        setTimeout(() => {
+                            const overlay = document.getElementById('paymentModalOverlay');
+                            if (overlay && overlay.classList.contains('open')) closePaymentModal();
+                        }, 4000);
+                    } else {
+                        // Polling: require 2 consecutive failures before acting
+                        // (avoids false-positives from transient intermediate states).
+                        _cryptoState.failedCount = (_cryptoState.failedCount || 0) + 1;
+                        if (_cryptoState.failedCount >= 2) {
+                            _cryptoState.resolved = true;
+                            _stopCryptoPoll();
+                            setModalState('❌', 'Payment Declined',
+                                'The M-Pesa payment was declined or cancelled.<br>You can try again below.',
+                                false);
+                            _resetCryptoBtn();
+                            setTimeout(() => {
+                                const overlay = document.getElementById('paymentModalOverlay');
+                                if (overlay && overlay.classList.contains('open')) closePaymentModal();
+                            }, 4000);
+                        }
+                    }
+                } else {
+                    if (_cryptoState) _cryptoState.failedCount = 0;
+                }
+            }
+
+            // ── Primary: SSE stream (real-time, < 1 s after callback fires) ──
+            _cryptoState.streamAbort = _openPaymentStream(
+                `${BACKEND_BASE_URL}/api/crypto/status-stream?ref=${encodeURIComponent(myCheckoutId)}`,
+                token,
+                (data) => handleResult(data, true),
+                (err)  => console.warn('[crypto] SSE error — polling fallback active:', err.message)
+            );
+
+            // ── Fallback: poll every 2 s (catches missed SSE events) ──────────
+            _cryptoState.interval = setInterval(async () => {
+                if (!_cryptoState || _cryptoState.checkoutId !== myCheckoutId) return;
+                if (_cryptoState.resolved) return;
+
+                _cryptoState.count++;
+
+                // Time-based countdown (accurate regardless of poll interval)
+                const elapsed  = Date.now() - startTime;
+                const secsLeft = Math.max(0, Math.floor((TIMEOUT_MS - elapsed) / 1000));
+                const cd = document.getElementById('cryptoCountdown');
+                if (cd) {
+                    const m = Math.floor(secsLeft / 60);
+                    const s = secsLeft % 60;
+                    cd.textContent = `${m}:${String(s).padStart(2, '0')}`;
+                }
+
+                // Timeout — restore display to default immediately
+                if (elapsed >= TIMEOUT_MS) {
+                    _cryptoState.resolved = true;
+                    _stopCryptoPoll();
+                    setModalState('⏱️', 'Request Timed Out',
+                        'We did not receive a response within 3 minutes.<br>' +
+                        'If you entered your PIN, please contact support — you will not be charged twice.',
+                        false);
+                    _resetCryptoBtn();   // restores button to "Pay KSh X Now" immediately
+                    return;
+                }
+
+                // Fallback poll
+                try {
+                    const res  = await fetch(
+                        `${BACKEND_BASE_URL}/api/crypto/status?ref=${encodeURIComponent(myCheckoutId)}`,
+                        { headers: { 'Authorization': `Bearer ${token}` } }
+                    );
+                    const data = await res.json();
+                    if (!_cryptoState || _cryptoState.checkoutId !== myCheckoutId) return;
+                    if (!_cryptoState.resolved) handleResult(data, false);
+                } catch (err) {
+                    console.warn('[crypto] Poll error (will retry):', err.message);
+                }
+            }, 2000);   // 2 s — faster fallback, still well below server load concern
+        }
+
         async function initiatePayment() {
             const rawPhone = (document.getElementById('mpesaPhone').value || '').trim().replace(/[\s\-]/g, '');
             const token    = authStorage.getItem(TOKEN_KEY);
             const { plan, amount } = _getSelectedCryptoPlan();
 
-            // ── Auth guard ────────────────────────────────────────────────────
             if (!token) {
                 setCryptoStatus('Please log in before making a payment.', 'error');
                 return;
             }
-
-            // ── Phone validation ──────────────────────────────────────────────
             const digits = rawPhone.replace(/\D/g, '');
             if (!digits || digits.length < 9) {
                 setCryptoStatus('Please enter a valid M-Pesa number (e.g. 0712 345 678).', 'error');
@@ -3785,10 +3938,10 @@
             }
 
             _stopCryptoPoll();
-
-            const btn = document.getElementById('btnPay');
-            btn.disabled  = true;
-            btn.innerHTML = '<span class="mpesa-logo">M-Pesa</span> Sending…';
+            const btn   = document.getElementById('btnPay');
+            const label = document.getElementById('btnPayLabel');
+            btn.disabled = true;
+            if (label) label.textContent = 'Sending…';
             setCryptoStatus('Sending STK push to your phone…', 'pending');
 
             try {
@@ -3827,112 +3980,6 @@
                 setCryptoStatus('Could not reach the payment server. Please try again.', 'error');
                 _resetCryptoBtn();
             }
-        }
-
-        function _startCryptoPoll(checkoutRequestId) {
-            // Always start from a clean slate
-            _stopCryptoPoll();
-            _cryptoState = {
-                checkoutId:  checkoutRequestId,
-                count:       0,
-                failedCount: 0,   // consecutive "failed" ticks — require 2 before aborting
-                interval:    null,
-            };
-            // Capture the checkout ID in this closure — if _cryptoState is
-            // replaced (new payment attempt), stale ticks become no-ops.
-            const myCheckoutId = checkoutRequestId;
-            _cryptoState.interval = setInterval(async () => {
-                // Guard: if _cryptoState was replaced or cleared, bail out
-                if (!_cryptoState || _cryptoState.checkoutId !== myCheckoutId) return;
-
-                _cryptoState.count++;
-
-                // ── Update countdown display ──────────────────────────────────
-                const secsLeft = Math.max(0, (POLL_MAX - _cryptoState.count) * 5);
-                const cd = document.getElementById('cryptoCountdown');
-                if (cd) {
-                    const m = Math.floor(secsLeft / 60);
-                    const s = secsLeft % 60;
-                    cd.textContent = `${m}:${String(s).padStart(2,'0')}`;
-                }
-
-                // ── Timeout ───────────────────────────────────────────────────
-                if (_cryptoState.count >= POLL_MAX) {
-                    _stopCryptoPoll();
-                    setModalState('⏱️', 'Request Timed Out',
-                        'We did not receive a response within 2 minutes.<br>' +
-                        'If you entered your PIN, please contact support — you will not be charged twice.',
-                        false);
-                    _resetCryptoBtn();
-                    return;
-                }
-
-                try {
-                    const token = authStorage.getItem(TOKEN_KEY);
-                    const res   = await fetch(
-                        `${BACKEND_BASE_URL}/api/crypto/status?ref=${encodeURIComponent(myCheckoutId)}`,
-                        { headers: { 'Authorization': `Bearer ${token}` } }
-                    );
-                    const data = await res.json();
-
-                    // Guard again after the async fetch returns
-                    if (!_cryptoState || _cryptoState.checkoutId !== myCheckoutId) return;
-
-                    if (data.payment_status === 'confirmed') {
-                        _stopCryptoPoll();
-                        authStorage.setItem(CRYPTO_PAID_KEY,    'true');
-                        authStorage.setItem(CRYPTO_EXPIRES_KEY, data.crypto_expires || '');
-                        const { plan, amount } = _getSelectedCryptoPlan();
-                        const planLabel = plan === 'weekly' ? '1 week' : plan === 'biweekly' ? '2 weeks' : '1 month';
-                        setModalState('🎉', 'Payment Confirmed!',
-                            `Your Crypto Signals subscription (${planLabel}) is now active.<br>` +
-                            (data.crypto_expires ? `<small style="color:#10b981;">Valid until ${data.crypto_expires}</small><br>` : '') +
-                            'Daily signals will arrive in your inbox throughout the day.',
-                            false);
-                        setTimeout(() => {
-                            closePaymentModal();
-                            renderCryptoPanel();
-                            const reveal = document.getElementById('binanceReveal');
-                            if (reveal) reveal.classList.add('visible');
-                        }, 2800);
-
-                    } else if (data.payment_status === 'failed') {
-                        // Require 2 consecutive "failed" responses before giving up.
-                        // IntaSend can send intermediate callbacks (PROCESSING etc.) that
-                        // briefly leave the ledger in a non-confirmed state. A single
-                        // failed tick could be a transient race; two in a row is definitive.
-                        _cryptoState.failedCount = (_cryptoState.failedCount || 0) + 1;
-                        if (_cryptoState.failedCount < 2) {
-                            // First "failed" — keep polling silently for one more tick
-                            console.warn('Crypto poll: first "failed" tick — waiting for confirmation');
-                        } else {
-                            _stopCryptoPoll();
-                            setModalState('❌', 'Payment Failed',
-                                'The M-Pesa payment was declined or cancelled.<br>' +
-                                'You can try again below.',
-                                false);
-                            _resetCryptoBtn();
-                            // Auto-close after 4 s — route through closePaymentModal()
-                            // so the poll is guaranteed stopped and the button re-enabled
-                            // even if the user does not click × themselves.
-                            setTimeout(() => {
-                                const overlay = document.getElementById('paymentModalOverlay');
-                                if (overlay && overlay.classList.contains('open')) {
-                                    closePaymentModal();
-                                }
-                            }, 4000);
-                        }
-
-                    } else {
-                        // 'pending' or any other value — reset failedCount and keep polling
-                        if (_cryptoState) _cryptoState.failedCount = 0;
-                    }
-                    // 'pending' → keep polling silently — no UI change
-                } catch (err) {
-                    // Network blip — log and retry on the next tick
-                    console.warn('Crypto poll error (will retry):', err.message);
-                }
-            }, 5000);
         }
 
         // Run on every page load to set correct panel state
@@ -4264,11 +4311,13 @@
         // UPGRADE PAYMENT STATE MACHINE  (same pattern as crypto above)
         // ─────────────────────────────────────────────────────────────────────
         let _upgradeState = null;  // { checkoutId, interval, count }
-        const UPG_POLL_MAX = 36;   // 36 × 5s = 3 minutes
+        const UPG_POLL_MAX  = 36;
+        const UPG_TIMEOUT_MS = UPG_POLL_MAX * 5 * 1000;
 
         function _stopUpgradePoll() {
-            if (_upgradeState && _upgradeState.interval) {
-                clearInterval(_upgradeState.interval);
+            if (_upgradeState) {
+                if (_upgradeState.interval)    clearInterval(_upgradeState.interval);
+                if (_upgradeState.streamAbort) _upgradeState.streamAbort.abort();
             }
             _upgradeState = null;
         }
@@ -4281,12 +4330,115 @@
             }
         }
 
-        // Override closeUpgradeModal so the X button always re-enables the pay button
         function closeUpgradeModal() {
             document.getElementById('upgradeModalOverlay').classList.remove('open');
             _stopUpgradePoll();
             _resetUpgradeBtn();
             setUpgradeStatus('', 'pending');
+        }
+
+        function _startUpgradePoll(checkoutId) {
+            _stopUpgradePoll();
+            const startTime    = Date.now();
+            const myCheckoutId = checkoutId;
+            const token        = authStorage.getItem(TOKEN_KEY);
+
+            _upgradeState = { checkoutId: myCheckoutId, count: 0, failedCount: 0,
+                              interval: null, streamAbort: null, resolved: false };
+
+            function handleResult(data, fromSSE) {
+                if (!_upgradeState || _upgradeState.checkoutId !== myCheckoutId) return;
+                if (_upgradeState.resolved) return;
+
+                if (data.payment_status === 'confirmed') {
+                    _upgradeState.resolved = true;
+                    _stopUpgradePoll();
+                    authStorage.setItem(UPGRADE_PAID_KEY,    'true');
+                    authStorage.setItem(UPGRADE_EXPIRES_KEY, data.upgrade_expires || '');
+                    setUpgradeModalState('🏆', 'Upgrade Confirmed!',
+                        'Your Enhanced Daily Engagement Hub is now active for 3 months.<br>' +
+                        (data.upgrade_expires ? `<small style="color:#10b981;">Valid until ${data.upgrade_expires}</small><br>` : '') +
+                        'Live classes and trade signals will begin arriving in your inbox.',
+                        false);
+                    setTimeout(() => { closeUpgradeModal(); renderUpgradePanel(); }, 2800);
+
+                } else if (data.payment_status === 'failed') {
+                    if (fromSSE) {
+                        _upgradeState.resolved = true;
+                        _stopUpgradePoll();
+                        setUpgradeModalState('❌', 'Payment Declined',
+                            'The M-Pesa payment was declined or cancelled.<br>You can try again below.',
+                            false);
+                        _resetUpgradeBtn();
+                        setTimeout(() => {
+                            const overlay = document.getElementById('upgradeModalOverlay');
+                            if (overlay && overlay.classList.contains('open')) closeUpgradeModal();
+                        }, 4000);
+                    } else {
+                        _upgradeState.failedCount = (_upgradeState.failedCount || 0) + 1;
+                        if (_upgradeState.failedCount >= 2) {
+                            _upgradeState.resolved = true;
+                            _stopUpgradePoll();
+                            setUpgradeModalState('❌', 'Payment Declined',
+                                'The M-Pesa payment was declined or cancelled.<br>You can try again below.',
+                                false);
+                            _resetUpgradeBtn();
+                            setTimeout(() => {
+                                const overlay = document.getElementById('upgradeModalOverlay');
+                                if (overlay && overlay.classList.contains('open')) closeUpgradeModal();
+                            }, 4000);
+                        }
+                    }
+                } else {
+                    if (_upgradeState) _upgradeState.failedCount = 0;
+                }
+            }
+
+            _upgradeState.streamAbort = _openPaymentStream(
+                `${BACKEND_BASE_URL}/api/upgrade/status-stream?ref=${encodeURIComponent(myCheckoutId)}`,
+                token,
+                (data) => handleResult(data, true),
+                (err)  => console.warn('[upgrade] SSE error — polling fallback active:', err.message)
+            );
+
+            _upgradeState.interval = setInterval(async () => {
+                if (!_upgradeState || _upgradeState.checkoutId !== myCheckoutId) return;
+                if (_upgradeState.resolved) return;
+
+                _upgradeState.count++;
+
+                const elapsed  = Date.now() - startTime;
+                const secsLeft = Math.max(0, Math.floor((UPG_TIMEOUT_MS - elapsed) / 1000));
+                const cd = document.getElementById('upgradeCountdown');
+                if (cd) {
+                    const m = Math.floor(secsLeft / 60);
+                    const s = secsLeft % 60;
+                    cd.textContent = `${m}:${String(s).padStart(2, '0')}`;
+                }
+
+                if (elapsed >= UPG_TIMEOUT_MS) {
+                    _upgradeState.resolved = true;
+                    _stopUpgradePoll();
+                    setUpgradeModalState('⏱️', 'Request Timed Out',
+                        'We did not receive a response within 3 minutes.<br>' +
+                        'If you entered your PIN, please contact support — you will not be charged twice.',
+                        false);
+                    _resetUpgradeBtn();   // restores button immediately on timeout
+                    return;
+                }
+
+                try {
+                    const res  = await fetch(
+                        `${BACKEND_BASE_URL}/api/upgrade/status?ref=${encodeURIComponent(myCheckoutId)}`,
+                        { headers: { 'Authorization': `Bearer ${token}` } }
+                    );
+                    const data = await res.json();
+                    if (!_upgradeState || _upgradeState.checkoutId !== myCheckoutId) return;
+                    if (!_upgradeState.resolved) handleResult(data, false);
+                } catch (err) {
+                    console.warn('[upgrade] Poll error (will retry):', err.message);
+                }
+            }, 2000);
         }
 
         async function initiateUpgradePayment() {
@@ -4297,7 +4449,6 @@
                 setUpgradeStatus('Please log in before making a payment.', 'error');
                 return;
             }
-
             const digits = rawPhone.replace(/\D/g, '');
             if (!digits || digits.length < 9) {
                 setUpgradeStatus('Please enter a valid M-Pesa number (e.g. 0712 345 678).', 'error');
@@ -4308,9 +4459,7 @@
                 return;
             }
 
-            // Tear down any previous in-progress flow FIRST
             _stopUpgradePoll();
-
             const btn = document.getElementById('btnUpgradePay');
             btn.disabled    = true;
             btn.textContent = 'Sending…';
@@ -4321,7 +4470,7 @@
                     method:  'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body:    JSON.stringify({ phone: rawPhone })
-                }, { timeoutMs: 30000, retries: 0 });  // retries:0 — never double-charge
+                }, { timeoutMs: 30000, retries: 0 });
 
                 const data = await res.json();
 
@@ -4332,7 +4481,6 @@
                 }
 
                 if (res.ok && data.status === 'pending') {
-                    // Reset modal content BEFORE opening
                     setUpgradeModalState('📱', 'Check Your Phone',
                         'An M-Pesa STK push has been sent.<br>' +
                         'Enter your PIN to complete the <strong style="color:#10b981;">KSh 6,000</strong> payment (3 months).<br>' +
@@ -4353,88 +4501,6 @@
                 setUpgradeStatus('Could not reach the payment server. Please try again.', 'error');
                 _resetUpgradeBtn();
             }
-        }
-
-        function _startUpgradePoll(checkoutId) {
-            _stopUpgradePoll();
-            _upgradeState = { checkoutId, count: 0, failedCount: 0, interval: null };
-            const myCheckoutId = checkoutId;
-
-            _upgradeState.interval = setInterval(async () => {
-                if (!_upgradeState || _upgradeState.checkoutId !== myCheckoutId) return;
-                _upgradeState.count++;
-
-                // ── Update countdown display ──────────────────────────────────
-                const secsLeft = Math.max(0, (UPG_POLL_MAX - _upgradeState.count) * 5);
-                const cd = document.getElementById('upgradeCountdown');
-                if (cd) {
-                    const m = Math.floor(secsLeft / 60);
-                    const s = secsLeft % 60;
-                    cd.textContent = `${m}:${String(s).padStart(2,'0')}`;
-                }
-
-                if (_upgradeState.count >= UPG_POLL_MAX) {
-                    _stopUpgradePoll();
-                    setUpgradeModalState('⏱️', 'Request Timed Out',
-                        'We did not receive a response within 2 minutes.<br>' +
-                        'If you entered your PIN, please contact support — you will not be charged twice.',
-                        false);
-                    _resetUpgradeBtn();
-                    return;
-                }
-
-                try {
-                    const token = authStorage.getItem(TOKEN_KEY);
-                    const res   = await fetch(
-                        `${BACKEND_BASE_URL}/api/upgrade/status?ref=${encodeURIComponent(myCheckoutId)}`,
-                        { headers: { 'Authorization': `Bearer ${token}` } }
-                    );
-                    const data = await res.json();
-
-                    if (!_upgradeState || _upgradeState.checkoutId !== myCheckoutId) return;
-
-                    if (data.payment_status === 'confirmed') {
-                        _stopUpgradePoll();
-                        authStorage.setItem(UPGRADE_PAID_KEY,    'true');
-                        authStorage.setItem(UPGRADE_EXPIRES_KEY, data.upgrade_expires || '');
-                        setUpgradeModalState('🏆', 'Upgrade Confirmed!',
-                            'Your Enhanced Daily Engagement Hub is now active for 3 months.<br>' +
-                            (data.upgrade_expires ? `<small style="color:#10b981;">Valid until ${data.upgrade_expires}</small><br>` : '') +
-                            'Live classes and trade signals will begin arriving in your inbox.',
-                            false);
-                        setTimeout(() => {
-                            closeUpgradeModal();
-                            renderUpgradePanel();
-                        }, 2800);
-
-                    } else if (data.payment_status === 'failed') {
-                        // Require 2 consecutive "failed" ticks before showing failure UI.
-                        _upgradeState.failedCount = (_upgradeState.failedCount || 0) + 1;
-                        if (_upgradeState.failedCount < 2) {
-                            console.warn('Upgrade poll: first "failed" tick — waiting for confirmation');
-                        } else {
-                            _stopUpgradePoll();
-                            setUpgradeModalState('❌', 'Payment Failed',
-                                'The M-Pesa payment was declined or cancelled.<br>' +
-                                'You can try again below.',
-                                false);
-                            _resetUpgradeBtn();
-                            // Route through closeUpgradeModal() so poll is always stopped
-                            setTimeout(() => {
-                                const overlay = document.getElementById('upgradeModalOverlay');
-                                if (overlay && overlay.classList.contains('open')) {
-                                    closeUpgradeModal();
-                                }
-                            }, 4000);
-                        }
-                    } else {
-                        // 'pending' or other — reset failedCount and keep polling silently
-                        if (_upgradeState) _upgradeState.failedCount = 0;
-                    }
-                } catch (err) {
-                    console.warn('Upgrade poll error (will retry):', err.message);
-                }
-            }, 5000);
         }
 
         // Initialise panel state on page load
