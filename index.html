@@ -3804,10 +3804,14 @@
             const myCheckoutId = checkoutRequestId;
             const token        = authStorage.getItem(TOKEN_KEY);
 
-            _cryptoState = { checkoutId: myCheckoutId, count: 0, failedCount: 0,
+            _cryptoState = { checkoutId: myCheckoutId, count: 0,
                              interval: null, streamAbort: null, resolved: false };
 
             // ── Shared result handler (called by SSE and polling) ─────────────
+            // Both SSE and polling act on the first definitive terminal state.
+            // The old failedCount >= 2 guard has been removed: SSE is the primary
+            // delivery path so if SSE fires "failed" it is definitive, and if the
+            // polling fallback reaches "failed" it means SSE was missed — trust it.
             function handleResult(data, fromSSE) {
                 if (!_cryptoState || _cryptoState.checkoutId !== myCheckoutId) return;
                 if (_cryptoState.resolved) return;
@@ -3832,37 +3836,19 @@
                     }, 2800);
 
                 } else if (data.payment_status === 'failed') {
-                    if (fromSSE) {
-                        // SSE events are definitive terminal states — act immediately.
-                        _cryptoState.resolved = true;
-                        _stopCryptoPoll();
-                        setModalState('❌', 'Payment Declined',
-                            'The M-Pesa payment was declined or cancelled.<br>You can try again below.',
-                            false);
-                        _resetCryptoBtn();
-                        setTimeout(() => {
-                            const overlay = document.getElementById('paymentModalOverlay');
-                            if (overlay && overlay.classList.contains('open')) closePaymentModal();
-                        }, 4000);
-                    } else {
-                        // Polling: require 2 consecutive failures before acting
-                        // (avoids false-positives from transient intermediate states).
-                        _cryptoState.failedCount = (_cryptoState.failedCount || 0) + 1;
-                        if (_cryptoState.failedCount >= 2) {
-                            _cryptoState.resolved = true;
-                            _stopCryptoPoll();
-                            setModalState('❌', 'Payment Declined',
-                                'The M-Pesa payment was declined or cancelled.<br>You can try again below.',
-                                false);
-                            _resetCryptoBtn();
-                            setTimeout(() => {
-                                const overlay = document.getElementById('paymentModalOverlay');
-                                if (overlay && overlay.classList.contains('open')) closePaymentModal();
-                            }, 4000);
-                        }
-                    }
-                } else {
-                    if (_cryptoState) _cryptoState.failedCount = 0;
+                    // Act immediately on the first failed event from either SSE or
+                    // polling — SSE fires within ~1 s of the webhook; if polling
+                    // reaches here it means SSE was missed, so treat it as definitive.
+                    _cryptoState.resolved = true;
+                    _stopCryptoPoll();
+                    setModalState('❌', 'Payment Declined',
+                        'The M-Pesa payment was declined or cancelled.<br>You can try again below.',
+                        false);
+                    _resetCryptoBtn();
+                    setTimeout(() => {
+                        const overlay = document.getElementById('paymentModalOverlay');
+                        if (overlay && overlay.classList.contains('open')) closePaymentModal();
+                    }, 2500);
                 }
             }
 
@@ -4343,9 +4329,13 @@
             const myCheckoutId = checkoutId;
             const token        = authStorage.getItem(TOKEN_KEY);
 
-            _upgradeState = { checkoutId: myCheckoutId, count: 0, failedCount: 0,
+            _upgradeState = { checkoutId: myCheckoutId, count: 0,
                               interval: null, streamAbort: null, resolved: false };
 
+            // Both SSE and polling act on the first definitive terminal state.
+            // The old failedCount >= 2 guard has been removed: SSE is the primary
+            // delivery path so if SSE fires "failed" it is definitive, and if the
+            // polling fallback reaches "failed" it means SSE was missed — trust it.
             function handleResult(data, fromSSE) {
                 if (!_upgradeState || _upgradeState.checkoutId !== myCheckoutId) return;
                 if (_upgradeState.resolved) return;
@@ -4363,34 +4353,19 @@
                     setTimeout(() => { closeUpgradeModal(); renderUpgradePanel(); }, 2800);
 
                 } else if (data.payment_status === 'failed') {
-                    if (fromSSE) {
-                        _upgradeState.resolved = true;
-                        _stopUpgradePoll();
-                        setUpgradeModalState('❌', 'Payment Declined',
-                            'The M-Pesa payment was declined or cancelled.<br>You can try again below.',
-                            false);
-                        _resetUpgradeBtn();
-                        setTimeout(() => {
-                            const overlay = document.getElementById('upgradeModalOverlay');
-                            if (overlay && overlay.classList.contains('open')) closeUpgradeModal();
-                        }, 4000);
-                    } else {
-                        _upgradeState.failedCount = (_upgradeState.failedCount || 0) + 1;
-                        if (_upgradeState.failedCount >= 2) {
-                            _upgradeState.resolved = true;
-                            _stopUpgradePoll();
-                            setUpgradeModalState('❌', 'Payment Declined',
-                                'The M-Pesa payment was declined or cancelled.<br>You can try again below.',
-                                false);
-                            _resetUpgradeBtn();
-                            setTimeout(() => {
-                                const overlay = document.getElementById('upgradeModalOverlay');
-                                if (overlay && overlay.classList.contains('open')) closeUpgradeModal();
-                            }, 4000);
-                        }
-                    }
-                } else {
-                    if (_upgradeState) _upgradeState.failedCount = 0;
+                    // Act immediately on the first failed event from either SSE or
+                    // polling — SSE fires within ~1 s of the webhook; if polling
+                    // reaches here it means SSE was missed, so treat it as definitive.
+                    _upgradeState.resolved = true;
+                    _stopUpgradePoll();
+                    setUpgradeModalState('❌', 'Payment Declined',
+                        'The M-Pesa payment was declined or cancelled.<br>You can try again below.',
+                        false);
+                    _resetUpgradeBtn();
+                    setTimeout(() => {
+                        const overlay = document.getElementById('upgradeModalOverlay');
+                        if (overlay && overlay.classList.contains('open')) closeUpgradeModal();
+                    }, 2500);
                 }
             }
 
