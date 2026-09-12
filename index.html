@@ -3705,7 +3705,7 @@
         //     retried — frontend had no way to tell that was stale.
         // ─────────────────────────────────────────────────────────────────────
 
-        let _cryptoState = null;  // { checkoutId, interval, intasendInterval, countdownTimer, count }
+        let _cryptoState = null;  // { checkoutId, interval, intasendInterval, countdownTimer, statusAbort, count }
         const POLL_MAX   = 36;    // 36 × 5 s = 3 minutes (IntaSend STK push window)
         const TIMEOUT_MS = POLL_MAX * 5 * 1000;
 
@@ -3715,6 +3715,7 @@
                 if (_cryptoState.interval)         clearInterval(_cryptoState.interval);
                 if (_cryptoState.intasendInterval) clearInterval(_cryptoState.intasendInterval);
                 if (_cryptoState.countdownTimer)   clearInterval(_cryptoState.countdownTimer);
+                if (_cryptoState.statusAbort)      _cryptoState.statusAbort.abort();
                 if (_cryptoState.streamAbort)      _cryptoState.streamAbort.abort();
             }
             _cryptoState = null;
@@ -3808,7 +3809,8 @@
 
             _cryptoState = { checkoutId: myCheckoutId, count: 0,
                              interval: null, intasendInterval: null,
-                             countdownTimer: null, streamAbort: null, resolved: false };
+                             countdownTimer: null, statusAbort: null,
+                             streamAbort: null, resolved: false };
 
             // ── Shared result handler ─────────────────────────────────────────
             // Called by all three channels (SSE, ledger poll, IntaSend direct
@@ -3879,17 +3881,21 @@
             const probeCryptoStatus = async () => {
                 if (!_cryptoState || _cryptoState.checkoutId !== myCheckoutId ||
                     _cryptoState.resolved) return;
+                const controller = new AbortController();
+                _cryptoState.statusAbort = controller;
                 try {
                     const res = await fetch(
                         `${BACKEND_BASE_URL}/api/crypto/poll-intasend?ref=${encodeURIComponent(myCheckoutId)}`,
-                        { headers: { 'Authorization': `****** } }
+                        { headers: { 'Authorization': `****** }, signal: controller.signal }
                     );
                     const data = await res.json();
                     if (_cryptoState && _cryptoState.checkoutId === myCheckoutId) {
                         handleResult(data, 'intasend-immediate');
                     }
                 } catch (err) {
-                    console.warn('[crypto] Immediate status probe failed:', err.message);
+                    if (err.name !== 'AbortError') {
+                        console.warn('[crypto] Immediate status probe failed:', err.message);
+                    }
                 }
             };
             probeCryptoStatus();
@@ -4356,7 +4362,7 @@
         // ─────────────────────────────────────────────────────────────────────
         // UPGRADE PAYMENT STATE MACHINE  (same pattern as crypto above)
         // ─────────────────────────────────────────────────────────────────────
-        let _upgradeState = null;  // { checkoutId, interval, intasendInterval, countdownTimer, count }
+        let _upgradeState = null;  // { checkoutId, interval, intasendInterval, countdownTimer, statusAbort, count }
         const UPG_POLL_MAX   = 36;
         const UPG_TIMEOUT_MS = UPG_POLL_MAX * 5 * 1000;
 
@@ -4366,6 +4372,7 @@
                 if (_upgradeState.interval)         clearInterval(_upgradeState.interval);
                 if (_upgradeState.intasendInterval) clearInterval(_upgradeState.intasendInterval);
                 if (_upgradeState.countdownTimer)   clearInterval(_upgradeState.countdownTimer);
+                if (_upgradeState.statusAbort)      _upgradeState.statusAbort.abort();
                 if (_upgradeState.streamAbort)      _upgradeState.streamAbort.abort();
             }
             _upgradeState = null;
@@ -4394,7 +4401,8 @@
 
             _upgradeState = { checkoutId: myCheckoutId, count: 0,
                               interval: null, intasendInterval: null,
-                              countdownTimer: null, streamAbort: null, resolved: false };
+                              countdownTimer: null, statusAbort: null,
+                              streamAbort: null, resolved: false };
 
             // ── Shared result handler ─────────────────────────────────────────
             // Called by all three channels (SSE, ledger poll, IntaSend direct
@@ -4451,17 +4459,21 @@
             const probeUpgradeStatus = async () => {
                 if (!_upgradeState || _upgradeState.checkoutId !== myCheckoutId ||
                     _upgradeState.resolved) return;
+                const controller = new AbortController();
+                _upgradeState.statusAbort = controller;
                 try {
                     const res = await fetch(
                         `${BACKEND_BASE_URL}/api/upgrade/poll-intasend?ref=${encodeURIComponent(myCheckoutId)}`,
-                        { headers: { 'Authorization': `****** } }
+                        { headers: { 'Authorization': `****** }, signal: controller.signal }
                     );
                     const data = await res.json();
                     if (_upgradeState && _upgradeState.checkoutId === myCheckoutId) {
                         handleResult(data, 'intasend-immediate');
                     }
                 } catch (err) {
-                    console.warn('[upgrade] Immediate status probe failed:', err.message);
+                    if (err.name !== 'AbortError') {
+                        console.warn('[upgrade] Immediate status probe failed:', err.message);
+                    }
                 }
             };
             probeUpgradeStatus();
