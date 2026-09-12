@@ -3400,12 +3400,6 @@
         const CRYPTO_PAID_KEY    = 'cff_crypto_paid';
         const CRYPTO_EXPIRES_KEY = 'cff_crypto_expires';
 
-        const BINANCE_REF_LINK = 'https://www.binance.com/register?ref=1065917774';
-
-        function openCryptoSection() {
-            document.getElementById('crypto-signals').scrollIntoView({ behavior: 'smooth' });
-        }
-
         function renderCryptoPanel() {
             const isLoggedIn   = !!authStorage.getItem(SESSION_KEY);
             const isCryptoPaid = authStorage.getItem(CRYPTO_PAID_KEY) === 'true';
@@ -3415,16 +3409,16 @@
             const activePanel   = document.getElementById('cryptoActivePanel');
 
             if (!isLoggedIn) {
-                if (visitorGate)  visitorGate.style.display  = '';
-                if (payPanel)     payPanel.style.display      = 'none';
-                if (activePanel)  activePanel.style.display   = 'none';
+                visitorGate.style.display  = '';
+                payPanel.style.display     = 'none';
+                activePanel.style.display  = 'none';
                 renderDashboardPanel(false);
                 return;
             }
             if (isCryptoPaid) {
-                if (visitorGate)  visitorGate.style.display  = 'none';
-                if (payPanel)     payPanel.style.display      = 'none';
-                if (activePanel)  activePanel.style.display   = '';
+                visitorGate.style.display  = 'none';
+                payPanel.style.display     = 'none';
+                activePanel.style.display  = '';
                 renderDashboardPanel(true);
                 // Populate expiry badge
                 const expires = authStorage.getItem(CRYPTO_EXPIRES_KEY) || '';
@@ -3432,14 +3426,48 @@
                 if (expiryDate) expiryDate.textContent = expires || '—';
                 const badge = document.getElementById('cryptoExpiryBadge');
                 if (badge && expires) {
+                    // Warn if expiring within 3 days
                     const daysLeft = Math.ceil((new Date(expires) - Date.now()) / 86400000);
                     badge.classList.toggle('expiring-soon', daysLeft <= 3);
                 }
                 return;
             }
-            if (visitorGate)  visitorGate.style.display  = 'none';
-            if (payPanel)     payPanel.style.display      = '';
-            if (activePanel)  activePanel.style.display   = 'none';
+            visitorGate.style.display  = 'none';
+            payPanel.style.display     = '';
+            activePanel.style.display  = 'none';
+            renderDashboardPanel(false);
+        }
+        const BINANCE_REF_LINK = 'https://www.binance.com/register?ref=1065917774'; // ← replace with your link
+
+        function openCryptoSection() {
+            document.getElementById('crypto-signals').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function renderCryptoPanel() {
+            const isLoggedIn  = !!authStorage.getItem(SESSION_KEY);
+            const isCryptoPaid = authStorage.getItem(CRYPTO_PAID_KEY) === 'true';
+
+            const visitorGate   = document.getElementById('cryptoVisitorGate');
+            const payPanel      = document.getElementById('cryptoPayPanel');
+            const activePanel   = document.getElementById('cryptoActivePanel');
+
+            if (!isLoggedIn) {
+                visitorGate.style.display  = '';
+                payPanel.style.display     = 'none';
+                activePanel.style.display  = 'none';
+                renderDashboardPanel(false);
+                return;
+            }
+            if (isCryptoPaid) {
+                visitorGate.style.display  = 'none';
+                payPanel.style.display     = 'none';
+                activePanel.style.display  = '';
+                renderDashboardPanel(true);
+                return;
+            }
+            visitorGate.style.display  = 'none';
+            payPanel.style.display     = '';
+            activePanel.style.display  = 'none';
             renderDashboardPanel(false);
         }
 
@@ -3785,15 +3813,19 @@
                              streamAbort: null, resolved: false };
 
             // ── Shared result handler ─────────────────────────────────────────
-            // Called by all three channels (SSE, ledger poll, IntaSend direct
-            // poll).  Acts immediately on the first terminal state received —
-            // no failedCount guard needed because _MPESA_FAILURE_STATES on the
-            // backend already filters out transient intermediate callbacks.
+            // Handles all four payment_status values from any channel:
+            //   pending           — no action (still waiting)
+            //   processing_fuliza — user accepted Fuliza; disbursement in flight
+            //   confirmed         — payment complete; activate subscription
+            //   failed            — declined/cancelled/expired; close modal
             function handleResult(data, source) {
                 if (!_cryptoState || _cryptoState.checkoutId !== myCheckoutId) return;
                 if (_cryptoState.resolved) return;
 
-                if (data.payment_status === 'confirmed') {
+                const status = data.payment_status;
+                console.log(`[crypto] status=${status} source=${source} intasend_state=${data.intasend_state||''}`);
+
+                if (status === 'confirmed') {
                     _cryptoState.resolved = true;
                     _stopCryptoPoll();
                     authStorage.setItem(CRYPTO_PAID_KEY,    'true');
@@ -3815,14 +3847,33 @@
                         if (reveal) reveal.classList.add('visible');
                     }, 2800);
 
-                } else if (data.payment_status === 'failed') {
-                    // Act immediately — all three sources only reach 'failed'
-                    // after a confirmed terminal state from IntaSend / ledger.
-                    console.log(`[crypto] Payment failed (source=${source})`);
+                } else if (status === 'processing_fuliza') {
+                    // User accepted Fuliza (typed 1 or tapped Yes).
+                    // Fuliza disbursement takes 30-120 s — keep the modal open
+                    // but change the message so the user knows what's happening.
+                    if (!_cryptoState.fuluzaMessageShown) {
+                        _cryptoState.fuluzaMessageShown = true;
+                        setModalState('💳', 'Fuliza Processing',
+                            'You accepted Fuliza — M-Pesa is processing the overdraft payment.<br>' +
+                            '<small style="color:#f59e0b;">This can take up to 2 minutes. Please keep this page open.</small>',
+                            true);  // keep dots visible
+                    }
+
+                } else if (status === 'failed') {
+                    // Covers: standard cancel, Fuliza decline (typed 2 or tapped Cancel
+                    // on Fuliza USSD), insufficient balance with Fuliza refused,
+                    // STK expiry — all arrive here with no distinction needed by the user.
                     _cryptoState.resolved = true;
                     _stopCryptoPoll();
+                    const isFulizaDecline = (data.intasend_state || '').match(
+                        /DS2|DS12|FULIZA_DECLINED|INSUFFICIENT/i
+                    );
                     setModalState('❌', 'Payment Declined',
-                        'The M-Pesa payment was declined or cancelled.<br>You can try again below.',
+                        isFulizaDecline
+                            ? 'The Fuliza payment was declined.<br>' +
+                              'You can top up your M-Pesa balance and try again.'
+                            : 'The M-Pesa payment was declined or cancelled.<br>' +
+                              'You can try again below.',
                         false);
                     _resetCryptoBtn();
                     setTimeout(() => {
@@ -3832,9 +3883,7 @@
                 }
             }
 
-            // Keep the display independent from network polling.  A terminal
-            // result clears this timer through _stopCryptoPoll(), so a
-            // cancelled push cannot keep counting down behind the result.
+            // ── Countdown timer (independent of network channels) ─────────────
             const updateCryptoCountdown = () => {
                 if (!_cryptoState || _cryptoState.checkoutId !== myCheckoutId) return;
                 const secsLeft = Math.max(0, Math.ceil((TIMEOUT_MS - (Date.now() - startTime)) / 1000));
@@ -3847,31 +3896,6 @@
             updateCryptoCountdown();
             _cryptoState.countdownTimer = setInterval(updateCryptoCountdown, 1000);
 
-            // Do not wait for the first interval tick.  This detects a
-            // cancellation that happened while the STK modal was open almost
-            // immediately, even if the webhook is delayed or lost.
-            const probeCryptoStatus = async () => {
-                if (!_cryptoState || _cryptoState.checkoutId !== myCheckoutId ||
-                    _cryptoState.resolved) return;
-                const controller = new AbortController();
-                _cryptoState.statusAbort = controller;
-                try {
-                    const res = await fetch(
-                        `${BACKEND_BASE_URL}/api/crypto/poll-intasend?ref=${encodeURIComponent(myCheckoutId)}`,
-                        { headers: { 'Authorization': `Bearer ${token}` }, signal: controller.signal }
-                    );
-                    const data = await res.json();
-                    if (_cryptoState && _cryptoState.checkoutId === myCheckoutId) {
-                        handleResult(data, 'intasend-immediate');
-                    }
-                } catch (err) {
-                    if (err.name !== 'AbortError') {
-                        console.warn('[crypto] Immediate status probe failed:', err.message);
-                    }
-                }
-            };
-            probeCryptoStatus();
-
             // ── Channel 1: SSE stream — real-time push from server ────────────
             _cryptoState.streamAbort = _openPaymentStream(
                 `${BACKEND_BASE_URL}/api/crypto/status-stream?ref=${encodeURIComponent(myCheckoutId)}`,
@@ -3881,23 +3905,12 @@
             );
 
             // ── Channel 2: Ledger status poll every 3 s ───────────────────────
-            // Catches confirmed/failed that the SSE missed (proxy buffering etc.)
             _cryptoState.interval = setInterval(async () => {
                 if (!_cryptoState || _cryptoState.checkoutId !== myCheckoutId) return;
                 if (_cryptoState.resolved) return;
-
                 _cryptoState.count++;
 
-                // Countdown display (time-based, accurate regardless of interval drift)
-                const elapsed  = Date.now() - startTime;
-                const secsLeft = Math.max(0, Math.floor((TIMEOUT_MS - elapsed) / 1000));
-                const cd = document.getElementById('cryptoCountdown');
-                if (cd) {
-                    const m = Math.floor(secsLeft / 60);
-                    const s = secsLeft % 60;
-                    cd.textContent = `${m}:${String(s).padStart(2, '0')}`;
-                }
-
+                const elapsed = Date.now() - startTime;
                 if (elapsed >= TIMEOUT_MS) {
                     _cryptoState.resolved = true;
                     _stopCryptoPoll();
@@ -3908,7 +3921,6 @@
                     _resetCryptoBtn();
                     return;
                 }
-
                 try {
                     const res  = await fetch(
                         `${BACKEND_BASE_URL}/api/crypto/status?ref=${encodeURIComponent(myCheckoutId)}`,
@@ -3922,10 +3934,13 @@
                 }
             }, 3000);
 
-            // ── Channel 3: IntaSend direct query every 8 s ────────────────────
-            // Queries IntaSend's own API — webhook-independent.  Slower cadence
-            // to stay within rate limits; channels 1 & 2 handle fast responses.
-            _cryptoState.intasendInterval = setInterval(async () => {
+            // ── Channel 3: IntaSend direct query every 5 s ────────────────────
+            // Bypasses the webhook entirely — the only channel that catches
+            // Fuliza declines (DS2 / DS12) and Cancel-on-USSD-overlay events
+            // because M-Pesa never sends a webhook for those actions.
+            // 5 s cadence: fast enough to respond within 1-2 ticks of the user
+            // action; safe enough to stay under IntaSend's rate limits.
+            const runIntasendPoll = async () => {
                 if (!_cryptoState || _cryptoState.checkoutId !== myCheckoutId) return;
                 if (_cryptoState.resolved) return;
                 try {
@@ -3939,7 +3954,10 @@
                 } catch (err) {
                     console.warn('[crypto] IntaSend direct poll error:', err.message);
                 }
-            }, 8000);  // 8 s — slower cadence to stay within IntaSend rate limits
+            };
+            // Fire immediately on start (catches fast cancels), then every 5 s
+            runIntasendPoll();
+            _cryptoState.intasendInterval = setInterval(runIntasendPoll, 5000);
         }
 
         async function initiatePayment() {
@@ -4377,13 +4395,14 @@
                               streamAbort: null, resolved: false };
 
             // ── Shared result handler ─────────────────────────────────────────
-            // Called by all three channels (SSE, ledger poll, IntaSend direct
-            // poll). Acts immediately on the first terminal state received.
             function handleResult(data, source) {
                 if (!_upgradeState || _upgradeState.checkoutId !== myCheckoutId) return;
                 if (_upgradeState.resolved) return;
 
-                if (data.payment_status === 'confirmed') {
+                const status = data.payment_status;
+                console.log(`[upgrade] status=${status} source=${source} intasend_state=${data.intasend_state||''}`);
+
+                if (status === 'confirmed') {
                     _upgradeState.resolved = true;
                     _stopUpgradePoll();
                     authStorage.setItem(UPGRADE_PAID_KEY,    'true');
@@ -4397,14 +4416,27 @@
                         false);
                     setTimeout(() => { closeUpgradeModal(); renderUpgradePanel(); }, 2800);
 
-                } else if (data.payment_status === 'failed') {
-                    // Act immediately — all three sources only reach 'failed'
-                    // after a confirmed terminal state from IntaSend / ledger.
-                    console.log(`[upgrade] Payment failed (source=${source})`);
+                } else if (status === 'processing_fuliza') {
+                    if (!_upgradeState.fuluzaMessageShown) {
+                        _upgradeState.fuluzaMessageShown = true;
+                        setUpgradeModalState('💳', 'Fuliza Processing',
+                            'You accepted Fuliza — M-Pesa is processing the overdraft payment.<br>' +
+                            '<small style="color:#f59e0b;">This can take up to 2 minutes. Please keep this page open.</small>',
+                            true);
+                    }
+
+                } else if (status === 'failed') {
                     _upgradeState.resolved = true;
                     _stopUpgradePoll();
+                    const isFulizaDecline = (data.intasend_state || '').match(
+                        /DS2|DS12|FULIZA_DECLINED|INSUFFICIENT/i
+                    );
                     setUpgradeModalState('❌', 'Payment Declined',
-                        'The M-Pesa payment was declined or cancelled.<br>You can try again below.',
+                        isFulizaDecline
+                            ? 'The Fuliza payment was declined.<br>' +
+                              'You can top up your M-Pesa balance and try again.'
+                            : 'The M-Pesa payment was declined or cancelled.<br>' +
+                              'You can try again below.',
                         false);
                     _resetUpgradeBtn();
                     setTimeout(() => {
@@ -4414,6 +4446,7 @@
                 }
             }
 
+            // ── Countdown timer ───────────────────────────────────────────────
             const updateUpgradeCountdown = () => {
                 if (!_upgradeState || _upgradeState.checkoutId !== myCheckoutId) return;
                 const secsLeft = Math.max(0, Math.ceil((UPG_TIMEOUT_MS - (Date.now() - startTime)) / 1000));
@@ -4426,31 +4459,7 @@
             updateUpgradeCountdown();
             _upgradeState.countdownTimer = setInterval(updateUpgradeCountdown, 1000);
 
-            // Probe IntaSend immediately instead of waiting for the first
-            // eight-second fallback tick.
-            const probeUpgradeStatus = async () => {
-                if (!_upgradeState || _upgradeState.checkoutId !== myCheckoutId ||
-                    _upgradeState.resolved) return;
-                const controller = new AbortController();
-                _upgradeState.statusAbort = controller;
-                try {
-                    const res = await fetch(
-                        `${BACKEND_BASE_URL}/api/upgrade/poll-intasend?ref=${encodeURIComponent(myCheckoutId)}`,
-                        { headers: { 'Authorization': `Bearer ${token}` }, signal: controller.signal }
-                    );
-                    const data = await res.json();
-                    if (_upgradeState && _upgradeState.checkoutId === myCheckoutId) {
-                        handleResult(data, 'intasend-immediate');
-                    }
-                } catch (err) {
-                    if (err.name !== 'AbortError') {
-                        console.warn('[upgrade] Immediate status probe failed:', err.message);
-                    }
-                }
-            };
-            probeUpgradeStatus();
-
-            // ── Channel 1: SSE stream — real-time push from server ────────────
+            // ── Channel 1: SSE stream ─────────────────────────────────────────
             _upgradeState.streamAbort = _openPaymentStream(
                 `${BACKEND_BASE_URL}/api/upgrade/status-stream?ref=${encodeURIComponent(myCheckoutId)}`,
                 token,
@@ -4462,18 +4471,9 @@
             _upgradeState.interval = setInterval(async () => {
                 if (!_upgradeState || _upgradeState.checkoutId !== myCheckoutId) return;
                 if (_upgradeState.resolved) return;
-
                 _upgradeState.count++;
 
-                const elapsed  = Date.now() - startTime;
-                const secsLeft = Math.max(0, Math.floor((UPG_TIMEOUT_MS - elapsed) / 1000));
-                const cd = document.getElementById('upgradeCountdown');
-                if (cd) {
-                    const m = Math.floor(secsLeft / 60);
-                    const s = secsLeft % 60;
-                    cd.textContent = `${m}:${String(s).padStart(2, '0')}`;
-                }
-
+                const elapsed = Date.now() - startTime;
                 if (elapsed >= UPG_TIMEOUT_MS) {
                     _upgradeState.resolved = true;
                     _stopUpgradePoll();
@@ -4484,7 +4484,6 @@
                     _resetUpgradeBtn();
                     return;
                 }
-
                 try {
                     const res  = await fetch(
                         `${BACKEND_BASE_URL}/api/upgrade/status?ref=${encodeURIComponent(myCheckoutId)}`,
@@ -4498,10 +4497,10 @@
                 }
             }, 3000);
 
-            // ── Channel 3: IntaSend direct query every 8 s ────────────────────
-            // Queries IntaSend's own API — webhook-independent. Slower cadence
-            // to stay within rate limits; channels 1 & 2 handle fast responses.
-            _upgradeState.intasendInterval = setInterval(async () => {
+            // ── Channel 3: IntaSend direct query every 5 s ────────────────────
+            // Primary rescue channel for Fuliza decline/cancel scenarios where
+            // no webhook is ever fired by M-Pesa / IntaSend.
+            const runUpgradeIntasendPoll = async () => {
                 if (!_upgradeState || _upgradeState.checkoutId !== myCheckoutId) return;
                 if (_upgradeState.resolved) return;
                 try {
@@ -4515,7 +4514,9 @@
                 } catch (err) {
                     console.warn('[upgrade] IntaSend direct poll error:', err.message);
                 }
-            }, 8000);  // 8 s — slower cadence to stay within IntaSend rate limits
+            };
+            runUpgradeIntasendPoll();
+            _upgradeState.intasendInterval = setInterval(runUpgradeIntasendPoll, 5000);
         }
 
         async function initiateUpgradePayment() {
