@@ -3705,15 +3705,16 @@
         //     retried — frontend had no way to tell that was stale.
         // ─────────────────────────────────────────────────────────────────────
 
-        let _cryptoState = null;  // { checkoutId, interval, count }
-        const POLL_MAX   = 36;    // 36 × 5s = 3 minutes (IntaSend STK push window)
+        let _cryptoState = null;  // { checkoutId, interval, intasendInterval, count }
+        const POLL_MAX   = 36;    // 36 × 5 s = 3 minutes (IntaSend STK push window)
         const TIMEOUT_MS = POLL_MAX * 5 * 1000;
 
-        // ── Tear-down helper — aborts SSE stream and clears interval ─────────
+        // ── Tear-down helper — aborts SSE stream and clears all intervals ─────
         function _stopCryptoPoll() {
             if (_cryptoState) {
-                if (_cryptoState.interval)    clearInterval(_cryptoState.interval);
-                if (_cryptoState.streamAbort) _cryptoState.streamAbort.abort();
+                if (_cryptoState.interval)         clearInterval(_cryptoState.interval);
+                if (_cryptoState.intasendInterval) clearInterval(_cryptoState.intasendInterval);
+                if (_cryptoState.streamAbort)      _cryptoState.streamAbort.abort();
             }
             _cryptoState = null;
         }
@@ -3805,14 +3806,15 @@
             const token        = authStorage.getItem(TOKEN_KEY);
 
             _cryptoState = { checkoutId: myCheckoutId, count: 0,
-                             interval: null, streamAbort: null, resolved: false };
+                             interval: null, intasendInterval: null,
+                             streamAbort: null, resolved: false };
 
-            // ── Shared result handler (called by SSE and polling) ─────────────
-            // Both SSE and polling act on the first definitive terminal state.
-            // The old failedCount >= 2 guard has been removed: SSE is the primary
-            // delivery path so if SSE fires "failed" it is definitive, and if the
-            // polling fallback reaches "failed" it means SSE was missed — trust it.
-            function handleResult(data, fromSSE) {
+            // ── Shared result handler ─────────────────────────────────────────
+            // Called by all three channels (SSE, ledger poll, IntaSend direct
+            // poll).  Acts immediately on the first terminal state received —
+            // no failedCount guard needed because _MPESA_FAILURE_STATES on the
+            // backend already filters out transient intermediate callbacks.
+            function handleResult(data, source) {
                 if (!_cryptoState || _cryptoState.checkoutId !== myCheckoutId) return;
                 if (_cryptoState.resolved) return;
 
@@ -3822,10 +3824,13 @@
                     authStorage.setItem(CRYPTO_PAID_KEY,    'true');
                     authStorage.setItem(CRYPTO_EXPIRES_KEY, data.crypto_expires || '');
                     const { plan } = _getSelectedCryptoPlan();
-                    const planLabel = plan === 'weekly' ? '1 week' : plan === 'biweekly' ? '2 weeks' : '1 month';
+                    const planLabel = plan === 'weekly' ? '1 week'
+                                    : plan === 'biweekly' ? '2 weeks' : '1 month';
                     setModalState('🎉', 'Payment Confirmed!',
                         `Your Crypto Signals subscription (${planLabel}) is now active.<br>` +
-                        (data.crypto_expires ? `<small style="color:#10b981;">Valid until ${data.crypto_expires}</small><br>` : '') +
+                        (data.crypto_expires
+                            ? `<small style="color:#10b981;">Valid until ${data.crypto_expires}</small><br>`
+                            : '') +
                         'Daily signals will arrive in your inbox throughout the day.',
                         false);
                     setTimeout(() => {
@@ -3836,9 +3841,9 @@
                     }, 2800);
 
                 } else if (data.payment_status === 'failed') {
-                    // Act immediately on the first failed event from either SSE or
-                    // polling — SSE fires within ~1 s of the webhook; if polling
-                    // reaches here it means SSE was missed, so treat it as definitive.
+                    // Act immediately — all three sources only reach 'failed'
+                    // after a confirmed terminal state from IntaSend / ledger.
+                    console.log(`[crypto] Payment failed (source=${source})`);
                     _cryptoState.resolved = true;
                     _stopCryptoPoll();
                     setModalState('❌', 'Payment Declined',
@@ -3852,22 +3857,23 @@
                 }
             }
 
-            // ── Primary: SSE stream (real-time, < 1 s after callback fires) ──
+            // ── Channel 1: SSE stream — real-time push from server ────────────
             _cryptoState.streamAbort = _openPaymentStream(
                 `${BACKEND_BASE_URL}/api/crypto/status-stream?ref=${encodeURIComponent(myCheckoutId)}`,
                 token,
-                (data) => handleResult(data, true),
-                (err)  => console.warn('[crypto] SSE error — polling fallback active:', err.message)
+                (data) => handleResult(data, 'sse'),
+                (err)  => console.warn('[crypto] SSE error — other channels active:', err.message)
             );
 
-            // ── Fallback: poll every 2 s (catches missed SSE events) ──────────
+            // ── Channel 2: Ledger status poll every 3 s ───────────────────────
+            // Catches confirmed/failed that the SSE missed (proxy buffering etc.)
             _cryptoState.interval = setInterval(async () => {
                 if (!_cryptoState || _cryptoState.checkoutId !== myCheckoutId) return;
                 if (_cryptoState.resolved) return;
 
                 _cryptoState.count++;
 
-                // Time-based countdown (accurate regardless of poll interval)
+                // Countdown display (time-based, accurate regardless of interval drift)
                 const elapsed  = Date.now() - startTime;
                 const secsLeft = Math.max(0, Math.floor((TIMEOUT_MS - elapsed) / 1000));
                 const cd = document.getElementById('cryptoCountdown');
@@ -3877,7 +3883,6 @@
                     cd.textContent = `${m}:${String(s).padStart(2, '0')}`;
                 }
 
-                // Timeout — restore display to default immediately
                 if (elapsed >= TIMEOUT_MS) {
                     _cryptoState.resolved = true;
                     _stopCryptoPoll();
@@ -3885,11 +3890,10 @@
                         'We did not receive a response within 3 minutes.<br>' +
                         'If you entered your PIN, please contact support — you will not be charged twice.',
                         false);
-                    _resetCryptoBtn();   // restores button to "Pay KSh X Now" immediately
+                    _resetCryptoBtn();
                     return;
                 }
 
-                // Fallback poll
                 try {
                     const res  = await fetch(
                         `${BACKEND_BASE_URL}/api/crypto/status?ref=${encodeURIComponent(myCheckoutId)}`,
@@ -3897,11 +3901,30 @@
                     );
                     const data = await res.json();
                     if (!_cryptoState || _cryptoState.checkoutId !== myCheckoutId) return;
-                    if (!_cryptoState.resolved) handleResult(data, false);
+                    if (!_cryptoState.resolved) handleResult(data, 'ledger-poll');
                 } catch (err) {
-                    console.warn('[crypto] Poll error (will retry):', err.message);
+                    console.warn('[crypto] Ledger poll error (will retry):', err.message);
                 }
-            }, 2000);   // 2 s — faster fallback, still well below server load concern
+            }, 3000);
+
+            // ── Channel 3: IntaSend direct query every 8 s ────────────────────
+            // Queries IntaSend's own API — webhook-independent.  Slower cadence
+            // to stay within rate limits; channels 1 & 2 handle fast responses.
+            _cryptoState.intasendInterval = setInterval(async () => {
+                if (!_cryptoState || _cryptoState.checkoutId !== myCheckoutId) return;
+                if (_cryptoState.resolved) return;
+                try {
+                    const res  = await fetch(
+                        `${BACKEND_BASE_URL}/api/crypto/poll-intasend?ref=${encodeURIComponent(myCheckoutId)}`,
+                        { headers: { 'Authorization': `Bearer ${token}` } }
+                    );
+                    const data = await res.json();
+                    if (!_cryptoState || _cryptoState.checkoutId !== myCheckoutId) return;
+                    if (!_cryptoState.resolved) handleResult(data, 'intasend-direct');
+                } catch (err) {
+                    console.warn('[crypto] IntaSend direct poll error:', err.message);
+                }
+            }, 8000);
         }
 
         async function initiatePayment() {
@@ -4296,14 +4319,16 @@
         // ─────────────────────────────────────────────────────────────────────
         // UPGRADE PAYMENT STATE MACHINE  (same pattern as crypto above)
         // ─────────────────────────────────────────────────────────────────────
-        let _upgradeState = null;  // { checkoutId, interval, count }
-        const UPG_POLL_MAX  = 36;
+        let _upgradeState = null;  // { checkoutId, interval, intasendInterval, count }
+        const UPG_POLL_MAX   = 36;
         const UPG_TIMEOUT_MS = UPG_POLL_MAX * 5 * 1000;
 
+        // ── Tear-down helper — aborts SSE stream and clears all intervals ─────
         function _stopUpgradePoll() {
             if (_upgradeState) {
-                if (_upgradeState.interval)    clearInterval(_upgradeState.interval);
-                if (_upgradeState.streamAbort) _upgradeState.streamAbort.abort();
+                if (_upgradeState.interval)         clearInterval(_upgradeState.interval);
+                if (_upgradeState.intasendInterval) clearInterval(_upgradeState.intasendInterval);
+                if (_upgradeState.streamAbort)      _upgradeState.streamAbort.abort();
             }
             _upgradeState = null;
         }
@@ -4330,13 +4355,13 @@
             const token        = authStorage.getItem(TOKEN_KEY);
 
             _upgradeState = { checkoutId: myCheckoutId, count: 0,
-                              interval: null, streamAbort: null, resolved: false };
+                              interval: null, intasendInterval: null,
+                              streamAbort: null, resolved: false };
 
-            // Both SSE and polling act on the first definitive terminal state.
-            // The old failedCount >= 2 guard has been removed: SSE is the primary
-            // delivery path so if SSE fires "failed" it is definitive, and if the
-            // polling fallback reaches "failed" it means SSE was missed — trust it.
-            function handleResult(data, fromSSE) {
+            // ── Shared result handler ─────────────────────────────────────────
+            // Called by all three channels (SSE, ledger poll, IntaSend direct
+            // poll). Acts immediately on the first terminal state received.
+            function handleResult(data, source) {
                 if (!_upgradeState || _upgradeState.checkoutId !== myCheckoutId) return;
                 if (_upgradeState.resolved) return;
 
@@ -4347,15 +4372,17 @@
                     authStorage.setItem(UPGRADE_EXPIRES_KEY, data.upgrade_expires || '');
                     setUpgradeModalState('🏆', 'Upgrade Confirmed!',
                         'Your Enhanced Daily Engagement Hub is now active for 3 months.<br>' +
-                        (data.upgrade_expires ? `<small style="color:#10b981;">Valid until ${data.upgrade_expires}</small><br>` : '') +
+                        (data.upgrade_expires
+                            ? `<small style="color:#10b981;">Valid until ${data.upgrade_expires}</small><br>`
+                            : '') +
                         'Live classes and trade signals will begin arriving in your inbox.',
                         false);
                     setTimeout(() => { closeUpgradeModal(); renderUpgradePanel(); }, 2800);
 
                 } else if (data.payment_status === 'failed') {
-                    // Act immediately on the first failed event from either SSE or
-                    // polling — SSE fires within ~1 s of the webhook; if polling
-                    // reaches here it means SSE was missed, so treat it as definitive.
+                    // Act immediately — all three sources only reach 'failed'
+                    // after a confirmed terminal state from IntaSend / ledger.
+                    console.log(`[upgrade] Payment failed (source=${source})`);
                     _upgradeState.resolved = true;
                     _stopUpgradePoll();
                     setUpgradeModalState('❌', 'Payment Declined',
@@ -4369,13 +4396,15 @@
                 }
             }
 
+            // ── Channel 1: SSE stream — real-time push from server ────────────
             _upgradeState.streamAbort = _openPaymentStream(
                 `${BACKEND_BASE_URL}/api/upgrade/status-stream?ref=${encodeURIComponent(myCheckoutId)}`,
                 token,
-                (data) => handleResult(data, true),
-                (err)  => console.warn('[upgrade] SSE error — polling fallback active:', err.message)
+                (data) => handleResult(data, 'sse'),
+                (err)  => console.warn('[upgrade] SSE error — other channels active:', err.message)
             );
 
+            // ── Channel 2: Ledger status poll every 3 s ───────────────────────
             _upgradeState.interval = setInterval(async () => {
                 if (!_upgradeState || _upgradeState.checkoutId !== myCheckoutId) return;
                 if (_upgradeState.resolved) return;
@@ -4398,7 +4427,7 @@
                         'We did not receive a response within 3 minutes.<br>' +
                         'If you entered your PIN, please contact support — you will not be charged twice.',
                         false);
-                    _resetUpgradeBtn();   // restores button immediately on timeout
+                    _resetUpgradeBtn();
                     return;
                 }
 
@@ -4409,11 +4438,30 @@
                     );
                     const data = await res.json();
                     if (!_upgradeState || _upgradeState.checkoutId !== myCheckoutId) return;
-                    if (!_upgradeState.resolved) handleResult(data, false);
+                    if (!_upgradeState.resolved) handleResult(data, 'ledger-poll');
                 } catch (err) {
-                    console.warn('[upgrade] Poll error (will retry):', err.message);
+                    console.warn('[upgrade] Ledger poll error (will retry):', err.message);
                 }
-            }, 2000);
+            }, 3000);
+
+            // ── Channel 3: IntaSend direct query every 8 s ────────────────────
+            // Queries IntaSend's own API — webhook-independent. Slower cadence
+            // to stay within rate limits; channels 1 & 2 handle fast responses.
+            _upgradeState.intasendInterval = setInterval(async () => {
+                if (!_upgradeState || _upgradeState.checkoutId !== myCheckoutId) return;
+                if (_upgradeState.resolved) return;
+                try {
+                    const res  = await fetch(
+                        `${BACKEND_BASE_URL}/api/upgrade/poll-intasend?ref=${encodeURIComponent(myCheckoutId)}`,
+                        { headers: { 'Authorization': `Bearer ${token}` } }
+                    );
+                    const data = await res.json();
+                    if (!_upgradeState || _upgradeState.checkoutId !== myCheckoutId) return;
+                    if (!_upgradeState.resolved) handleResult(data, 'intasend-direct');
+                } catch (err) {
+                    console.warn('[upgrade] IntaSend direct poll error:', err.message);
+                }
+            }, 8000);
         }
 
         async function initiateUpgradePayment() {
