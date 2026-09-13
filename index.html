@@ -3851,8 +3851,17 @@
                     // User accepted Fuliza (typed 1 or tapped Yes).
                     // Fuliza disbursement takes 30-120 s — keep the modal open
                     // but change the message so the user knows what's happening.
-                    if (!_cryptoState.fuluzaMessageShown) {
-                        _cryptoState.fuluzaMessageShown = true;
+                    if (!_cryptoState.inFulizaProcessing) {
+                        _cryptoState.inFulizaProcessing = true;
+                        // Extend the effective timeout by 2 extra minutes from NOW.
+                        // Without this extension, a Fuliza that starts at t=60s and
+                        // takes 100s completes at t=160s — only 20s before the base
+                        // 3-minute window closes, and any network delay tips it over.
+                        _cryptoState.extraTimeMs = 120_000;
+                        console.log('[crypto] Fuliza processing detected — timeout extended by 2 min');
+                    }
+                    if (!_cryptoState.fulizaMessageShown) {
+                        _cryptoState.fulizaMessageShown = true;
                         setModalState('💳', 'Fuliza Processing',
                             'You accepted Fuliza — M-Pesa is processing the overdraft payment.<br>' +
                             '<small style="color:#f59e0b;">This can take up to 2 minutes. Please keep this page open.</small>',
@@ -3910,8 +3919,9 @@
                 if (_cryptoState.resolved) return;
                 _cryptoState.count++;
 
-                const elapsed = Date.now() - startTime;
-                if (elapsed >= TIMEOUT_MS) {
+                const elapsed    = Date.now() - startTime;
+                const effectiveMs = TIMEOUT_MS + (_cryptoState.extraTimeMs || 0);
+                if (elapsed >= effectiveMs) {
                     _cryptoState.resolved = true;
                     _stopCryptoPoll();
                     setModalState('⏱️', 'Request Timed Out',
@@ -4417,8 +4427,13 @@
                     setTimeout(() => { closeUpgradeModal(); renderUpgradePanel(); }, 2800);
 
                 } else if (status === 'processing_fuliza') {
-                    if (!_upgradeState.fuluzaMessageShown) {
-                        _upgradeState.fuluzaMessageShown = true;
+                    if (!_upgradeState.inFulizaProcessing) {
+                        _upgradeState.inFulizaProcessing = true;
+                        _upgradeState.extraTimeMs        = 120_000;  // 2 extra minutes
+                        console.log('[upgrade] Fuliza processing detected — timeout extended by 2 min');
+                    }
+                    if (!_upgradeState.fulizaMessageShown) {
+                        _upgradeState.fulizaMessageShown = true;
                         setUpgradeModalState('💳', 'Fuliza Processing',
                             'You accepted Fuliza — M-Pesa is processing the overdraft payment.<br>' +
                             '<small style="color:#f59e0b;">This can take up to 2 minutes. Please keep this page open.</small>',
@@ -4473,8 +4488,9 @@
                 if (_upgradeState.resolved) return;
                 _upgradeState.count++;
 
-                const elapsed = Date.now() - startTime;
-                if (elapsed >= UPG_TIMEOUT_MS) {
+                const elapsed     = Date.now() - startTime;
+                const effectiveMs  = UPG_TIMEOUT_MS + (_upgradeState.extraTimeMs || 0);
+                if (elapsed >= effectiveMs) {
                     _upgradeState.resolved = true;
                     _stopUpgradePoll();
                     setUpgradeModalState('⏱️', 'Request Timed Out',
