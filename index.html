@@ -3706,8 +3706,9 @@
         // ─────────────────────────────────────────────────────────────────────
 
         let _cryptoState = null;  // { checkoutId, interval, intasendInterval, countdownTimer, statusAbort, count }
-        const POLL_MAX   = 36;    // 36 × 5 s = 3 minutes (IntaSend STK push window)
-        const TIMEOUT_MS = POLL_MAX * 5 * 1000;
+        const POLL_MAX   = 60;    // 3 minutes at a 3-second ledger cadence
+        const POLL_INTERVAL_MS = 3000;
+        const TIMEOUT_MS = POLL_MAX * POLL_INTERVAL_MS;
 
         // ── Tear-down helper — aborts SSE stream and clears all intervals ─────
         function _stopCryptoPoll() {
@@ -3857,8 +3858,8 @@
                         // Without this extension, a Fuliza that starts at t=60s and
                         // takes 100s completes at t=160s — only 20s before the base
                         // 3-minute window closes, and any network delay tips it over.
-                        _cryptoState.extraTimeMs = 120_000;
-                        console.log('[crypto] Fuliza processing detected — timeout extended by 2 min');
+                        _cryptoState.extraTimeMs = 300_000;
+                        console.log('[crypto] Fuliza processing detected — timeout extended by 5 min');
                     }
                     if (!_cryptoState.fulizaMessageShown) {
                         _cryptoState.fulizaMessageShown = true;
@@ -3942,13 +3943,13 @@
                 } catch (err) {
                     console.warn('[crypto] Ledger poll error (will retry):', err.message);
                 }
-            }, 3000);
+            }, POLL_INTERVAL_MS);
 
             // ── Channel 3: IntaSend direct query every 5 s ────────────────────
             // Bypasses the webhook entirely — the only channel that catches
             // Fuliza declines (DS2 / DS12) and Cancel-on-USSD-overlay events
             // because M-Pesa never sends a webhook for those actions.
-            // 5 s cadence: fast enough to respond within 1-2 ticks of the user
+            // 3 s cadence: fast enough to respond within 1-2 ticks of the user
             // action; safe enough to stay under IntaSend's rate limits.
             const runIntasendPoll = async () => {
                 if (!_cryptoState || _cryptoState.checkoutId !== myCheckoutId) return;
@@ -3967,7 +3968,7 @@
             };
             // Fire immediately on start (catches fast cancels), then every 5 s
             runIntasendPoll();
-            _cryptoState.intasendInterval = setInterval(runIntasendPoll, 5000);
+            _cryptoState.intasendInterval = setInterval(runIntasendPoll, 3000);
         }
 
         async function initiatePayment() {
@@ -4364,7 +4365,8 @@
         // ─────────────────────────────────────────────────────────────────────
         let _upgradeState = null;  // { checkoutId, interval, intasendInterval, countdownTimer, statusAbort, count }
         const UPG_POLL_MAX   = 36;
-        const UPG_TIMEOUT_MS = UPG_POLL_MAX * 5 * 1000;
+        const UPG_POLL_INTERVAL_MS = 3000;
+        const UPG_TIMEOUT_MS = UPG_POLL_MAX * UPG_POLL_INTERVAL_MS;
 
         // ── Tear-down helper — aborts SSE stream and clears all intervals ─────
         function _stopUpgradePoll() {
@@ -4429,8 +4431,8 @@
                 } else if (status === 'processing_fuliza') {
                     if (!_upgradeState.inFulizaProcessing) {
                         _upgradeState.inFulizaProcessing = true;
-                        _upgradeState.extraTimeMs        = 120_000;  // 2 extra minutes
-                        console.log('[upgrade] Fuliza processing detected — timeout extended by 2 min');
+                        _upgradeState.extraTimeMs        = 300_000;  // 5 extra minutes
+                        console.log('[upgrade] Fuliza processing detected — timeout extended by 5 min');
                     }
                     if (!_upgradeState.fulizaMessageShown) {
                         _upgradeState.fulizaMessageShown = true;
@@ -4511,7 +4513,7 @@
                 } catch (err) {
                     console.warn('[upgrade] Ledger poll error (will retry):', err.message);
                 }
-            }, 3000);
+            }, UPG_POLL_INTERVAL_MS);
 
             // ── Channel 3: IntaSend direct query every 5 s ────────────────────
             // Primary rescue channel for Fuliza decline/cancel scenarios where
@@ -4532,7 +4534,7 @@
                 }
             };
             runUpgradeIntasendPoll();
-            _upgradeState.intasendInterval = setInterval(runUpgradeIntasendPoll, 5000);
+            _upgradeState.intasendInterval = setInterval(runUpgradeIntasendPoll, 3000);
         }
 
         async function initiateUpgradePayment() {
