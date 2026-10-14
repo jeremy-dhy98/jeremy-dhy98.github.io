@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coding For Freedom — Python Automation & AI and DATA Solutions for Business</title>
+    <title>Coding For Freedom — Python Automation & AI Solutions for Business</title>
     <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="shortcut icon" href="favicon.ico">
@@ -355,32 +355,91 @@
             .nav-hamburger { display: flex; }
         }
 
+        /* ── Hero: scaling-safe background slideshow + layered overlay ───────── */
         .hero {
-            position: relative;
-            padding: 90px 20px 72px;
+            position: relative; isolation: isolate;
+            display: flex; align-items: center; justify-content: center;
+            min-height: clamp(480px, 64vh, 640px);
+            padding: 84px 24px 72px;
             text-align: center;
-            border-radius: 16px;
-            margin: 20px 0 40px;
-            overflow: hidden;
+            border-radius: 18px; margin: 20px 0 40px; overflow: hidden;
             border: 1px solid var(--border);
             background-color: var(--bg-color);
+            box-shadow: 0 28px 60px -34px rgba(0,0,0,.75);
         }
         @media(max-width:600px) {
-            .hero { padding: 64px 16px 52px; margin: 12px 0 28px; border-radius: 12px; }
+            .hero { min-height: 0; padding: 44px 16px 52px; margin: 12px 0 28px; border-radius: 14px; }
         }
-        .slideshow-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
-        .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: 0; transition: opacity 1.5s ease-in-out; background: var(--card-bg); }
-        .slide.active { opacity: 0.55; }
-        .slide-person { object-position: center 20%; }
-        /* Stronger overlay on mobile for readability in sunlight */
+        .slideshow-background {
+            position: absolute; inset: 0; z-index: 0;
+            background: linear-gradient(135deg,#0b1730 0%,#0f172a 60%,#0a1224 100%);   /* shown until images load */
+        }
+        /* object-fit:cover keeps the aspect ratio (no stretching); --fx/--fy choose the focal point */
+        .slide {
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            object-fit: cover; object-position: var(--fx, 50%) var(--fy, 50%);
+            opacity: 0; transition: opacity 1.2s ease-in-out;
+            background: transparent; transform: translateZ(0); backface-visibility: hidden;
+            user-select: none; -webkit-user-drag: none;
+        }
+        .slide.active { opacity: .85; }
+        .slide-person { --fy: 18%; }
+        @media(max-width:600px) { .slide { --fx: 50%; } .slide-person { --fy: 12%; } }
+        /* Overlay = dark centre (text zone, hides any text baked into the photos) that opens up
+           toward the edges so the imagery still shows, plus a top/bottom shade. */
         .slideshow-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15,23,42,0.68); z-index: 2;
+            position: absolute; inset: 0; z-index: 1; pointer-events: none;
+            background:
+                linear-gradient(180deg, rgba(8,13,28,.55) 0%, rgba(8,13,28,0) 28%, rgba(8,13,28,0) 62%, rgba(8,13,28,.7) 100%),
+                radial-gradient(ellipse 78% 82% at 50% 50%, rgba(8,13,28,.92) 0%, rgba(8,13,28,.74) 55%, rgba(8,13,28,.36) 100%);
+        }
+        /* Phones: portrait crop shows only a slice of the image, so use a calmer, even scrim */
+        @media(max-width:600px) {
+            .slideshow-overlay {
+                background: linear-gradient(180deg, rgba(8,13,28,.86) 0%, rgba(8,13,28,.88) 45%, rgba(8,13,28,.93) 100%);
+            }
+        }
+        .hero-content { position: relative; z-index: 2; width: 100%; max-width: 820px; margin: 0 auto; }
+        .hero .badge {
+            background: rgba(3,105,161,.78); color: #e0f2fe;
+            border: 1px solid rgba(125,211,252,.35);
+            font-size: .78rem; letter-spacing: .02em; line-height: 1.35;
+            padding: 6px 14px; margin-bottom: 18px; max-width: 100%;
+            -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
         }
         @media(max-width:600px) {
-            .slideshow-overlay { background: rgba(10,18,40,0.78); }
+            .hero .badge { font-size: .74rem; padding: 5px 14px; margin-bottom: 14px; }
         }
-        .hero-content { position: relative; z-index: 3; }
+        .hero h1 {
+            font-size: clamp(1.65rem, 1.05rem + 2.7vw, 2.8rem);
+            line-height: 1.15; margin: 0 auto 16px; max-width: 18em;
+            text-wrap: balance; text-shadow: 0 2px 20px rgba(0,0,0,.6);
+        }
+        .hero p {
+            font-size: clamp(.98rem, .9rem + .35vw, 1.15rem); line-height: 1.65;
+            color: #cbd5e1; max-width: 640px; margin: 0 auto;
+            text-wrap: pretty; text-shadow: 0 1px 12px rgba(0,0,0,.6);
+        }
+        .hero .cx-cta-row { justify-content: center; margin-top: 26px; }
+        .hero .cx-btn-ghost { background: rgba(15,23,42,.6); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+        .hero .cx-audience { justify-content: center; margin-top: 26px; }
+        .hero .cx-chip { -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+        @media(max-width:600px) {
+            .hero .cx-cta-row { flex-direction: column; align-items: stretch; max-width: 340px; margin: 22px auto 0; gap: 10px; }
+            .hero .cx-btn { text-align: center; padding: 14px 18px; }
+            .hero .cx-audience { margin-top: 22px; gap: 8px; }
+            .hero .cx-audience-label { flex-basis: 100%; text-align: center; margin: 0 0 2px; }
+            .hero .cx-chip { padding: 8px 13px; font-size: .82rem; }
+        }
+        .hero .badge .b-short { display: none; }
+        @media(max-width:520px) { .hero .badge .b-full { display: none; } .hero .badge .b-short { display: inline; } }
+        /* Slide dots */
+        .hero-dots { position: absolute; left: 0; right: 0; bottom: 8px; z-index: 3; display: flex; justify-content: center; gap: 2px; }
+        .hero-dot { width: 26px; height: 26px; padding: 0; border: 0; background: transparent; cursor: pointer; position: relative; }
+        .hero-dot::after { content: ""; position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: rgba(248,250,252,.35); transition: background .25s, transform .25s; }
+        .hero-dot[aria-selected="true"]::after { background: var(--accent); transform: scale(1.25); }
+        .hero-dot:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; border-radius: 6px; }
+        @media (prefers-reduced-motion: reduce) { .slide { transition: none; } }
 
         .badge { background: #0369a1; color: #e0f2fe; padding: 4px 12px; border-radius: 999px; font-size: 0.85rem; font-weight: 600; display: inline-block; margin-bottom: 16px; }
 
@@ -2064,14 +2123,14 @@
     <main class="container">
         <section class="hero" id="about">
             <div class="slideshow-background">
-                <img src="" class="slide active" alt="Background Slide 1" data-bg-key="bg1">
-                <img src="" class="slide" alt="Background Slide 3" data-bg-key="bg3">
-                <img src="" class="slide slide-person" alt="Background Slide 2" data-bg-key="bg2">
+                <img src="" class="slide active" alt="" aria-hidden="true" decoding="async" draggable="false" data-bg-key="bg1">
+                <img src="" class="slide" alt="" aria-hidden="true" decoding="async" draggable="false" data-bg-key="bg3">
+                <img src="" class="slide slide-person" alt="" aria-hidden="true" decoding="async" draggable="false" data-bg-key="bg2">
             </div>
             <div class="slideshow-overlay"></div>
 
             <div class="hero-content">
-                <span class="badge">Python Automation Engineer &amp; AI Solutions Developer</span>
+                <span class="badge"><span class="b-full">Python Automation Engineer &amp; AI Solutions Developer</span><span class="b-short">Python Automation &amp; AI Solutions</span></span>
                 <h1>We build Python automation systems that save businesses time and money.</h1>
                 <p>Workflow automation, data dashboards, AI assistants and custom web apps &mdash; designed, built and deployed in production by Coding For Freedom.</p>
                 <div class="cx-cta-row">
@@ -4833,15 +4892,40 @@
         // Slideshow Timer
         const slides = document.querySelectorAll('.slide');
         let currentSlide = 0;
-        function nextSlide() {
-            if (slides.length > 0) {
-                slides[currentSlide].classList.remove('active');
-                currentSlide = (currentSlide + 1) % slides.length;
-                slides[currentSlide].classList.add('active');
-            }
+        let slideTimer = null;
+        const heroDots = [];
+        function showSlide(i) {
+            if (!slides.length) return;
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (i + slides.length) % slides.length;
+            slides[currentSlide].classList.add('active');
+            heroDots.forEach((d, k) => d.setAttribute('aria-selected', k === currentSlide ? 'true' : 'false'));
         }
-        if (slides.length > 0) {
-            setInterval(nextSlide, 10000);
+        function nextSlide() { showSlide(currentSlide + 1); }
+        function startSlides() { stopSlides(); slideTimer = setInterval(nextSlide, 8000); }
+        function stopSlides()  { if (slideTimer) { clearInterval(slideTimer); slideTimer = null; } }
+        if (slides.length > 1) {
+            const heroEl = document.getElementById('about');
+            const dotsWrap = document.createElement('div');
+            dotsWrap.className = 'hero-dots';
+            dotsWrap.setAttribute('role', 'tablist');
+            dotsWrap.setAttribute('aria-label', 'Background slides');
+            slides.forEach((_, i) => {
+                const b = document.createElement('button');
+                b.type = 'button'; b.className = 'hero-dot';
+                b.setAttribute('role', 'tab');
+                b.setAttribute('aria-label', 'Show background ' + (i + 1));
+                b.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+                b.addEventListener('click', () => { showSlide(i); if (!reduceMotion) startSlides(); });
+                dotsWrap.appendChild(b); heroDots.push(b);
+            });
+            if (heroEl) heroEl.appendChild(dotsWrap);
+        }
+        const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (slides.length > 1 && !reduceMotion) {
+            startSlides();
+            // Don't burn CPU / data cycling backgrounds in a hidden tab
+            document.addEventListener('visibilitychange', () => { document.hidden ? stopSlides() : startSlides(); });
         }
 
 
