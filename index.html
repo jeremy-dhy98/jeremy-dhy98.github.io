@@ -4005,6 +4005,7 @@
                 if (_cryptoState.countdownTimer)   clearInterval(_cryptoState.countdownTimer);
                 if (_cryptoState.statusAbort)      _cryptoState.statusAbort.abort();
                 if (_cryptoState.streamAbort)      _cryptoState.streamAbort.abort();
+                if (_cryptoState.onVisible)        document.removeEventListener('visibilitychange', _cryptoState.onVisible);
             }
             _cryptoState = null;
         }
@@ -4135,6 +4136,20 @@
                         if (reveal) reveal.classList.add('visible');
                     }, 2800);
 
+                } else if (status === 'processing') {
+                    // PIN entered; M-Pesa is confirming. This happens for EVERY
+                    // payment (normal balance or Fuliza), so keep the wording neutral.
+                    if (!_cryptoState.processingShown) {
+                        _cryptoState.processingShown = true;
+                        // Guarantee at least 90 s of confirmation time from now.
+                        _cryptoState.extraTimeMs = Math.max(_cryptoState.extraTimeMs || 0,
+                            (Date.now() - startTime) + 90_000 - TIMEOUT_MS);
+                        setModalState('🔄', 'Confirming Payment',
+                            'We received your PIN — M-Pesa is confirming the payment.<br>' +
+                            '<small style="color:#64748b;">This usually takes a few seconds.</small>',
+                            true);
+                    }
+
                 } else if (status === 'processing_fuliza') {
                     // User accepted Fuliza (typed 1 or tapped Yes).
                     // Fuliza disbursement takes 30-120 s — keep the modal open
@@ -4238,9 +4253,11 @@
             // because M-Pesa never sends a webhook for those actions.
             // 3 s cadence: fast enough to respond within 1-2 ticks of the user
             // action; safe enough to stay under IntaSend's rate limits.
+            let _intasendBusy = false;
             const runIntasendPoll = async () => {
                 if (!_cryptoState || _cryptoState.checkoutId !== myCheckoutId) return;
-                if (_cryptoState.resolved) return;
+                if (_cryptoState.resolved || _intasendBusy) return;
+                _intasendBusy = true;
                 try {
                     const res  = await fetch(
                         `${BACKEND_BASE_URL}/api/crypto/poll-intasend?ref=${encodeURIComponent(myCheckoutId)}`,
@@ -4251,11 +4268,15 @@
                     if (!_cryptoState.resolved) handleResult(data, 'intasend-direct');
                 } catch (err) {
                     console.warn('[crypto] IntaSend direct poll error:', err.message);
-                }
+                } finally { _intasendBusy = false; }
             };
+            // Same-phone flow: the STK/Fuliza prompt backgrounds this tab and the
+            // browser throttles timers. Check immediately when the user returns.
+            _cryptoState.onVisible = () => { if (!document.hidden) runIntasendPoll(); };
+            document.addEventListener('visibilitychange', _cryptoState.onVisible);
             // Fire immediately on start (catches fast cancels), then every 5 s
             runIntasendPoll();
-            _cryptoState.intasendInterval = setInterval(runIntasendPoll, 3000);
+            _cryptoState.intasendInterval = setInterval(runIntasendPoll, 2000);
         }
 
         async function initiatePayment() {
@@ -4663,6 +4684,7 @@
                 if (_upgradeState.countdownTimer)   clearInterval(_upgradeState.countdownTimer);
                 if (_upgradeState.statusAbort)      _upgradeState.statusAbort.abort();
                 if (_upgradeState.streamAbort)      _upgradeState.streamAbort.abort();
+                if (_upgradeState.onVisible)        document.removeEventListener('visibilitychange', _upgradeState.onVisible);
             }
             _upgradeState = null;
         }
@@ -4714,6 +4736,20 @@
                         'Live classes and trade signals will begin arriving in your inbox.',
                         false);
                     setTimeout(() => { closeUpgradeModal(); renderUpgradePanel(); }, 2800);
+
+                } else if (status === 'processing') {
+                    // PIN entered; M-Pesa is confirming. This happens for EVERY
+                    // payment (normal balance or Fuliza), so keep the wording neutral.
+                    if (!_upgradeState.processingShown) {
+                        _upgradeState.processingShown = true;
+                        // Guarantee at least 90 s of confirmation time from now.
+                        _upgradeState.extraTimeMs = Math.max(_upgradeState.extraTimeMs || 0,
+                            (Date.now() - startTime) + 90_000 - UPG_TIMEOUT_MS);
+                        setUpgradeModalState('🔄', 'Confirming Payment',
+                            'We received your PIN — M-Pesa is confirming the payment.<br>' +
+                            '<small style="color:#64748b;">This usually takes a few seconds.</small>',
+                            true);
+                    }
 
                 } else if (status === 'processing_fuliza') {
                     if (!_upgradeState.inFulizaProcessing) {
@@ -4805,9 +4841,11 @@
             // ── Channel 3: IntaSend direct query every 5 s ────────────────────
             // Primary rescue channel for Fuliza decline/cancel scenarios where
             // no webhook is ever fired by M-Pesa / IntaSend.
+            let _intasendBusy = false;
             const runUpgradeIntasendPoll = async () => {
                 if (!_upgradeState || _upgradeState.checkoutId !== myCheckoutId) return;
-                if (_upgradeState.resolved) return;
+                if (_upgradeState.resolved || _intasendBusy) return;
+                _intasendBusy = true;
                 try {
                     const res  = await fetch(
                         `${BACKEND_BASE_URL}/api/upgrade/poll-intasend?ref=${encodeURIComponent(myCheckoutId)}`,
@@ -4818,10 +4856,12 @@
                     if (!_upgradeState.resolved) handleResult(data, 'intasend-direct');
                 } catch (err) {
                     console.warn('[upgrade] IntaSend direct poll error:', err.message);
-                }
+                } finally { _intasendBusy = false; }
             };
+            _upgradeState.onVisible = () => { if (!document.hidden) runUpgradeIntasendPoll(); };
+            document.addEventListener('visibilitychange', _upgradeState.onVisible);
             runUpgradeIntasendPoll();
-            _upgradeState.intasendInterval = setInterval(runUpgradeIntasendPoll, 3000);
+            _upgradeState.intasendInterval = setInterval(runUpgradeIntasendPoll, 2000);
         }
 
         async function initiateUpgradePayment() {
