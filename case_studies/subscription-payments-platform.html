@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subscription & M-Pesa Payments Platform | Coding For Freedom</title>
+<meta name="description" content="How a Flask backend with IntaSend, M-Pesa webhooks, email delivery and Google Sheets automates subscriptions and payment confirmation.">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg"><link rel="icon" href="../favicon.ico">
+<meta name="theme-color" content="#0f172a"><link rel="stylesheet" href="case.css"></head><body>
+<div class="top"><a href="../index.html#work">&larr; Back to Coding For Freedom</a></div>
+<main>
+<div class="eyebrow">Case study</div>
+<h1>Subscription &amp; M-Pesa Payments Platform</h1>
+<p class="lead">A Flask backend that lets customers pay by M-Pesa and then confirms the payment, activates access, emails the customer and records everything automatically.</p>
+<ol class="flow" aria-label="Workflow"><li>M-Pesa checkout</li><li>IntaSend</li><li>Flask webhook</li><li>Access, email &amp; records</li></ol>
+<h2>The problem</h2><p>Selling access to premium content to Kenyan customers needs local payments. Done manually, every payment means checking a statement, switching on access and updating a record by hand.</p>
+<h2>The solution</h2><p>Customers pay through an M-Pesa prompt on their phone, processed by IntaSend. The Flask backend receives IntaSend&rsquo;s payment webhooks, confirms the payment, activates the subscription, sends the customer an email and writes the record to Google Sheets. No one reconciles anything by hand.</p>
+<h2>Architecture</h2><ul><li><b>Checkout:</b> M-Pesa prompt triggered through IntaSend.</li><li><b>Confirmation:</b> webhook callbacks from IntaSend, backed up by live status streaming to the browser and direct status checks, so a missed or late callback does not leave a customer waiting.</li><li><b>Records:</b> Google Sheets as the subscriber database, fronted by a short-lived cache.</li><li><b>Delivery:</b> automatic emails over SMTP.</li></ul>
+<h2>Technologies</h2><p>Flask, IntaSend, M-Pesa, webhooks, Google Sheets API, SMTP email, Server-Sent Events.</p>
+<h2>Lessons learned</h2><ul><li><b>Never rely on one confirmation channel.</b> Webhooks can arrive late or not at all, so the system also checks payment status directly.</li><li><b>Spreadsheet APIs have rate limits.</b> Polling during checkout would exhaust them, so user records are cached briefly and refreshed after every write.</li><li><b>Payment states are ambiguous.</b> A generic &ldquo;processing&rdquo; state does not tell you whether the money came from the customer&rsquo;s balance or from an overdraft, so the interface now uses neutral wording and reacts the moment a payment is declined or confirmed.</li></ul>
+<div class="box result"><b>Result</b><p>Replaced manual payment checks and reconciliation with automatic M-Pesa confirmation, access activation and record-keeping.</p></div>
+<div class="tags"><span>Flask</span><span>M-Pesa</span><span>Webhooks</span></div>
+<div class="cta"><h2>Have a similar problem?</h2><p>Tell us what you want to automate and we will reply with how we would do it and what it could save you.</p><a class="btn" href="../index.html#hire">Book a consultation</a></div>
+<p class="nav2"><a href="live-data-dashboard.html">Next: Live Data Dashboard &rarr;</a></p>
+</main></body></html>
