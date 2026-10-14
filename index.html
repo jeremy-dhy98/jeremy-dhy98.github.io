@@ -4145,7 +4145,7 @@
                         _cryptoState.extraTimeMs = Math.max(_cryptoState.extraTimeMs || 0,
                             (Date.now() - startTime) + 90_000 - TIMEOUT_MS);
                         setModalState('🔄', 'Confirming Payment',
-                            'We received your PIN — M-Pesa is confirming the payment.<br>' +
+                            'M-Pesa is confirming your payment.<br>' +
                             '<small style="color:#64748b;">This usually takes a few seconds.</small>',
                             true);
                     }
@@ -4746,7 +4746,7 @@
                         _upgradeState.extraTimeMs = Math.max(_upgradeState.extraTimeMs || 0,
                             (Date.now() - startTime) + 90_000 - UPG_TIMEOUT_MS);
                         setUpgradeModalState('🔄', 'Confirming Payment',
-                            'We received your PIN — M-Pesa is confirming the payment.<br>' +
+                            'M-Pesa is confirming your payment.<br>' +
                             '<small style="color:#64748b;">This usually takes a few seconds.</small>',
                             true);
                     }
