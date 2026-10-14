@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coding For Freedom — Python Automation, AI & DATA Solutions for Business</title>
+    <title>Coding For Freedom — Python Automation & AI and DATA Solutions for Business</title>
     <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="shortcut icon" href="favicon.ico">
@@ -2243,8 +2243,7 @@
             <!-- Founder visibility. To use a real photo, replace the <div class="cx-founder-photo"> with:
                  <img class="cx-founder-photo" src="assets/jeremy.jpg" alt="Jeremy"> -->
             <div class="cx-founder">
-                <!-- <div class="cx-founder-photo" aria-hidden="true">J</div> -->
-                <img class="cx-founder-photo" src="jeremy.png" alt="Jeremy">
+                <div class="cx-founder-photo" aria-hidden="true">J</div>
                 <div>
                     <h3>Jeremy</h3>
                     <p class="cx-founder-role">Python Automation Engineer &amp; AI Solutions Developer</p>
@@ -6211,7 +6210,7 @@
                 msg.className = 'cx-form-msg';
                 msg.textContent = 'Sending\u2026 (the server may take a few seconds to wake up)';
                 var ctl = new AbortController();
-                var to = setTimeout(function () { ctl.abort(); }, 45000);
+                var to = setTimeout(function () { ctl.abort(); }, 75000);
                 fetch(API + '/api/inquiry', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload), signal: ctl.signal
