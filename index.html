@@ -4269,7 +4269,7 @@
                             true);  // keep dots visible
                     }
 
-                } else if (status === 'failed') {
+                } else if (status === 'failed' || status === 'cancelled' || status === 'canceled') {
                     // Covers: standard cancel, Fuliza decline (typed 2 or tapped Cancel
                     // on Fuliza USSD), insufficient balance with Fuliza refused,
                     // STK expiry — all arrive here with no distinction needed by the user.
@@ -4853,7 +4853,7 @@
                             true);
                     }
 
-                } else if (status === 'failed') {
+                } else if (status === 'failed' || status === 'cancelled' || status === 'canceled') {
                     _upgradeState.resolved = true;
                     const failMsg = _describePaymentFailure(data.intasend_state);
                     closeUpgradeModal();                 // stops polling, re-enables the button
