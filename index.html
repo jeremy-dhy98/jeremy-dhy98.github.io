@@ -4045,8 +4045,9 @@
         // ─────────────────────────────────────────────────────────────────────
 
         let _cryptoState = null;  // { checkoutId, interval, intasendInterval, countdownTimer, statusAbort, count }
-        const POLL_MAX   = 60;    // 3 minutes at a 3-second ledger cadence
-        const POLL_INTERVAL_MS = 3000;
+        const POLL_MAX   = 180;   // 3 minutes at a 1-second ledger cadence
+        const POLL_INTERVAL_MS = 1000;   // ledger poll is in-memory on the server: cheap, so poll fast
+        const PAY_RESULT_LINGER_MS = 1200; // how long the success card stays before auto-closing
         const TIMEOUT_MS = POLL_MAX * POLL_INTERVAL_MS;
 
         // ── Tear-down helper — aborts SSE stream and clears all intervals ─────
@@ -4105,6 +4106,35 @@
         function showUpgradeRenewPanel() {
             document.getElementById('upgradeActivePanel').style.display = 'none';
             document.getElementById('upgradePayPanel').style.display    = '';
+        }
+
+        // ── fetch + JSON with a hard timeout ──────────────────────────────────
+        // Without a timeout a hung request leaves the poll's "busy" flag set forever and the
+        // loop silently stops - the modal then sits on "Waiting…" until the 3-minute timeout.
+        async function _payFetchJson(url, token, timeoutMs = 6000) {
+            const ctrl = new AbortController();
+            const t = setTimeout(() => ctrl.abort(), timeoutMs);
+            try {
+                const res = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    signal: ctrl.signal, cache: 'no-store'
+                });
+                return await res.json();
+            } finally { clearTimeout(t); }
+        }
+
+        // Plain-language reason for a failed STK push (shown inline - no modal delay).
+        function _describePaymentFailure(state) {
+            const st = String(state || '').toUpperCase();
+            if (/DS2|DS12|FULIZA_DECLINED/.test(st))
+                return 'The Fuliza payment was declined. Top up your M-Pesa balance and try again.';
+            if (/INSUFFICIENT|LOW_BALANCE/.test(st))
+                return 'Payment failed: insufficient M-Pesa balance. Top up and try again.';
+            if (/EXPIRED|TIMEOUT|TIMED_OUT/.test(st))
+                return 'The M-Pesa request expired before a PIN was entered. Tap Pay to try again.';
+            if (/CANCEL/.test(st))
+                return 'Payment cancelled - you have not been charged. Tap Pay whenever you are ready.';
+            return 'The M-Pesa payment was declined or cancelled. You have not been charged - tap Pay to try again.';
         }
 
         // ── Shared fetch-based SSE helper ─────────────────────────────────────
@@ -4181,12 +4211,11 @@
                             : '') +
                         'Daily signals will arrive in your inbox throughout the day.',
                         false);
-                    setTimeout(() => {
-                        closePaymentModal();
-                        renderCryptoPanel();
-                        const reveal = document.getElementById('binanceReveal');
-                        if (reveal) reveal.classList.add('visible');
-                    }, 2800);
+                    // Unlock the UI NOW; the card below is only a short confirmation.
+                    renderCryptoPanel();
+                    const reveal = document.getElementById('binanceReveal');
+                    if (reveal) reveal.classList.add('visible');
+                    setTimeout(closePaymentModal, PAY_RESULT_LINGER_MS);
 
                 } else if (status === 'processing') {
                     // PIN entered; M-Pesa is confirming. This happens for EVERY
@@ -4228,22 +4257,11 @@
                     // on Fuliza USSD), insufficient balance with Fuliza refused,
                     // STK expiry — all arrive here with no distinction needed by the user.
                     _cryptoState.resolved = true;
-                    _stopCryptoPoll();
-                    const isFulizaDecline = (data.intasend_state || '').match(
-                        /DS2|DS12|FULIZA_DECLINED|INSUFFICIENT/i
-                    );
-                    setModalState('❌', 'Payment Declined',
-                        isFulizaDecline
-                            ? 'The Fuliza payment was declined.<br>' +
-                              'You can top up your M-Pesa balance and try again.'
-                            : 'The M-Pesa payment was declined or cancelled.<br>' +
-                              'You can try again below.',
-                        false);
-                    _resetCryptoBtn();
-                    setTimeout(() => {
-                        const overlay = document.getElementById('paymentModalOverlay');
-                        if (overlay && overlay.classList.contains('open')) closePaymentModal();
-                    }, 2500);
+                    // Cancel / decline: respond at once - close the waiting screen, re-enable
+                    // Pay and say why, right where the user is looking. No timed delay.
+                    const failMsg = _describePaymentFailure(data.intasend_state);
+                    closePaymentModal();                 // stops polling, re-enables the button
+                    setCryptoStatus(failMsg, 'error');
                 }
             }
 
@@ -4269,7 +4287,8 @@
             );
 
             // ── Channel 2: Ledger status poll every 3 s ───────────────────────
-            _cryptoState.interval = setInterval(async () => {
+            let _ledgerBusy = false;
+            const runLedgerPoll = async () => {
                 if (!_cryptoState || _cryptoState.checkoutId !== myCheckoutId) return;
                 if (_cryptoState.resolved) return;
                 _cryptoState.count++;
@@ -4286,18 +4305,18 @@
                     _resetCryptoBtn();
                     return;
                 }
+                if (_ledgerBusy) return;          // never stack requests on a slow network
+                _ledgerBusy = true;
                 try {
-                    const res  = await fetch(
-                        `${BACKEND_BASE_URL}/api/crypto/status?ref=${encodeURIComponent(myCheckoutId)}`,
-                        { headers: { 'Authorization': `Bearer ${token}` } }
-                    );
-                    const data = await res.json();
+                    const data = await _payFetchJson(
+                        `${BACKEND_BASE_URL}/api/crypto/status?ref=${encodeURIComponent(myCheckoutId)}`, token, 6000);
                     if (!_cryptoState || _cryptoState.checkoutId !== myCheckoutId) return;
                     if (!_cryptoState.resolved) handleResult(data, 'ledger-poll');
                 } catch (err) {
                     console.warn('[crypto] Ledger poll error (will retry):', err.message);
-                }
-            }, POLL_INTERVAL_MS);
+                } finally { _ledgerBusy = false; }
+            };
+            _cryptoState.interval = setInterval(runLedgerPoll, POLL_INTERVAL_MS);
 
             // ── Channel 3: IntaSend direct query every 5 s ────────────────────
             // Bypasses the webhook entirely — the only channel that catches
@@ -4311,11 +4330,8 @@
                 if (_cryptoState.resolved || _intasendBusy) return;
                 _intasendBusy = true;
                 try {
-                    const res  = await fetch(
-                        `${BACKEND_BASE_URL}/api/crypto/poll-intasend?ref=${encodeURIComponent(myCheckoutId)}`,
-                        { headers: { 'Authorization': `Bearer ${token}` } }
-                    );
-                    const data = await res.json();
+                    const data = await _payFetchJson(
+                        `${BACKEND_BASE_URL}/api/crypto/poll-intasend?ref=${encodeURIComponent(myCheckoutId)}`, token, 8000);
                     if (!_cryptoState || _cryptoState.checkoutId !== myCheckoutId) return;
                     if (!_cryptoState.resolved) handleResult(data, 'intasend-direct');
                 } catch (err) {
@@ -4324,7 +4340,7 @@
             };
             // Same-phone flow: the STK/Fuliza prompt backgrounds this tab and the
             // browser throttles timers. Check immediately when the user returns.
-            _cryptoState.onVisible = () => { if (!document.hidden) runIntasendPoll(); };
+            _cryptoState.onVisible = () => { if (!document.hidden) { runLedgerPoll(); runIntasendPoll(); } };
             document.addEventListener('visibilitychange', _cryptoState.onVisible);
             // Fire immediately on start (catches fast cancels), then every 5 s
             runIntasendPoll();
@@ -4724,8 +4740,8 @@
         // UPGRADE PAYMENT STATE MACHINE  (same pattern as crypto above)
         // ─────────────────────────────────────────────────────────────────────
         let _upgradeState = null;  // { checkoutId, interval, intasendInterval, countdownTimer, statusAbort, count }
-        const UPG_POLL_MAX   = 36;
-        const UPG_POLL_INTERVAL_MS = 3000;
+        const UPG_POLL_MAX   = 180;  // 3 minutes (matches the on-screen countdown + timeout text)
+        const UPG_POLL_INTERVAL_MS = 1000;
         const UPG_TIMEOUT_MS = UPG_POLL_MAX * UPG_POLL_INTERVAL_MS;
 
         // ── Tear-down helper — aborts SSE stream and clears all intervals ─────
@@ -4787,7 +4803,8 @@
                             : '') +
                         'Live classes and trade signals will begin arriving in your inbox.',
                         false);
-                    setTimeout(() => { closeUpgradeModal(); renderUpgradePanel(); }, 2800);
+                    renderUpgradePanel();                         // unlock the UI now
+                    setTimeout(closeUpgradeModal, PAY_RESULT_LINGER_MS);
 
                 } else if (status === 'processing') {
                     // PIN entered; M-Pesa is confirming. This happens for EVERY
@@ -4819,22 +4836,9 @@
 
                 } else if (status === 'failed') {
                     _upgradeState.resolved = true;
-                    _stopUpgradePoll();
-                    const isFulizaDecline = (data.intasend_state || '').match(
-                        /DS2|DS12|FULIZA_DECLINED|INSUFFICIENT/i
-                    );
-                    setUpgradeModalState('❌', 'Payment Declined',
-                        isFulizaDecline
-                            ? 'The Fuliza payment was declined.<br>' +
-                              'You can top up your M-Pesa balance and try again.'
-                            : 'The M-Pesa payment was declined or cancelled.<br>' +
-                              'You can try again below.',
-                        false);
-                    _resetUpgradeBtn();
-                    setTimeout(() => {
-                        const overlay = document.getElementById('upgradeModalOverlay');
-                        if (overlay && overlay.classList.contains('open')) closeUpgradeModal();
-                    }, 2500);
+                    const failMsg = _describePaymentFailure(data.intasend_state);
+                    closeUpgradeModal();                 // stops polling, re-enables the button
+                    setUpgradeStatus(failMsg, 'error');
                 }
             }
 
@@ -4860,7 +4864,8 @@
             );
 
             // ── Channel 2: Ledger status poll every 3 s ───────────────────────
-            _upgradeState.interval = setInterval(async () => {
+            let _ledgerBusy = false;
+            const runUpgradeLedgerPoll = async () => {
                 if (!_upgradeState || _upgradeState.checkoutId !== myCheckoutId) return;
                 if (_upgradeState.resolved) return;
                 _upgradeState.count++;
@@ -4877,18 +4882,18 @@
                     _resetUpgradeBtn();
                     return;
                 }
+                if (_ledgerBusy) return;
+                _ledgerBusy = true;
                 try {
-                    const res  = await fetch(
-                        `${BACKEND_BASE_URL}/api/upgrade/status?ref=${encodeURIComponent(myCheckoutId)}`,
-                        { headers: { 'Authorization': `Bearer ${token}` } }
-                    );
-                    const data = await res.json();
+                    const data = await _payFetchJson(
+                        `${BACKEND_BASE_URL}/api/upgrade/status?ref=${encodeURIComponent(myCheckoutId)}`, token, 6000);
                     if (!_upgradeState || _upgradeState.checkoutId !== myCheckoutId) return;
                     if (!_upgradeState.resolved) handleResult(data, 'ledger-poll');
                 } catch (err) {
                     console.warn('[upgrade] Ledger poll error (will retry):', err.message);
-                }
-            }, UPG_POLL_INTERVAL_MS);
+                } finally { _ledgerBusy = false; }
+            };
+            _upgradeState.interval = setInterval(runUpgradeLedgerPoll, UPG_POLL_INTERVAL_MS);
 
             // ── Channel 3: IntaSend direct query every 5 s ────────────────────
             // Primary rescue channel for Fuliza decline/cancel scenarios where
@@ -4899,18 +4904,15 @@
                 if (_upgradeState.resolved || _intasendBusy) return;
                 _intasendBusy = true;
                 try {
-                    const res  = await fetch(
-                        `${BACKEND_BASE_URL}/api/upgrade/poll-intasend?ref=${encodeURIComponent(myCheckoutId)}`,
-                        { headers: { 'Authorization': `Bearer ${token}` } }
-                    );
-                    const data = await res.json();
+                    const data = await _payFetchJson(
+                        `${BACKEND_BASE_URL}/api/upgrade/poll-intasend?ref=${encodeURIComponent(myCheckoutId)}`, token, 8000);
                     if (!_upgradeState || _upgradeState.checkoutId !== myCheckoutId) return;
                     if (!_upgradeState.resolved) handleResult(data, 'intasend-direct');
                 } catch (err) {
                     console.warn('[upgrade] IntaSend direct poll error:', err.message);
                 } finally { _intasendBusy = false; }
             };
-            _upgradeState.onVisible = () => { if (!document.hidden) runUpgradeIntasendPoll(); };
+            _upgradeState.onVisible = () => { if (!document.hidden) { runUpgradeLedgerPoll(); runUpgradeIntasendPoll(); } };
             document.addEventListener('visibilitychange', _upgradeState.onVisible);
             runUpgradeIntasendPoll();
             _upgradeState.intasendInterval = setInterval(runUpgradeIntasendPoll, 2000);
