@@ -3294,8 +3294,16 @@
                             <span style="width:8px;height:8px;border-radius:50%;background:#f59e0b;animation:pulse-new 1.2s 0.6s infinite;display:block;"></span>
                         </div>
                     </div>
+                    <button type="button" id="modalCancelBtn" onclick="cancelPendingPayment('crypto')"
+                            style="margin:0 0 14px;background:transparent;border:1px solid #475569;color:#cbd5e1;border-radius:8px;padding:9px 20px;font-size:0.85rem;font-weight:600;cursor:pointer;">
+                        Cancel payment
+                    </button>
+                    <button type="button" id="upgModalCancelBtn" onclick="cancelPendingPayment('upgrade')"
+                            style="margin:0 0 14px;background:transparent;border:1px solid #475569;color:#cbd5e1;border-radius:8px;padding:9px 20px;font-size:0.85rem;font-weight:600;cursor:pointer;">
+                        Cancel payment
+                    </button>
                     <p style="font-size:0.75rem;color:#475569;line-height:1.5;">
-                        This screen will update automatically.<br>Do not close or refresh the page.
+                        This screen updates automatically.<br>Entered your PIN? Keep this open. Changed your mind? Tap Cancel payment.
                     </p>
                 </div>
             </div>
@@ -4016,6 +4024,15 @@
             document.getElementById('modalTitle').textContent = title;
             document.getElementById('modalBody').innerHTML    = body;
             document.getElementById('modalPollBox').style.display = showDots ? '' : 'none';
+            const cb = document.getElementById('modalCancelBtn'); if (cb) cb.style.display = showDots ? '' : 'none';
+        }
+
+        // User-driven cancel: never leave anyone trapped on "Waiting…" if the upstream status is slow.
+        // If a PIN was already entered the webhook still activates the subscription server-side.
+        function cancelPendingPayment(kind) {
+            const msg = 'Payment cancelled. If you already entered your M-Pesa PIN, your subscription will still activate automatically - refresh the page in a minute to see it.';
+            if (kind === 'upgrade') { closeUpgradeModal(); setUpgradeStatus(msg, 'error'); }
+            else { closePaymentModal(); setCryptoStatus(msg, 'error'); }
         }
 
         // ─────────────────────────────────────────────────────────────────────
@@ -4734,6 +4751,8 @@
             document.getElementById('upgModalTitle').textContent = title;
             document.getElementById('upgModalBody').innerHTML    = body;
             document.getElementById('upgModalPollBox').style.display = showDots ? '' : 'none';
+        
+            const ucb = document.getElementById('upgModalCancelBtn'); if (ucb) ucb.style.display = showDots ? '' : 'none';
         }
 
         // ─────────────────────────────────────────────────────────────────────
