@@ -2697,6 +2697,10 @@
                         <span style="width:8px;height:8px;border-radius:50%;background:#10b981;animation:pulse-new 1.2s .6s infinite;display:block;"></span>
                     </div>
                 </div>
+                    <button type="button" id="upgModalCancelBtn" onclick="cancelPendingPayment('upgrade')"
+                            style="margin:0 0 14px;background:transparent;border:1px solid #475569;color:#cbd5e1;border-radius:8px;padding:9px 20px;font-size:.85rem;font-weight:600;cursor:pointer;">
+                        Cancel payment
+                    </button>
                 <p style="font-size:.72rem;color:#475569;line-height:1.5;">
                     This screen updates automatically.<br>Do not refresh the page.
                 </p>
@@ -3295,10 +3299,6 @@
                         </div>
                     </div>
                     <button type="button" id="modalCancelBtn" onclick="cancelPendingPayment('crypto')"
-                            style="margin:0 0 14px;background:transparent;border:1px solid #475569;color:#cbd5e1;border-radius:8px;padding:9px 20px;font-size:0.85rem;font-weight:600;cursor:pointer;">
-                        Cancel payment
-                    </button>
-                    <button type="button" id="upgModalCancelBtn" onclick="cancelPendingPayment('upgrade')"
                             style="margin:0 0 14px;background:transparent;border:1px solid #475569;color:#cbd5e1;border-radius:8px;padding:9px 20px;font-size:0.85rem;font-weight:600;cursor:pointer;">
                         Cancel payment
                     </button>
@@ -4242,10 +4242,9 @@
                         // Guarantee at least 90 s of confirmation time from now.
                         _cryptoState.extraTimeMs = Math.max(_cryptoState.extraTimeMs || 0,
                             (Date.now() - startTime) + 90_000 - TIMEOUT_MS);
-                        setModalState('🔄', 'Confirming Payment',
-                            'M-Pesa is confirming your payment.<br>' +
-                            '<small style="color:#64748b;">This usually takes a few seconds.</small>',
-                            true);
+                        // IntaSend reports PROCESSING as soon as the STK prompt is DELIVERED to the
+                        // handset (seconds after it is sent, before any PIN), so keep the
+                        // "Check Your Phone" screen and its countdown instead of claiming a PIN was entered.
                     }
 
                 } else if (status === 'processing_fuliza') {
@@ -4833,10 +4832,8 @@
                         // Guarantee at least 90 s of confirmation time from now.
                         _upgradeState.extraTimeMs = Math.max(_upgradeState.extraTimeMs || 0,
                             (Date.now() - startTime) + 90_000 - UPG_TIMEOUT_MS);
-                        setUpgradeModalState('🔄', 'Confirming Payment',
-                            'M-Pesa is confirming your payment.<br>' +
-                            '<small style="color:#64748b;">This usually takes a few seconds.</small>',
-                            true);
+                        // PROCESSING = prompt delivered to the handset, not "PIN entered": keep the
+                        // "Check Your Phone" screen and its countdown.
                     }
 
                 } else if (status === 'processing_fuliza') {
