@@ -4035,6 +4035,22 @@
             else { closePaymentModal(); setCryptoStatus(msg, 'error'); }
         }
 
+        // After CANCEL_HINT_MS without a result, turn the plain cancel button into an obvious
+        // "I already cancelled on my phone" action (IntaSend does not report cancels promptly).
+        const CANCEL_HINT_MS = 30000;
+        function _cancelBtnHint(btnId, on) {
+            const b = document.getElementById(btnId); if (!b) return;
+            if (on) {
+                b.textContent = 'Cancelled it on your phone? Tap here';
+                b.style.borderColor = '#f59e0b'; b.style.color = '#fbbf24';
+                b.style.background  = 'rgba(245,158,11,.12)';
+            } else {
+                b.textContent = 'Cancel payment';
+                b.style.borderColor = '#475569'; b.style.color = '#cbd5e1';
+                b.style.background  = 'transparent';
+            }
+        }
+
         // ─────────────────────────────────────────────────────────────────────
         // CRYPTO PAYMENT STATE MACHINE
         //
@@ -4148,7 +4164,7 @@
             if (/INSUFFICIENT|LOW_BALANCE/.test(st))
                 return 'Payment failed: insufficient M-Pesa balance. Top up and try again.';
             if (/EXPIRED|TIMEOUT|TIMED_OUT/.test(st))
-                return 'The M-Pesa request expired before a PIN was entered. Tap Pay to try again.';
+                return 'The M-Pesa request expired. Tap Pay to try again. If you already entered your PIN, your subscription will still activate automatically.';
             if (/CANCEL/.test(st))
                 return 'Payment cancelled - you have not been charged. Tap Pay whenever you are ready.';
             return 'The M-Pesa payment was declined or cancelled. You have not been charged - tap Pay to try again.';
@@ -4284,6 +4300,7 @@
             // ── Countdown timer (independent of network channels) ─────────────
             const updateCryptoCountdown = () => {
                 if (!_cryptoState || _cryptoState.checkoutId !== myCheckoutId) return;
+                _cancelBtnHint('modalCancelBtn', Date.now() - startTime >= CANCEL_HINT_MS);
                 const secsLeft = Math.max(0, Math.ceil((TIMEOUT_MS - (Date.now() - startTime)) / 1000));
                 const cd = document.getElementById('cryptoCountdown');
                 if (cd) {
@@ -4861,6 +4878,7 @@
             // ── Countdown timer ───────────────────────────────────────────────
             const updateUpgradeCountdown = () => {
                 if (!_upgradeState || _upgradeState.checkoutId !== myCheckoutId) return;
+                _cancelBtnHint('upgModalCancelBtn', Date.now() - startTime >= CANCEL_HINT_MS);
                 const secsLeft = Math.max(0, Math.ceil((UPG_TIMEOUT_MS - (Date.now() - startTime)) / 1000));
                 const cd = document.getElementById('upgradeCountdown');
                 if (cd) {
