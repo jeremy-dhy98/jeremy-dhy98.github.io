@@ -72,7 +72,8 @@
             text-decoration: none; display: flex; align-items: center;
             gap: 8px; white-space: nowrap; flex-shrink: 0;
         }
-        .logo-img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--card-bg); }
+        .logo-img { width: 32px; height: 32px; border-radius: 8px; object-fit: contain; object-position: center; flex-shrink: 0; background: var(--card-bg); }
+        @media(max-width:600px) { .logo-img { width: 36px; height: 36px; max-width: 36px; } }
 
         /* Desktop nav list */
         .nav-links {
@@ -440,6 +441,30 @@
         .hero-dot[aria-selected="true"]::after { background: var(--accent); transform: scale(1.25); }
         .hero-dot:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; border-radius: 6px; }
         @media (prefers-reduced-motion: reduce) { .slide { transition: none; } }
+
+        /* ── Phones: show each background image WHOLE (no crop / no stretch) ──────
+           The image gets its own banner at the top of the hero and is letterboxed with
+           object-fit:contain, so the full picture is visible at its natural proportions.
+           The headline/buttons sit below it on the solid hero background (still readable). */
+        @media(max-width:600px) {
+            .hero {
+                flex-direction: column; justify-content: flex-start; align-items: stretch;
+                padding: 0 0 56px;
+            }
+            .slideshow-background {
+                position: relative; inset: auto; width: 100%;
+                aspect-ratio: 16 / 10; max-height: 62vh;
+                background: #0b1220;
+                border-bottom: 1px solid var(--border);
+            }
+            .slide, .slide-person {
+                object-fit: contain; object-position: center center;
+                width: 100%; height: 100%; --fx: 50%; --fy: 50%;
+            }
+            .slide.active { opacity: 1; }
+            .slideshow-overlay { display: none; }
+            .hero-content { padding: 22px 16px 0; }
+        }
 
         .badge { background: #0369a1; color: #e0f2fe; padding: 4px 12px; border-radius: 999px; font-size: 0.85rem; font-weight: 600; display: inline-block; margin-bottom: 16px; }
 
