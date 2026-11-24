@@ -444,23 +444,26 @@
         .hero-dot:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; border-radius: 6px; }
         @media (prefers-reduced-motion: reduce) { .slide { transition: none; } }
 
-        /* ── Phones: show each background image WHOLE (no crop / no stretch) ──────
-           The image gets its own banner at the top of the hero and is letterboxed with
-           object-fit:contain, so the full picture is visible at its natural proportions.
-           The headline/buttons sit below it on the solid hero background (still readable). */
+        /* ── Phones: hero background image fills its banner edge to edge ──────────
+           object-fit:cover scales the image (keeping its proportions, never
+           stretched) until it covers the whole banner, so there are no dark bands
+           or lines above/below it.  The banner is wide enough (2:1) that a centred
+           logo fills the full height — touching the top and bottom centre.
+           Tweak --hero-aspect (e.g. 16 / 9 shows more of the image, 2.2 / 1 zooms in). */
         @media(max-width:600px) {
             .hero {
                 flex-direction: column; justify-content: flex-start; align-items: stretch;
                 padding: 0 0 56px;
             }
             .slideshow-background {
+                --hero-aspect: 2 / 1;
                 position: relative; inset: auto; width: 100%;
-                aspect-ratio: 16 / 10; max-height: 62vh;
-                background: #0b1220;
-                border-bottom: 1px solid var(--border);
+                aspect-ratio: var(--hero-aspect); max-height: 62vh;
+                background: #ffffff;
+                border: 0; overflow: hidden;
             }
             .slide, .slide-person {
-                object-fit: contain; object-position: center center;
+                object-fit: cover; object-position: center center;
                 width: 100%; height: 100%; --fx: 50%; --fy: 50%;
             }
             .slide.active { opacity: 1; }
