@@ -4020,17 +4020,44 @@
             }
         }
 
-        /* Init: fetch stats immediately, poll every 5 min, pause when tab hidden */
+        /* Instant updates: the embedded dashboard posts its KPIs the moment a scan finishes.
+           (Only messages from the dashboard's own origin are accepted.) */
+        window.addEventListener('message', function (ev) {
+            let dashOrigin = '';
+            try { dashOrigin = new URL(DASHBOARD_BASE_URL).origin; } catch (e) {}
+            if (!dashOrigin || ev.origin !== dashOrigin) return;
+            const d = ev.data;
+            if (!d || d.source !== 'cff-dashboard' || d.type !== 'stats') return;
+            const num = v => (v === undefined || v === null || v === '' || v === '\u2014') ? '0' : String(v);
+            const setChip = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+            setChip('dsBuyCount',     num(d.buy));
+            setChip('dsSellCount',    num(d.sell));
+            setChip('dsAvgSentiment', d.avg || '\u2014');
+            setChip('dsMarketBias',   d.bias || '\u2014');
+            const biasEl = document.getElementById('dsMarketBias');
+            if (biasEl) biasEl.style.color =
+                d.bias === 'Bullish' ? '#10b981' : d.bias === 'Bearish' ? '#ef4444' : '#f59e0b';
+            const badge = document.querySelector('.dashboard-badge');
+            if (badge) {
+                const tn = [...badge.childNodes].find(n => n.nodeType === 3);
+                if (tn) tn.textContent = d.status && /scanning/i.test(d.status)
+                    ? ' Scanning\u2026 '
+                    : d.last_scan ? ' Live \u00b7 ' + String(d.last_scan).replace('Last scan: ', 'Last scan ')
+                                  : ' Live ';
+            }
+        });
+
+        /* Init: fetch stats immediately, then poll every minute as a fallback, pause when tab hidden */
         (function initDashboard() {
             _fetchDashboardStats();
             clearInterval(_dashboardStatsPollTimer);
-            _dashboardStatsPollTimer = setInterval(_fetchDashboardStats, 5 * 60 * 1000);
+            _dashboardStatsPollTimer = setInterval(_fetchDashboardStats, 60 * 1000);
             document.addEventListener('visibilitychange', () => {
                 if (document.visibilityState === 'hidden') {
                     clearInterval(_dashboardStatsPollTimer);
                 } else {
                     _fetchDashboardStats();
-                    _dashboardStatsPollTimer = setInterval(_fetchDashboardStats, 5 * 60 * 1000);
+                    _dashboardStatsPollTimer = setInterval(_fetchDashboardStats, 60 * 1000);
                 }
             });
         })();
